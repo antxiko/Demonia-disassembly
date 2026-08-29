@@ -2,8 +2,21 @@
 # Desensamblador Z80 (equivalente funcional) para el monitor de Demonia.
 # Contrato: IX=direccion -> 0xC1E4 (texto) + 0xC1E3 (longitud).
 # Comodines de plantilla:  #=byte n   @=word nn   $=salto relativo
-# Cubre: sin prefijo, CB, ED.  (DD/FD en la siguiente pasada.)
+# Cubre: sin prefijo, CB, ED, DD/FD y DDCB/FDCB. Ademas deja el tipo de
+# instruccion en 0xC1BB y el destino del salto en 0xC1C4 (para el paso a paso).
 import sys
+
+# Marcadores de TIPO (primer byte de la plantilla) para el paso a paso del
+# monitor: 0xCBE7-0xCC4E decide como ejecutar la instruccion segun 0xC1BB y
+# 0xC1C4 (deducido de ese codigo superviviente):
+#   1 = JP nn / JP cc,nn     -> se le cambia el operando por 0xCC74
+#   2 = JR / JR cc / DJNZ    -> se le cambia el desplazamiento por 0x13
+#   3 = CALL / CALL cc / RST -> idem que 1, y ademas arregla la vuelta
+#   4 = RET / RET cc / RETI / RETN -> mete 0xCC74 en la pila
+#   5 = JP (HL)/(IX)/(IY)    -> lo convierte en JP nn con el registro
+#   6 = RST (marcador propio: tipo 3 con destino = opcode & 0x38)
+# El destino del salto va a 0xC1C4 (lo escribe la rutina del operando).
+TJP=''; TJR=''; TCALL=''; TRET=''; TJPR=''; TRST=''
 
 r  = ['B','C','D','E','H','L','(HL)','A']
 rp = ['BC','DE','HL','SP']
@@ -15,8 +28,8 @@ rot= ['RLC','RRC','RL ','RR ','SLA','SRA','SLL','SRL']
 # ---------------- SIN PREFIJO ----------------
 T=[None]*256
 def s(o,t): T[o]=t
-s(0x00,'NOP'); s(0x08,"EX AF,AF'"); s(0x10,'DJNZ $'); s(0x18,'JR $')
-for i,c in enumerate(['NZ','Z','NC','C']): s(0x20+i*8,'JR '+c+',$')
+s(0x00,'NOP'); s(0x08,"EX AF,AF'"); s(0x10,TJR+'DJNZ $'); s(0x18,TJR+'JR $')
+for i,c in enumerate(['NZ','Z','NC','C']): s(0x20+i*8,TJR+'JR '+c+',$')
 for i,p in enumerate(rp):
     s(0x01+i*0x10,'LD '+p+',@'); s(0x09+i*0x10,'ADD HL,'+p)
     s(0x03+i*0x10,'INC '+p);     s(0x0B+i*0x10,'DEC '+p)
@@ -32,13 +45,13 @@ for d in range(8):
 for a in range(8):
     for ss in range(8): s(0x80+a*8+ss, alu[a]+r[ss])
 for i,c in enumerate(cc):
-    s(0xC0+i*8,'RET '+c); s(0xC2+i*8,'JP '+c+',@'); s(0xC4+i*8,'CALL '+c+',@')
+    s(0xC0+i*8,TRET+'RET '+c); s(0xC2+i*8,TJP+'JP '+c+',@'); s(0xC4+i*8,TCALL+'CALL '+c+',@')
 for i,p in enumerate(rp2): s(0xC1+i*0x10,'POP '+p); s(0xC5+i*0x10,'PUSH '+p)
-s(0xC3,'JP @'); s(0xC9,'RET'); s(0xCD,'CALL @')
-for i in range(8): s(0xC7+i*8,'RST %02X'%(i*8))
+s(0xC3,TJP+'JP @'); s(0xC9,TRET+'RET'); s(0xCD,TCALL+'CALL @')
+for i in range(8): s(0xC7+i*8,TRST+'RST %02X'%(i*8))
 for i,a in enumerate(alu): s(0xC6+i*8, a+'#')
 s(0xD3,'OUT (#),A'); s(0xDB,'IN A,(#)')
-s(0xE3,'EX (SP),HL'); s(0xEB,'EX DE,HL'); s(0xE9,'JP (HL)'); s(0xF9,'LD SP,HL')
+s(0xE3,'EX (SP),HL'); s(0xEB,'EX DE,HL'); s(0xE9,TJPR+'JP (HL)'); s(0xF9,'LD SP,HL')
 s(0xF3,'DI'); s(0xFB,'EI')
 s(0xCB,'CB?'); s(0xDD,'DD?'); s(0xED,'ED?'); s(0xFD,'FD?')  # prefijos (dispatch aparte)
 for o in range(256):
@@ -62,7 +75,7 @@ for i,p in enumerate(rp):
 for i,rg in enumerate(['B','C','D','E','H','L','?','A']):
     if rg!='?':
         e(0x40+i*8,'IN '+rg+',(C)'); e(0x41+i*8,'OUT (C),'+rg)
-e(0x44,'NEG'); e(0x45,'RETN'); e(0x4D,'RETI'); e(0x46,'IM 0'); e(0x56,'IM 1'); e(0x5E,'IM 2')
+e(0x44,'NEG'); e(0x45,TRET+'RETN'); e(0x4D,TRET+'RETI'); e(0x46,'IM 0'); e(0x56,'IM 1'); e(0x5E,'IM 2')
 e(0x47,'LD I,A'); e(0x4F,'LD R,A'); e(0x57,'LD A,I'); e(0x5F,'LD A,R'); e(0x67,'RRD'); e(0x6F,'RLD')
 for o,m in [(0xA0,'LDI'),(0xA1,'CPI'),(0xA2,'INI'),(0xA3,'OUTI'),(0xA8,'LDD'),(0xA9,'CPD'),(0xAA,'IND'),(0xAB,'OUTD'),
             (0xB0,'LDIR'),(0xB1,'CPIR'),(0xB2,'INIR'),(0xB3,'OTIR'),(0xB8,'LDDR'),(0xB9,'CPDR'),(0xBA,'INDR'),(0xBB,'OTDR')]:
@@ -82,7 +95,7 @@ for o in range(256):
         # instruccion no afectada por el prefijo: el prefijo es "ignorado"
         pass
     DDFD[o]=t
-DDFD[0xE9]='JP (~)'        # JP (IX), sin desplazamiento
+DDFD[0xE9]=TJPR+'JP (~)'   # JP (IX), sin desplazamiento
 DDFD[0xEB]='EX DE,HL'      # el prefijo se ignora aqui
 
 # ---------------- emitir asm ----------------
@@ -92,6 +105,8 @@ INTERP = r'''
 ; Rellena DBUF (16 char) y DLEN (longitud). Sin prefijo, CB, ED, DD/FD.
 DBUF equ 0C1E4h
 DLEN equ 0C1E3h
+DTIPO equ 0C1BBh         ; tipo de instruccion para el paso a paso (0 = normal)
+DDEST equ 0C1C4h         ; destino del salto, para el paso a paso
         org 0A000h
 disasm:
         ld hl,DBUF
@@ -99,6 +114,8 @@ disasm:
 dclr:   ld (hl),020h
         inc hl
         djnz dclr
+        xor a
+        ld (DTIPO),a       ; tipo 0 (normal) por defecto; los marcadores 1..6 lo cambian
         ld de,DBUF
         ld a,(ix+000h)
         cp 0CBh
@@ -149,6 +166,8 @@ drender:
         ld a,(bc)
         or a
         ret z
+        cp 008h
+        jp c,dtipo
         cp 023h
         jp z,ddn
         cp 040h
@@ -161,6 +180,21 @@ drender:
         jp z,ddis8
         ld (de),a
         inc de
+        inc bc
+        jp drender
+; --- marcador de tipo (1..6) al principio de la plantilla ---
+dtipo:  cp 006h
+        jr z,drst
+        ld (DTIPO),a
+        inc bc
+        jp drender
+drst:   ld a,003h            ; un RST es un CALL de un byte
+        ld (DTIPO),a
+        ld a,(ix+000h)
+        and 038h
+        ld l,a
+        ld h,000h
+        ld (DDEST),hl        ; destino: 0x00, 0x08 ... 0x38
         inc bc
         jp drender
 ddidx:  ld a,(dixnam)
@@ -186,6 +220,7 @@ ddnn:   push bc
         inc hl
         ld h,(hl)
         ld l,a
+        ld (DDEST),hl        ; el operando nn, por si es el destino de un salto
         ld a,h
         call ddhex2
         ld a,l
@@ -216,6 +251,7 @@ ddrp:   push de
         inc hl
         pop bc
         add hl,bc
+        ld (DDEST),hl        ; el destino del salto relativo
         ld a,h
         call ddhex2
         ld a,l
@@ -310,7 +346,7 @@ ddcbw:  ld a,(hl)
         inc de
         inc hl
         djnz ddcbw
-        ld a,c
+        ld a,(ix+003h)      ; el opcode otra vez: BC quedo pisado por DDCBWRD
         rrca
         rrca
         rrca

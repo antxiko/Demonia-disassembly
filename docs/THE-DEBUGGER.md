@@ -39,25 +39,63 @@ behaves as it did.
 
 ## Bringing back the interactive monitor
 
-The surviving low-level machinery — writing a character to the screen, reading
-the keyboard, the command dispatcher, the handlers — needed only a handful of
-its erased helpers rebuilt from how the survivors call them: `0x0072`/INITXT for
-its 40-column text screen (proven by its own cell geometry, `row*40 + col + 2`),
-CHGET for its key wait, and the screen-clear primitives. With those in place the
-monitor **boots, sets up its screen, and paints the twelve registers of the
-stopped program** — the picture at the top of this page, where `HL=1234`,
-`DE=5678`, `IX=AAAA` are the values a small launcher put there on purpose.
+The dead zone took a dozen of the monitor's own screen and keyboard subroutines
+with it (`0xD200`-`0xD2E8`). Each is rebuilt at its exact address from the
+contract its surviving callers demand: `0x0072`/INITXT for the 40-column text
+screen (proven by its own cell geometry, `row*40 + col + 2`), a non-blocking key
+read over CHSNS/CHGET, the pair that swap the slot layout between the monitor's
+memory and the stopped program's, the beep on a bad command, and the BASIC error
+hook. With those in place the monitor **boots, sets up its screen, and paints the
+twelve registers of the stopped program** — the picture at the top of this page,
+where `HL=1234`, `DE=5678`, `IX=AAAA` are the values a small launcher put there on
+purpose.
 
-The command table was rebuilt letter by letter from the surviving handlers. Two
-are wired and proven so far:
+The command table is rebuilt entry by entry, each surviving handler given back
+its letter, and every command answers — typed for real into the monitor and read
+back off the screen on a Philips VG-8020:
 
-**`G` — Go.** The handler at `0xC5D3` parses a hex address, stores it and jumps
-there. The [fossil](FINDINGS.html) left the last thing the author ever typed,
-`G7FE0`, frozen in the input buffer. Typing that exact command back into the
-resurrected monitor jumps to the sound routine at `0x7FE0` — his 1986 debugging
-session, replayed by hand:
+| key | command | what it does |
+|---|---|---|
+| `L` | list | disassembles a range of memory |
+| `D` | dump | shows memory as hex and ASCII, and edits it under a cursor |
+| `S` | search | hunts for a byte from an address and lands on it |
+| `R` | registers | prints the twelve of the stopped program |
+| `F` | flags | spells out `SZ1H1PNC` for it |
+| `I` | interrupts | allowed or forbidden on the way back |
+| `B` | breakpoints | lists the ten slots |
+| `T` | trace | single-steps the stopped program |
+| `=` | evaluate | reads a number in any base and prints it |
+| `G` | go | restores the registers and jumps |
+
+`D` is the debugger's workbench: a screen of memory in hex and ASCII, a cursor you
+drive with the arrows, and hex digits that overwrite the byte under it —
+
+![The D command: a page of memory in hex and ASCII, editable under the cursor](imagenes/monitor-memoria.png)
+
+`F` reads the flag byte straight off the stopped program — here `S---1---`, the
+sign flag and the ever-set bit of an `AF` whose low byte is `0x88`:
+
+![The F command spelling out the flags of the stopped program](imagenes/monitor-banderas.png)
+
+**`G` — Go**, and the fossil. The handler at `0xC5D3` parses a hex address,
+stores it and jumps there. The [fossil](FINDINGS.html) left the last thing the
+author ever typed, `G7FE0`, frozen in the input buffer. Typing that exact command
+back into the resurrected monitor jumps to the sound routine at `0x7FE0` — his
+1986 debugging session, replayed by hand:
 
 ![Typing G7FE0H — the author's fossilised command — back into the monitor](imagenes/monitor-orden-g.png)
+
+**`T` — trace** is the single-step. It disassembles the next instruction, copies
+it into a scratch buffer, runs it with the program's own registers, and takes
+control back to redraw them advanced by one. It is the command that needs the
+disassembler to tag each instruction by kind — a jump, a call, a return — so the
+step knows how to resume, and it does: tracing a short loop marches the program
+counter and the registers forward one instruction at a time.
+
+One thing the monitor can no longer do in full: the `=` calculator reads and
+converts a value in any base, but its **operator table lived at `0xD8FB`, inside
+the dead zone**, so chained arithmetic (`+`, `-`, `*`, `/`) went with it — one
+more small casualty of the overwrite, stated plainly.
 
 ## The disassembler
 
@@ -70,10 +108,10 @@ text and the instruction length exactly where the surviving display code
 
 It covers the **whole Z80 instruction set** — unprefixed, `CB`, `ED`, `DD`/`FD`
 (IX/IY) and `DDCB`/`FDCB` — and it was checked instruction by instruction in the
-emulator: **38 of 38 correct**, including relative jumps, `(IX+d)` and `(IY-d)`
-displacements and every instruction length. The register dump already proves it
-on screen — the line under the registers reads the instruction at the program
-counter:
+emulator, group by group: relative-jump targets, `(IX+d)` and `(IY-d)`
+displacements, the `DD CB` bit operations and every instruction length. The
+register dump already proves it on screen — the line under the registers reads the
+instruction at the program counter:
 
 ![The line under the registers disassembles the instruction at the PC: CALL C924](imagenes/monitor-pc.png)
 
@@ -95,7 +133,8 @@ Nothing here is a mock-up; every picture is a raw frame from the emulator runnin
 the reconstructed monitor.
 
 *Careful with the claim: what is measured is that the reconstructed monitor boots,
-accepts commands and disassembles correctly, shown by the captures and a 38/38
-instruction check. What is a reconstruction — stated plainly — is the command
-table's letters, the rebuilt helper routines and the disassembler itself; those
-are equivalents, not Sablatou's lost originals.*
+accepts every command and disassembles correctly, shown by the captures and an
+instruction-by-instruction check of the disassembler. What is a reconstruction —
+stated plainly — is the command table's letters, the rebuilt helper routines and
+the disassembler itself; those are equivalents, not Sablatou's lost originals, and
+one lost table (the `=` operators) is gone for good.*
