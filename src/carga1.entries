@@ -1,0 +1,2 @@
+# carga1: puntos de entrada
+0xA600   # direccion de ejecucion que pide la entrada 1 de la tabla de 0x8180

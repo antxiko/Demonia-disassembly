@@ -1,0 +1,60 @@
+B 0x7900 ====================================================================
+B 0x7900  LA MUSICA: PARTITURA Y REPRODUCTOR
+B 0x7900 ====================================================================
+B 0x7900 Mil setecientos sesenta y ocho bytes en la pagina 1 escondida, y los
+B 0x7900 unicos de toda la RAM de debajo de la ROM que son CODIGO: el resto de
+B 0x7900 los 26 KB escondidos son dibujos y mapas.
+B 0x7900
+B 0x7900 La partitura es una lista de pasos de cuatro bytes. El reproductor
+B 0x7900 los escribe en los registros 3, 2, 5 y 4 del PSG, que son el tono de
+B 0x7900 los canales B y C: primero la parte gruesa y luego la fina de cada
+B 0x7900 uno. Asi que cada paso es "canal B en este periodo, canal C en este
+B 0x7900 otro". El primer paso, 02 A7 01 53, da periodo 679 en B y 339 en C,
+B 0x7900 que con el reloj del PSG del MSX (3.579.545/16 Hz) son 329,5 Hz y
+B 0x7900 659,1 Hz: la misma nota con una octava de diferencia.
+B 0x7900
+B 0x7900 El puntero arranca en 0x7900 (lo pone 0xC009) pero al llegar al 0xFF
+B 0x7900 vuelve a 0x79C8, no a 0x7900. O sea que los primeros 200 bytes son
+B 0x7900 una entradilla que solo suena una vez y el bucle es lo de despues.
+
+D 0x7900 0x79C8 melodia_entradilla  50 pasos de 4 bytes que solo suenan la primera vez: el puntero arranca aqui (0xC009) pero el bucle de rebobinado de 0x7FA5 ya no vuelve. Los 50 son el mismo compas de 4 pasos repetido doce veces y medio
+F 0x7900 4
+
+D 0x79C8 0x7F90 melodia_bucle  La melodia que se repite, en pasos de 4 bytes (tono grueso y fino del canal B, y del canal C). Termina con un 0xFF que hace rebobinar a 0x79C8
+F 0x79C8 4
+
+D 0x7FE7 0x7FE8 relleno_cero  Un byte de cola: el trozo copiado llega hasta 0x7FE7
+
+L 0x7F90 suena_un_paso  El reproductor. Lo llama 0xC000, que antes conmuta la pagina 1 a RAM
+C 0x7F90 Un contador del juego que hace de interruptor de la musica
+C 0x7F93 A partir de 0x69 la musica se calla y la rutina se va sin tocar el PSG
+C 0x7F96 Cuenta atras hasta el paso siguiente
+C 0x7F9a Si no ha llegado a cero, todavia no toca cambiar de nota
+C 0x7F9b Catorce llamadas por paso: eso es el tempo
+C 0x7F9d El puntero de la partitura
+C 0x7Fa0 El primer byte del paso
+C 0x7Fa1 0xFF marca el final
+C 0x7Fa5 Rebobina al BUCLE, no al principio: la entradilla de 0x7900 ya no suena mas
+L 0x7FAB escribe_el_paso
+C 0x7Fab Byte 1 del paso
+C 0x7Fac Registro 3 del PSG: tono grueso del canal B
+C 0x7Fb2 Byte 2
+C 0x7Fb3 Registro 2: tono fino del canal B
+C 0x7Fb8 Byte 3
+C 0x7Fb9 Registro 5: tono grueso del canal C
+C 0x7Fbf Byte 4
+C 0x7Fc0 Registro 4: tono fino del canal C
+C 0x7Fc5 Guarda el puntero ya avanzado
+C 0x7Fc8 Registro 7, el mezclador
+C 0x7Fca 0xB8: los tres tonos abiertos, los tres ruidos cerrados
+C 0x7Fcf Registro 9: volumen del canal B
+C 0x7Fd1 Doce sobre quince
+C 0x7Fd6 Registro 10: volumen del canal C
+C 0x7Fd7 Diez sobre quince, un poco por debajo del B
+C 0x7Fdc Registro 8: volumen del canal A
+C 0x7Fde A cero: el canal A no lo usa la musica, lo usan los efectos
+C 0x7Fe3 Y de paso llama al vector de sonido de 0xFD9A, que es donde el juego
+
+# >>> HUECOS ETIQUETADOS POR tools/rellena_huecos.py - NO EDITAR A MANO
+D 0x7fe7 0x7fe8 relleno_cero  todo el hueco es 0x00
+# <<< fin de los huecos automaticos

@@ -1,0 +1,14 @@
+# Reparto de la cinta a la memoria real. Un renglon por copia:
+#   modulo  desplazamiento_dentro_del_modulo  destino  longitud   # de donde se sabe
+#
+# El destino y la longitud salen del LDIR de la rutinilla que cada trozo lleva
+# pegada, y la prueba es la direccion de ese LDIR en el propio listado.
+# Los trozos 1 y 2 no aparecen: no copian a RAM, vuelcan a VRAM y se quedan
+# donde la cinta los deja (por eso su listado va con el org de carga).
+
+carga4  0x0000  0x0000  0x1F32   # LDIR de carga4 en 0xBF3E: 0xA000 -> 0x0000, 0x1F32 bytes
+carga5  0x0000  0x1F32  0x1B96   # LDIR de carga5 en 0xBBA2: 0xA000 -> 0x1F32, 0x1B96 bytes
+carga3  0x0000  0x4000  0x1468   # LDIR de carga3 en 0xB4D8: 0xA000 -> 0x4000, 0x1468 bytes
+carga6  0x0030  0x6000  0x1000   # LDIR de carga6 en 0xAFEC: 0xB000 -> 0x6000, 0x1000 bytes
+carga7  0x0000  0x7900  0x06E8   # LDIR de carga7 en 0x9704: 0x9000 -> 0x7900, 0x06E8 bytes
+juego   0x0000  0x8000  0x6000   # la cinta lo declara: BIN 0x8000-0xDFFF, exec 0x8100

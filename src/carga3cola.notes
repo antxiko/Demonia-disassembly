@@ -1,0 +1,80 @@
+B 0xB468 ====================================================================
+B 0xB468  TROZO 3, LA COLA: BUSCA UN SLOT CON 64 KB DE RAM
+B 0xB468 ====================================================================
+B 0xB468 Aqui esta la maniobra que hace posible el juego. Demonia ocupa mas de
+B 0xB468 lo que cabe en la RAM visible de un MSX arrancado desde BASIC, donde
+B 0xB468 las paginas 0 y 1 (0x0000-0x7FFF) las tapa la ROM. Asi que busca un
+B 0xB468 slot que tenga RAM DEBAJO de esa ROM y esconde ahi 26 KB.
+B 0xB468
+B 0xB468 La busqueda es a la brava: recorre los cuatro slots primarios y, en
+B 0xB468 cada uno, los cuatro secundarios; en cada combinacion escribe 0x55 y
+B 0xB468 0xAA en 0x0000 y en 0x4000 y comprueba que se leen de vuelta. El
+B 0xB468 primero que pasa la prueba se guarda en 0xFD98 (primarios) y 0xFD99
+B 0xB468 (secundarios), y todo el juego usara esos dos bytes a partir de aqui.
+B 0xB468
+B 0xB468 Si no hay 64 KB, escribe un mensaje y devuelve la maquina al BASIC.
+
+D 0xB4F2 0xB518 mensaje_sin_64k  El texto que se imprime si ningun slot da 64 KB de RAM, en el formato que espera la rutina 0x6678 de la ROM del BASIC
+F 0xB4F2 20
+
+L 0xB468 busca_64k  Direccion de ejecucion que pide la entrada 3 de la tabla de 0x8180
+C 0xB468 Nada de interrupciones mientras se toquetean los slots
+C 0xB469 Lee el registro de slots primarios
+C 0xB46B Lo guarda para dejarlo luego como estaba
+C 0xB46E Se queda con las paginas 2 y 3, que no se tocan
+C 0xB470 D = valor de primarios que se va probando
+C 0xB471 El registro de secundarios se lee de 0xFFFF, e invertido
+C 0xB474 Deshace la inversion
+C 0xB475 Y se guarda
+C 0xB47B Cuatro slots primarios
+L 0xB47D bucle_primarios
+C 0xB47D Prueba los cuatro secundarios de este primario
+C 0xB480 Con acarreo: encontrado, a 0xB4D8 a copiar
+C 0xB482 Siguiente primario
+C 0xB484 Se acabaron los slots y no hay 64 KB
+
+L 0xB488 prueba_cuatro_secundarios  Devuelve acarreo si alguno tiene RAM en las paginas 0 y 1
+C 0xB489 Cuatro secundarios
+L 0xB48B bucle_secundarios
+C 0xB48C Pone el primario que toca en las paginas 0 y 1
+C 0xB48F Y el secundario
+C 0xB493 Hay RAM de verdad ahi?
+C 0xB496 Si: con este ya vale
+C 0xB498 Suma 1 a los campos de pagina 0 y 1 a la vez (0b0000_0101)
+C 0xB49d Siguiente secundario
+C 0xB49f Vuelve al valor original de secundarios
+C 0xB4a6 Suma 1 al campo de primarios de las paginas 0 y 1
+C 0xB4aa Sin acarreo: en este primario no habia
+L 0xB4AC apunta_el_slot  Encontrado: guarda los dos registros de slot para todo el juego
+C 0xB4ad 0xFD98 = valor de primarios con la RAM puesta
+C 0xB4b1 0xFD99 = valor de secundarios
+C 0xB4b4 Acarreo = encontrado
+
+L 0xB4B8 hay_ram_aqui  Escribe y relee 0x55 y 0xAA en 0x0000 y en 0x4000
+C 0xB4b8 Pagina 0
+C 0xB4bd Escribe 0x55...
+C 0xB4be ...y comprueba que vuelve
+C 0xB4c0 Ahora el complementario, por si hubiera lineas de datos pegadas
+C 0xB4c5 Pagina 1
+C 0xB4d1 Z si el ultimo valor volvio bien
+
+L 0xB4D8 esconde_bajo_la_rom  Copia los 5224 bytes del cuerpo a 0x4000, ya en RAM
+C 0xB4d8 Origen: el cuerpo de este mismo trozo
+C 0xB4db Destino: pagina 1, que ahora es RAM
+C 0xB4de 0x1468 = 5224 bytes, todo el cuerpo
+C 0xB4e3 Devuelve el registro de primarios como estaba
+C 0xB4e8 Y el de secundarios
+C 0xB4ee Un pitido: trozo 3 colocado
+
+L 0xB518 sin_64k  No hay 64 KB: aviso y de vuelta al BASIC
+C 0xB518 Deja los slots como estaban antes de tocar nada
+C 0xB523 Vuelve al modo texto
+C 0xB526 El mensaje
+C 0xB529 Rutina de la ROM del BASIC que lo imprime
+C 0xB52f Vuelta al BASIC. Se acabo
+
+# >>> HUECOS ETIQUETADOS POR tools/rellena_huecos.py - NO EDITAR A MANO
+D 0xb487 0xb488 relleno_cero  todo el hueco es 0x00
+D 0xb4b6 0xb4b8 relleno_cero  todo el hueco es 0x00
+D 0xb4d2 0xb4d8 relleno_cero  todo el hueco es 0x00
+# <<< fin de los huecos automaticos

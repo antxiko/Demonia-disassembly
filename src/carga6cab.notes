@@ -1,0 +1,30 @@
+B 0xAFD0 ====================================================================
+B 0xAFD0  TROZO 6, LA CABEZA: PATRONES Y COLORES A 0x6000
+B 0xAFD0 ====================================================================
+B 0xAFD0 Este trozo lleva la rutinilla DELANTE del cuerpo, al reves que los
+B 0xAFD0 demas, porque su cuerpo tenia que quedar alineado en 0xB000 para
+B 0xAFD0 poder copiarlo a 0x6000 de una pieza.
+B 0xAFD0 El cuerpo -los 4096 bytes de patrones y colores de SCREEN 2 del
+B 0xAFD0 juego- se desensambla en src/demonia_bajo6000.asm.
+
+L 0xAFE0 copia_a_6000  Direccion de ejecucion que pide la entrada 6 de la tabla de 0x8180
+C 0xAFE0 Sin interrupciones mientras la ROM no este
+C 0xAFE1 El slot de RAM que apunto el trozo 3
+C 0xAFe6 Y el registro de secundarios
+C 0xAFec Origen: el cuerpo, que empieza en 0xB000
+C 0xAFef Destino: 0x6000, dentro de la pagina 1 escondida
+C 0xAFf2 4096 bytes: 2048 de patrones y 2048 de color
+C 0xAFf7 Devuelve los primarios
+C 0xAFfc La cola de la restauracion esta en 0xAFD0, delante
+
+L 0xAFD0 devuelve_el_slot  Repone los secundarios y avisa con dos pitidos
+C 0xAFd0 El registro de secundarios original
+C 0xAFd6 Dos pitidos
+C 0xAFdc Vuelta al cargador
+
+D 0xAFDD 0xAFE0 tres_ret_sueltos  Tres RET seguidos que rellenan hasta 0xAFE0, que es donde la tabla de 0x8180 manda arrancar
+F 0xAFDD 3
+
+# >>> HUECOS ETIQUETADOS POR tools/rellena_huecos.py - NO EDITAR A MANO
+D 0xafff 0xb000 relleno_cero  todo el hueco es 0x00
+# <<< fin de los huecos automaticos

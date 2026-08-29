@@ -1,0 +1,27 @@
+B 0xA000 ====================================================================
+B 0xA000  TROZO 1 DE LA CARGA: LA PANTALLA EN SCREEN 3
+B 0xA000 ====================================================================
+B 0xA000 Lo primero que se ve. Son 1536 bytes que se vuelcan tal cual al
+B 0xA000 principio de la VRAM despues de poner SCREEN 3, el modo multicolor
+B 0xA000 de 64x48 puntos gordos. 0x600 bytes es exactamente lo que ocupa ese
+B 0xA000 modo, asi que el bloque es la pantalla entera y no hay nada que
+B 0xA000 interpretar: cada byte son dos puntos, el nibble alto a la izquierda.
+B 0xA000 Este trozo no toca la RAM escondida: se queda donde la cinta lo deja.
+
+D 0xA000 0xA600 pantalla_multicolor  La imagen de SCREEN 3 entera, 1536 bytes = 64x48 puntos de 4 bits. Se sube a la VRAM desde 0x0000 con el LDIRVM de 0xA60F
+F 0xA000 32
+
+D 0xA613 0xA619 relleno_cero  Cola del bloque; el fichero llega hasta 0xA618
+F 0xA613 6
+
+L 0xA600 arranca_trozo1  Direccion de ejecucion que pide la entrada 1 de la tabla de 0x8180
+C 0xA600 Un pitido para avisar de que este trozo ya esta
+C 0xA603 SCREEN 3, el modo multicolor de 64x48
+C 0xA606 Origen: el propio bloque, que ya esta en su sitio
+C 0xA609 Destino: el principio de la VRAM, donde SCREEN 3 tiene sus puntos
+C 0xA60C 0x600 bytes, la pantalla completa
+C 0xA612 Y vuelve al cargador de 0x8208 a por el trozo siguiente
+
+# >>> HUECOS ETIQUETADOS POR tools/rellena_huecos.py - NO EDITAR A MANO
+D 0xa613 0xa619 relleno_cero  todo el hueco es 0x00
+# <<< fin de los huecos automaticos

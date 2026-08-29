@@ -1,0 +1,122 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Open questions — Demonia (1986)</title>
+<style>
+:root{--tinta:#cfd0d4;--suave:#83868f;--fondo:#000;--panel:#0c0e13;--linea:#23262e;
+  --rojo:#ff897d;--cyan:#65dbef;--verde:#3eb849;--oro:#ded087}
+@media (prefers-color-scheme:light){:root{--tinta:#191a1e;--suave:#5a5d66;--fondo:#e9e7e1;
+  --panel:#f7f6f2;--linea:#d0cdc5;--rojo:#b23f34;--cyan:#1c6b7c;--verde:#2b7734;--oro:#8a7420}}
+:root[data-theme="dark"]{--tinta:#cfd0d4;--suave:#83868f;--fondo:#000;--panel:#0c0e13;
+  --linea:#23262e;--rojo:#ff897d;--cyan:#65dbef;--verde:#3eb849;--oro:#ded087}
+:root[data-theme="light"]{--tinta:#191a1e;--suave:#5a5d66;--fondo:#e9e7e1;--panel:#f7f6f2;
+  --linea:#d0cdc5;--rojo:#b23f34;--cyan:#1c6b7c;--verde:#2b7734;--oro:#8a7420}
+*{box-sizing:border-box}
+body{margin:0;background:var(--fondo);color:var(--tinta);padding:0 1.25rem 6rem;
+  font:15px/1.7 ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+.w{max-width:1120px;margin:0 auto}
+.n{max-width:68ch}
+h1,h2,h3,h4{font-weight:400;text-wrap:balance}
+a{color:var(--cyan)}
+img{image-rendering:pixelated;max-width:100%;height:auto;display:block}
+header.top{display:flex;flex-direction:column;align-items:center;gap:1.5rem;
+  padding:4rem 0 2rem;text-align:center}
+header.top img{width:min(100%,642px)}
+.claim{max-width:60ch;color:var(--suave);font-size:1.05rem}
+.claim b{color:var(--tinta);font-weight:400}
+.ficha{display:flex;flex-wrap:wrap;justify-content:center;gap:0 1.5rem;width:100%;
+  font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--suave);
+  border-top:1px solid var(--linea);border-bottom:1px solid var(--linea);padding:.85rem 0}
+.ficha b{color:var(--rojo);font-weight:400}
+nav{display:flex;flex-wrap:wrap;gap:1.25rem;justify-content:center;padding:1.25rem 0;
+  font-size:12px;letter-spacing:.08em;text-transform:uppercase}
+nav a{color:var(--suave);text-decoration:none;border-bottom:1px solid transparent}
+nav a:hover,nav a:focus{color:var(--tinta);border-bottom-color:var(--rojo)}
+nav.docs{border-top:1px solid var(--linea);border-bottom:1px solid var(--linea);
+  margin-bottom:1rem}
+section{margin-top:4.5rem;scroll-margin-top:1rem}
+section>h2{font-size:1rem;letter-spacing:.1em;text-transform:uppercase;
+  border-left:3px solid var(--rojo);padding-left:.9rem;margin:0 0 1.5rem}
+.cifras{display:grid;gap:1px;background:var(--linea);border:1px solid var(--linea);
+  grid-template-columns:repeat(auto-fit,minmax(160px,1fr))}
+.cifra{background:var(--panel);padding:1.1rem}
+.cifra b{display:block;font-size:1.7rem;color:var(--oro);font-weight:400;
+  font-variant-numeric:tabular-nums;line-height:1.2}
+.cifra span{font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--suave)}
+.hall{border-top:1px solid var(--linea);padding-top:1.75rem;margin-top:2.5rem}
+.hall:first-of-type{border-top:0;padding-top:0;margin-top:0}
+.hall h3{margin:0 0 .75rem;font-size:1.15rem;color:var(--rojo)}
+.hall h4{color:var(--oro);margin:1.5rem 0 .5rem;font-size:.95rem}
+.hall p{margin:0 0 1rem}
+pre.asm{background:var(--panel);border-left:2px solid var(--verde);margin:1.25rem 0;
+  padding:1rem 1.1rem;overflow-x:auto;font-size:13px;line-height:1.6;color:var(--tinta)}
+.par{display:grid;gap:1.25rem;grid-template-columns:1fr}
+@media(min-width:820px){.par{grid-template-columns:1fr 1fr}}
+.par figure{margin:0}
+table{border-collapse:collapse;width:100%;margin:1.25rem 0;font-size:13px;display:block;
+  overflow-x:auto}
+th,td{text-align:left;padding:.5rem .75rem;border-bottom:1px solid var(--linea)}
+th{color:var(--suave);font-weight:400;font-size:11px;letter-spacing:.07em;text-transform:uppercase}
+td.num{font-variant-numeric:tabular-nums;color:var(--oro)}
+.nivel{margin-top:2rem}
+.nivel h3{margin:0 0 .9rem;font-size:.95rem;letter-spacing:.06em;text-transform:uppercase}
+.nivel em{color:var(--cyan);font-style:normal}
+.sep{color:var(--suave);margin:0 .6rem}
+.rejilla{display:grid;gap:.9rem;grid-template-columns:repeat(auto-fill,minmax(250px,1fr))}
+.rejilla figure{margin:0;background:var(--panel);box-shadow:0 0 0 1px var(--linea)}
+.rejilla figcaption{display:flex;justify-content:space-between;padding:.45rem .65rem;
+  font-size:11px;color:var(--suave);border-top:1px solid var(--linea)}
+.dir{font-variant-numeric:tabular-nums;color:var(--verde)}
+footer{margin-top:5rem;padding-top:1.5rem;border-top:1px solid var(--linea);
+  color:var(--suave);font-size:12px}
+
+/* Aviso de trabajo en curso: tiene que verse antes que las cifras, porque un
+   100% mal leido hace mas dano que no ponerlo. */
+.aviso{background:#3a2a10;border-left:3px solid var(--oro);margin:1.5rem auto;
+  padding:1rem 1.2rem;max-width:900px;border-radius:4px}
+.aviso p{margin:0;color:var(--tinta);font-size:15px;line-height:1.65}
+.galeria{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+  gap:1.5rem;margin:1.5rem 0}
+.galeria figure{margin:0}
+.galeria img{width:100%;height:auto;image-rendering:pixelated;
+  border:1px solid var(--linea);border-radius:3px}
+.galeria figcaption{color:var(--suave);font-size:13px;margin-top:.5rem}
+audio{display:block;width:100%;max-width:640px;margin:.75rem 0 1.5rem}
+</style>
+<div class="w"><nav class="top"><a href="index.html">Home</a><a href="GETTING-STARTED.html">Start</a><a href="THE-GAME.html">The game</a><a href="THE-TAPE.html">The tape</a><a href="THE-CODE.html">The code</a><a href="FINDINGS.html">Findings</a><a href="OPEN-QUESTIONS.html" style=color:var(--tinta)>Open questions</a><a href="es/PREGUNTAS-ABIERTAS.html" style="margin-left:auto;color:var(--oro)">Castellano</a></nav>
+<h1 id="open-questions">Open questions</h1>
+<p><a href="GETTING-STARTED.html">Getting started</a> · <a href="THE-GAME.html">The game</a> · <a href="THE-TAPE.html">The tape</a> · <a href="THE-CODE.html">The code</a> · <a href="FINDINGS.html">Findings</a></p>
+<p>What is still open, keeping MEASURED and ASSUMED apart. What is measured carries its measurement; what is assumed is labelled as such and has not been written into the listing as if it were a fact.</p>
+<hr>
+<h2 id="measured">MEASURED</h2>
+<h3 id="the-tape">The tape</h3>
+<ul><li>Thirteen blocks. Three named files, all called <code>DEMON</code>: an ASCII one (the BASIC loader), a 249-byte BIN at <code>0x8180</code> and a 24,576-byte BIN at <code>0x8000</code>. Between the two BINs go seven headerless blocks.</li><li>Line 50 of the BASIC loader is <code>BLOAD&quot;CAS:DEMON&quot;,R:RUN</code>. Since tape is sequential, the first pass finds the small BIN and the second — after the <code>RUN</code> — the big one. They share a name on purpose.</li><li><code>make verify</code> rebuilds the whole <code>.cas</code>, sha256 <code>69031ee25099df0703332ca74a64b52e6dd9909e4cfded4c3699be153adc5fc9</code>.</li></ul>
+<h3 id="the-layout-in-memory">The layout in memory</h3>
+<ul><li>The table at <code>0x8180</code> declares the seven chunks. <code>tools/cuerpos.py</code> checks that every entry matches the size of its block and aborts if it does not.</li><li>The five chunks hidden under the ROM match the RAM of a running openMSX <b>byte for byte</b> (<code>tools/coteja_ram.py</code>), and also the RAM snapshots inside a replay recorded on a different machine (a Sony HB-20P). Two independent measurements.</li><li>The game block differs from the tape by 83 bytes the moment it starts, all within <code>0x8000</code>-<code>0x80FF</code>. Over 200 seconds of play 134 bytes change, 133 of them on that same page and the other one being <code>0x8C5E</code>.</li></ul>
+<h3 id="geometries">Geometries</h3>
+<ul><li><b>Sprites</b>: 33-byte records (32 of 16×16 pattern + 1 of colour), in two banks, 242 records at <code>0x0000</code> and 214 at <code>0x1F32</code>. It comes from the routine at <code>0x8292</code> and both counts come out exact.</li><li><b>Screen maps</b>: 26 maps compressed with <code>0xFF &lt;tile&gt; &lt;how many&gt;</code>. Decompressed they give 640 tiles (32×20) each and end exactly where the next begins. The decompressor is <code>0x819D</code>.</li><li><b>Scenery</b>: 2,048 bytes of pattern at <code>0x6000</code> and 2,048 of colour at <code>0x6800</code>, uploaded to all THREE thirds of the screen (<code>0x8150</code>). The three thirds share their artwork.</li><li><b>Music</b>: four-byte steps (coarse and fine tone for channel B, and for channel C). The pointer starts at <code>0x7900</code> and on reaching <code>0xFF</code> rewinds to <code>0x79C8</code>, not to the beginning.</li></ul>
+<h3 id="the-title">The title</h3>
+<p>The game is called <b>DEMONIA</b>, and its own title screen says so: the compressed map at <code>0x4281</code>, decompressed and drawn with its patterns (<code>tools/mapas.py</code>, PNG in <code>docs/imagenes/portada-titulo.png</code>), carries DEMONIA in huge letters across the first eight rows. Underneath, in small letters, <code>L&#x27;INTRUSION</code> on row 17 and <code>(C) 1986 PAR SABLATOU CLAUDE</code> on row 19.</p>
+<p>Those two bottom rows are the only ones that read back if the map is dumped as TEXT, because the title is made of graphic tiles and not of ASCII. A dump like that fooled us once, and that is where the idea that the game was called <code>L&#x27;INTRUSION</code> came from: it is the subtitle. The tape is called DEMONIA too.</p>
+<hr>
+<h2 id="assumed-labelled-as-such-and-not-written-into-the-listing-as-fact">ASSUMED (labelled as such, and not written into the listing as fact)</h2>
+<ul><li><b>That <code>0x9C72</code> is a debugging back door.</b> What is measured is that it reads INTFLG (<code>0xFC9B</code>), compares against 3 and calls the monitor&#x27;s entry point. That the intent was to leave a door open is a reading, not a datum.</li><li><b>That the <code>ld hl,(0x8078)</code> in the single-step buffer at <code>0xCC5F</code> is the fossil of a debugging session on this game.</b> What is measured are the four bytes and that <code>0x8078</code> falls in the variable page. It fits, but the binary does not say so.</li><li><b>That the monitor&#x27;s command table was erased by the author himself when he built the game on top.</b> What is measured is that there are screen records at <code>0xD5C6</code> and not a table. Who did it and when, no.</li><li><b>The loader&#x27;s two initial values (<code>0x81F8</code> = <code>0x8188</code>, <code>0x81FA</code> = <code>0xC050</code>)</b> are consistent with a photograph of memory taken while chunk 2 was running. That is all that can be said: the code writes both before reading them, so they do not matter.</li></ul>
+<hr>
+<h2 id="open-what-could-not-be-closed">OPEN: what could not be closed</h2>
+<h3 id="1-the-user-s-replay-cannot-be-reproduced-here">1. The user&#x27;s replay cannot be reproduced here</h3>
+<p><code>Demonia.omr</code> was recorded on a <b>Sony HB-20P</b> and openMSX asks for its ROM by sha1 (<code>63050d2d21214a721cc55f152c22b7be8061ac33</code>). That ROM is not on this machine and cannot be downloaded.</p>
+<p>Three attempts were made:</p>
+<ol><li>Repointing the tape reference to the local copy with <code>tools/prepara_replay.py</code>. The path is corrected (24 references), but the failure was elsewhere.</li><li>Putting a substitute MSX1 ROM under that name into a private <code>filepool</code>, without touching the user&#x27;s installation. openMSX resolves system ROMs <b>by sha1</b>, not by name, and rejects it.</li><li>Rewriting the sha1 inside the <code>.omr</code> to point at the substitute. <b>The replay loads and runs its 926 seconds</b>, but with a different ROM the tape load desynchronises: 100% of the 1,854,327 PC samples land in the BIOS cassette routines (<code>0x046F</code>, <code>0x047B</code>, <code>0x1B2A</code>…) and the game never gets going. The measurement is worthless and has not been used.</li></ol>
+<p><b>What the replay did give up, without an emulator</b>: opening it with gzip and decompressing its twelve RAM snapshots. From the fourth on (t=256 s) the game block matches the tape 99.5%, and the five chunks hidden under the ROM match 100%. So in a real game the memory layout is exactly the one this project describes.</p>
+<p><b>To close it you need</b>: the file <code>hb-20p_basic-bios1.rom</code> with that sha1 in openMSX&#x27;s <code>systemroms</code>. With that, <code>tools/omsx_replay.tcl</code> gives the PC sampling for a whole game and section 6 of <a href="FINDINGS.html">Findings</a> stops being a weak datum.</p>
+<h3 id="2-what-the-game-does-played">2. What the game does, played</h3>
+<p>No play session has been documented. What is known about the game comes from the code and its data: 24 screens with their 88-byte record and their four behaviour routines, a twelve-opcode script interpreter, a scoreboard with <code>SCORE=</code>, <code>RECORD=</code> and <code>FORCE=</code>, and a <code>GAME OVER</code>. Tying each screen to what is actually seen is still to do, and the right road for that is the replay in point 1.</p>
+<h3 id="3-the-screen-records-inside">3. The screen records, inside</h3>
+<p>We know they are 24 records of 88 bytes at <code>0xD0C0</code>-<code>0xD8FF</code> and that byte 84 of each carries the marker <code>FF &lt;screen number in ASCII&gt; FF</code>. The remaining 88 bytes have <b>not</b> been broken down field by field. There are visibly groups of three bytes starting with <code>0x06</code>, <code>0x0E</code>, <code>0x15</code> and <code>0x1B</code> — numbers that grow and that could be positions — but that is an impression, not a measurement, and so it is not in the listing.</p>
+<h3 id="4-the-short-unidentified-tables">4. The short unidentified tables</h3>
+<p>Twelve data ranges are left with a name but no explained use, because we know WHO reads them but not WHAT FOR: <code>0x89F1</code>, <code>0x8C58</code>, <code>0x9B47</code>, <code>0xA5E4</code>, <code>0xA7FF</code>, <code>0xB4F0</code>, <code>0xB540</code>, <code>0xBA64</code>, <code>0xBDB1</code>, <code>0xDAD7</code> and the two tile tables <code>0xA830</code> and <code>0xDAA3</code>. In the listing they carry the address of the instruction that loads them, which is what is known.</p>
+<p><code>0xB4F0</code> we do know the shape of: seven ten-byte records, with fields advancing in a fixed step from one record to the next (+0x18 in the third byte, +0x300 in the following pair, +1 in the eighth). It looks like a table of seven identical things laid out in a row; what things, has not been measured.</p>
+<h3 id="5-the-music-s-tempo">5. The music&#x27;s tempo</h3>
+<p>The player at <code>0x7F90</code> changes note every 14 calls (<code>0x7F9B</code>). <b>How many calls a second that is has not been measured</b>, so no tempo in notes per minute can be given, nor whether it depends on PAL or NTSC. What is measured are the PSG periods: the first step gives 679 on channel B and 339 on C, that is 329.5 Hz and 659.1 Hz with the MSX clock (3,579,545/16), the same note an octave apart.</p>
+<h3 id="6-the-three-ret-nc-in-the-loader">6. The three RET NC in the loader</h3>
+<p>At <code>0x823A</code> there are three <code>RET NC</code> in a row where one would do: the first has already returned. No explanation has been found. It could be a relative jump that was changed to a RET and left two bytes behind, but that is a guess.</p>
+<footer><p><em>Demonia</em> is a 1986 MSX game; its title screen reads DEMONIA and it is signed <em>(C) 1986 PAR SABLATOU CLAUDE</em>, and the tape is 58,334 bytes. That Microids published it comes from the catalogue, not from the binary. All rights in the game remain with their holders. This is preservation, study and documentation work.</p></footer></div>

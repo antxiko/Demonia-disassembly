@@ -1,0 +1,2 @@
+# arranque: puntos de entrada
+0x8200   # direccion de ejecucion que declara la cabecera BIN

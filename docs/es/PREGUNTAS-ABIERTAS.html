@@ -1,0 +1,122 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Preguntas abiertas — Demonia (1986)</title>
+<style>
+:root{--tinta:#cfd0d4;--suave:#83868f;--fondo:#000;--panel:#0c0e13;--linea:#23262e;
+  --rojo:#ff897d;--cyan:#65dbef;--verde:#3eb849;--oro:#ded087}
+@media (prefers-color-scheme:light){:root{--tinta:#191a1e;--suave:#5a5d66;--fondo:#e9e7e1;
+  --panel:#f7f6f2;--linea:#d0cdc5;--rojo:#b23f34;--cyan:#1c6b7c;--verde:#2b7734;--oro:#8a7420}}
+:root[data-theme="dark"]{--tinta:#cfd0d4;--suave:#83868f;--fondo:#000;--panel:#0c0e13;
+  --linea:#23262e;--rojo:#ff897d;--cyan:#65dbef;--verde:#3eb849;--oro:#ded087}
+:root[data-theme="light"]{--tinta:#191a1e;--suave:#5a5d66;--fondo:#e9e7e1;--panel:#f7f6f2;
+  --linea:#d0cdc5;--rojo:#b23f34;--cyan:#1c6b7c;--verde:#2b7734;--oro:#8a7420}
+*{box-sizing:border-box}
+body{margin:0;background:var(--fondo);color:var(--tinta);padding:0 1.25rem 6rem;
+  font:15px/1.7 ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+.w{max-width:1120px;margin:0 auto}
+.n{max-width:68ch}
+h1,h2,h3,h4{font-weight:400;text-wrap:balance}
+a{color:var(--cyan)}
+img{image-rendering:pixelated;max-width:100%;height:auto;display:block}
+header.top{display:flex;flex-direction:column;align-items:center;gap:1.5rem;
+  padding:4rem 0 2rem;text-align:center}
+header.top img{width:min(100%,642px)}
+.claim{max-width:60ch;color:var(--suave);font-size:1.05rem}
+.claim b{color:var(--tinta);font-weight:400}
+.ficha{display:flex;flex-wrap:wrap;justify-content:center;gap:0 1.5rem;width:100%;
+  font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--suave);
+  border-top:1px solid var(--linea);border-bottom:1px solid var(--linea);padding:.85rem 0}
+.ficha b{color:var(--rojo);font-weight:400}
+nav{display:flex;flex-wrap:wrap;gap:1.25rem;justify-content:center;padding:1.25rem 0;
+  font-size:12px;letter-spacing:.08em;text-transform:uppercase}
+nav a{color:var(--suave);text-decoration:none;border-bottom:1px solid transparent}
+nav a:hover,nav a:focus{color:var(--tinta);border-bottom-color:var(--rojo)}
+nav.docs{border-top:1px solid var(--linea);border-bottom:1px solid var(--linea);
+  margin-bottom:1rem}
+section{margin-top:4.5rem;scroll-margin-top:1rem}
+section>h2{font-size:1rem;letter-spacing:.1em;text-transform:uppercase;
+  border-left:3px solid var(--rojo);padding-left:.9rem;margin:0 0 1.5rem}
+.cifras{display:grid;gap:1px;background:var(--linea);border:1px solid var(--linea);
+  grid-template-columns:repeat(auto-fit,minmax(160px,1fr))}
+.cifra{background:var(--panel);padding:1.1rem}
+.cifra b{display:block;font-size:1.7rem;color:var(--oro);font-weight:400;
+  font-variant-numeric:tabular-nums;line-height:1.2}
+.cifra span{font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--suave)}
+.hall{border-top:1px solid var(--linea);padding-top:1.75rem;margin-top:2.5rem}
+.hall:first-of-type{border-top:0;padding-top:0;margin-top:0}
+.hall h3{margin:0 0 .75rem;font-size:1.15rem;color:var(--rojo)}
+.hall h4{color:var(--oro);margin:1.5rem 0 .5rem;font-size:.95rem}
+.hall p{margin:0 0 1rem}
+pre.asm{background:var(--panel);border-left:2px solid var(--verde);margin:1.25rem 0;
+  padding:1rem 1.1rem;overflow-x:auto;font-size:13px;line-height:1.6;color:var(--tinta)}
+.par{display:grid;gap:1.25rem;grid-template-columns:1fr}
+@media(min-width:820px){.par{grid-template-columns:1fr 1fr}}
+.par figure{margin:0}
+table{border-collapse:collapse;width:100%;margin:1.25rem 0;font-size:13px;display:block;
+  overflow-x:auto}
+th,td{text-align:left;padding:.5rem .75rem;border-bottom:1px solid var(--linea)}
+th{color:var(--suave);font-weight:400;font-size:11px;letter-spacing:.07em;text-transform:uppercase}
+td.num{font-variant-numeric:tabular-nums;color:var(--oro)}
+.nivel{margin-top:2rem}
+.nivel h3{margin:0 0 .9rem;font-size:.95rem;letter-spacing:.06em;text-transform:uppercase}
+.nivel em{color:var(--cyan);font-style:normal}
+.sep{color:var(--suave);margin:0 .6rem}
+.rejilla{display:grid;gap:.9rem;grid-template-columns:repeat(auto-fill,minmax(250px,1fr))}
+.rejilla figure{margin:0;background:var(--panel);box-shadow:0 0 0 1px var(--linea)}
+.rejilla figcaption{display:flex;justify-content:space-between;padding:.45rem .65rem;
+  font-size:11px;color:var(--suave);border-top:1px solid var(--linea)}
+.dir{font-variant-numeric:tabular-nums;color:var(--verde)}
+footer{margin-top:5rem;padding-top:1.5rem;border-top:1px solid var(--linea);
+  color:var(--suave);font-size:12px}
+
+/* Aviso de trabajo en curso: tiene que verse antes que las cifras, porque un
+   100% mal leido hace mas dano que no ponerlo. */
+.aviso{background:#3a2a10;border-left:3px solid var(--oro);margin:1.5rem auto;
+  padding:1rem 1.2rem;max-width:900px;border-radius:4px}
+.aviso p{margin:0;color:var(--tinta);font-size:15px;line-height:1.65}
+.galeria{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+  gap:1.5rem;margin:1.5rem 0}
+.galeria figure{margin:0}
+.galeria img{width:100%;height:auto;image-rendering:pixelated;
+  border:1px solid var(--linea);border-radius:3px}
+.galeria figcaption{color:var(--suave);font-size:13px;margin-top:.5rem}
+audio{display:block;width:100%;max-width:640px;margin:.75rem 0 1.5rem}
+</style>
+<div class="w"><nav class="top"><a href="index.html">Portada</a><a href="EMPEZAR.html">Empezar</a><a href="EL-JUEGO.html">El juego</a><a href="LA-CINTA.html">La cinta</a><a href="EL-CODIGO.html">El código</a><a href="HALLAZGOS.html">Hallazgos</a><a href="PREGUNTAS-ABIERTAS.html" style=color:var(--tinta)>Preguntas abiertas</a><a href="../OPEN-QUESTIONS.html" style="margin-left:auto;color:var(--oro)">English</a></nav>
+<h1 id="preguntas-abiertas">Preguntas abiertas</h1>
+<p>Lo que queda abierto, separando lo MEDIDO de lo SUPUESTO.</p>
+<p>Las otras paginas: <a href="EMPEZAR.html">Empezar</a> · <a href="EL-JUEGO.html">El juego</a> · <a href="LA-CINTA.html">La cinta</a> · <a href="EL-CODIGO.html">El codigo</a> · <a href="HALLAZGOS.html">Hallazgos</a> Lo medido lleva al lado la medida; lo supuesto va marcado como tal y no se ha escrito en el listado como si fuera un hecho.</p>
+<hr>
+<h2 id="medido">MEDIDO</h2>
+<h3 id="la-cinta">La cinta</h3>
+<ul><li>Trece bloques. Tres ficheros con nombre, todos llamados <code>DEMON</code>: un ASCII (el cargador BASIC), un BIN de 249 bytes en 0x8180 y un BIN de 24.576 bytes en 0x8000. Entre los dos BIN van siete bloques SIN cabecera.</li><li>La linea 50 del cargador BASIC es <code>BLOAD&quot;CAS:DEMON&quot;,R:RUN</code>. Como la cinta es secuencial, la primera vez encuentra el BIN pequeno y la segunda -despues del <code>RUN</code>- el grande. Los dos se llaman igual a proposito.</li><li><code>make verify</code> reconstruye el <code>.cas</code> entero, sha256 <code>69031ee25099df0703332ca74a64b52e6dd9909e4cfded4c3699be153adc5fc9</code>.</li></ul>
+<h3 id="el-reparto-a-memoria">El reparto a memoria</h3>
+<ul><li>La tabla de 0x8180 declara los siete trozos. <code>tools/cuerpos.py</code> comprueba que cada entrada cuadra con el tamano de su bloque y aborta si no.</li><li>Los cinco trozos que se esconden bajo la ROM coinciden <b>byte a byte</b> con la RAM de openMSX con el juego en marcha (<code>tools/coteja_ram.py</code>), y tambien con las instantaneas de RAM que lleva dentro el replay <code>Demonia.omr</code>, que se grabo en otra maquina (un Sony HB-20P). Dos medidas independientes.</li><li>El bloque del juego difiere de la cinta en 83 bytes nada mas arrancar, todos dentro de 0x8000-0x80FF. En 200 segundos de juego cambian 134 bytes, 133 de ellos en esa misma pagina y el otro es 0x8C5E.</li></ul>
+<h3 id="geometrias">Geometrias</h3>
+<ul><li><b>Sprites</b>: registros de 33 bytes (32 de patron de 16x16 + 1 de color), en dos bancos, 242 registros en 0x0000 y 214 en 0x1F32. Sale de la rutina 0x8292 y las dos cuentas dan exactas.</li><li><b>Mapas de pantalla</b>: 26 mapas comprimidos con <code>0xFF &lt;baldosa&gt; &lt;cuantas&gt;</code>. Descomprimidos dan 640 baldosas (32x20) cada uno y terminan exactamente donde empieza el siguiente. El descompresor es 0x819D.</li><li><b>Decorados</b>: 2048 bytes de patrones en 0x6000 y 2048 de color en 0x6800, que se suben a los TRES tercios de la pantalla (0x8150). Los tres tercios comparten dibujo.</li><li><b>Musica</b>: pasos de 4 bytes (tono grueso y fino del canal B, y del canal C). El puntero arranca en 0x7900 y al llegar al 0xFF rebobina a 0x79C8, no al principio.</li></ul>
+<h3 id="el-titulo">El titulo</h3>
+<p>El juego se llama <b>DEMONIA</b>, y lo pone su propia portada: el mapa comprimido de 0x4281, descomprimido y dibujado con sus patrones (<code>tools/mapas.py</code>, PNG en <code>docs/imagenes/portada-titulo.png</code>), lleva DEMONIA en letras enormes ocupando las ocho primeras filas. Debajo, en letras pequenas, <code>L&#x27;INTRUSION</code> en la fila 17 y <code>(C) 1986 PAR SABLATOU CLAUDE</code> en la 19.</p>
+<p>Esas dos filas de abajo son las unicas que se leen si el mapa se vuelca como TEXTO, porque el titulo esta hecho de baldosas graficas y no de ASCII. Un volcado asi engano una vez y de ahi salio la idea de que el juego se titulaba <code>L&#x27;INTRUSION</code>: es el subtitulo. La cinta tambien se llama DEMONIA.</p>
+<hr>
+<h2 id="supuesto-marcado-como-tal-y-sin-escribir-en-el-listado-como-hecho">SUPUESTO (marcado como tal, y sin escribir en el listado como hecho)</h2>
+<ul><li><b>Que 0x9C72 sea una puerta trasera de depuracion.</b> Lo medido es que lee INTFLG (0xFC9B), compara con 3 y llama a la entrada del monitor. Que la intencion fuera dejarse una puerta abierta es una lectura, no un dato.</li><li><b>Que el <code>ld hl,(0x8078)</code> del tampon de paso a paso de 0xCC5F sea el fosil de una sesion de depuracion de este juego.</b> Lo medido son los cuatro bytes y que 0x8078 cae en la pagina de variables. Encaja, pero no lo dice el binario.</li><li><b>Que la tabla de ordenes del monitor la borrase el propio autor al montar el juego encima.</b> Lo medido es que en 0xD5C6 hay fichas de pantalla y no una tabla. Quien lo hizo y cuando, no.</li><li><b>Los dos valores iniciales del cargador (0x81F8 = 0x8188, 0x81FA = 0xC050)</b> son consistentes con una foto de la memoria tomada mientras corria el trozo 2. Es lo unico que se puede decir: el codigo los escribe antes de leerlos, asi que dan igual.</li></ul>
+<hr>
+<h2 id="abierto-lo-que-no-se-ha-podido-cerrar">ABIERTO: lo que no se ha podido cerrar</h2>
+<h3 id="1-el-replay-del-usuario-no-se-puede-reproducir-aqui">1. El replay del usuario no se puede reproducir aqui</h3>
+<p><code>Demonia.omr</code> se grabo en un <b>Sony HB-20P</b> y openMSX pide su ROM por sha1 (<code>63050d2d21214a721cc55f152c22b7be8061ac33</code>). Esa ROM no esta en esta maquina y no se puede descargar.</p>
+<p>Se intento tres veces:</p>
+<ol><li>Reapuntar la cinta a la local con <code>tools/prepara_replay.py</code>. La ruta se corrige (24 referencias), pero el fallo era otro.</li><li>Meter una ROM de MSX1 sustituta con ese nombre en un <code>filepool</code> propio, sin tocar la instalacion del usuario. openMSX resuelve las ROM de sistema <b>por sha1</b>, no por nombre, y la rechaza.</li><li>Reescribir el sha1 dentro del <code>.omr</code> para que apunte a la sustituta. <b>El replay carga y corre los 926 segundos</b>, pero con otra ROM la carga de cinta se desincroniza: el 100 % de las 1.854.327 muestras del PC caen en las rutinas de casete de la BIOS (0x046F, 0x047B, 0x1B2A...) y el juego no llega a arrancar. La medida no vale y no se ha usado.</li></ol>
+<p><b>Lo que si se saco del replay, sin emulador</b>: abriendolo con gzip y descomprimiendo sus doce instantaneas de RAM. Desde la cuarta (t=256 s) el bloque del juego coincide al 99,5 % con el de la cinta, y los cinco trozos escondidos bajo la ROM coinciden al 100 %. O sea que en la partida de verdad el reparto de memoria es exactamente el que dice este proyecto. Las instantaneas estan en <code>work/replay/ram_snapNN.bin</code> si se vuelven a extraer.</p>
+<p><b>Para cerrarlo hace falta</b>: el fichero <code>hb-20p_basic-bios1.rom</code> con ese sha1 en <code>~/Documents/openMSX/share/systemroms/</code>. Con eso, <code>tools/omsx_replay.tcl</code> da el muestreo del PC de una partida entera y la seccion 6 de <a href="HALLAZGOS.html">Hallazgos</a> deja de ser un dato flojo.</p>
+<h3 id="2-que-hace-el-juego-jugado">2. Que hace el juego, jugado</h3>
+<p>No se ha documentado una partida. Lo que se sabe del juego sale del codigo y de sus datos: 24 pantallas con su ficha de 88 bytes y sus cuatro rutinas de conducta, un interprete de guiones de doce opcodes, marcador con <code>SCORE=</code>, <code>RECORD=</code> y <code>FORCE=</code>, y un <code>GAME OVER</code>. Falta atar cada pantalla con lo que se ve, y para eso el camino bueno es el replay del punto 1.</p>
+<h3 id="3-las-fichas-de-pantalla-por-dentro">3. Las fichas de pantalla, por dentro</h3>
+<p>Se sabe que son 24 fichas de 88 bytes en 0xD0C0-0xD8FF y que el byte 84 de cada una lleva la marca <code>FF &lt;numero de pantalla en ASCII&gt; FF</code>. <b>No</b> se ha desmenuzado el resto de los 88 bytes campo a campo. Se ve que hay grupos de tres bytes que empiezan por 0x06, 0x0E, 0x15 y 0x1B -numeros que crecen y que podrian ser posiciones- pero eso es una impresion, no una medida, y por eso no esta en el listado.</p>
+<h3 id="4-las-tablas-cortas-sin-identificar">4. Las tablas cortas sin identificar</h3>
+<p>Quedan doce tramos de datos con nombre pero sin uso explicado, porque se sabe QUIEN los lee pero no PARA QUE. Son: 0x89F1, 0x8C58, 0x9B47, 0xA5E4, 0xA7FF, 0xB4F0, 0xB540, 0xBA64, 0xBDB1, 0xDAD7 y las dos de baldosas 0xA830 y 0xDAA3. En el listado estan con la direccion de la instruccion que las carga, que es lo que se sabe.</p>
+<p>De 0xB4F0 si se sabe la forma: siete registros de diez bytes, y los campos avanzan a paso fijo de un registro al siguiente (+0x18 en el tercer byte, +0x300 en la pareja siguiente, +1 en el octavo). Parece una tabla de siete cosas iguales colocadas en fila; que cosas, no se ha medido.</p>
+<h3 id="5-el-tempo-de-la-musica">5. El tempo de la musica</h3>
+<p>El reproductor de 0x7F90 cambia de nota cada 14 llamadas (0x7F9B). <b>No se ha medido a cuantas llamadas por segundo va</b>, asi que no se puede dar un tempo en notas por minuto ni decir si eso depende de PAL o NTSC. Lo que si esta medido son los periodos del PSG: el primer paso da 679 en el canal B y 339 en el C, o sea 329,5 Hz y 659,1 Hz con el reloj del MSX (3.579.545/16), la misma nota a una octava.</p>
+<h3 id="6-los-tres-ret-nc-del-cargador">6. Los tres RET NC del cargador</h3>
+<p>En 0x823A hay tres <code>RET NC</code> seguidos donde con uno bastaba: el primero ya vuelve. No se ha encontrado explicacion. Puede ser un salto relativo que se cambio por un RET y dejo dos bytes detras, pero eso es una suposicion.</p>
+<footer><p><em>Demonia</em> es un juego de MSX de 1986; su portada pone DEMONIA y lo firma <em>(C) 1986 PAR SABLATOU CLAUDE</em>, y la cinta son 58.334 bytes. Que lo publicara Microids sale del catalogo, no del binario. Todos los derechos sobre el juego siguen siendo de sus titulares. Este trabajo es de preservacion, estudio y documentacion.</p></footer></div>

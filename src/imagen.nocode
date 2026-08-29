@@ -1,0 +1,24 @@
+# Zonas por las que el trazador NO debe pasar, con el motivo.
+#
+# 1) Pagina 0 (0x0000-0x3FFF). Con el juego en marcha ahi esta la ROM del BASIC
+#    casi siempre: la rutina de 0x8126 conmuta a RAM la pagina 1 y DEJA la 0 en
+#    slot 0 (AND 0FCh sobre el valor del slot). Solo la de 0x8139 pone las dos
+#    en RAM, y eso es para LEER los graficos que carga4 y carga5 dejaron ahi.
+#    Si el trazador entrase, seguiria cada CALL 0x005C (LDIRVM) dentro de un
+#    dibujo y desensamblaria pixeles.
+0x0000 0x4000   pagina 0: ROM del BASIC en marcha; debajo, graficos de carga4/carga5
+
+# 2) Memoria que nadie carga. Esta a cero en la imagen y un mar de NOP se traza
+#    de maravilla, inflando la cobertura con nada.
+0x3AC8 0x4000   sin cargar (el hueco entre el final de carga5 y la pagina 1)
+0x5468 0x6000   sin cargar
+0x7000 0x7900   sin cargar
+0x7FE8 0x8000   sin cargar
+0xE000 0x10000  sin cargar (RAM de trabajo y area del sistema)
+
+# 3) Tablas de punteros. Si el trazador entra en una, desensambla direcciones.
+0xAA20 0xAA38   tabla de saltos del interprete de guiones (12 opcodes x 2 bytes), la usa 0xAA17
+0xD000 0xD0C0   tablas de pantalla: 24 punteros a datos (0xD000) y 24x4 punteros a rutina (0xD030)
+0xD0C0 0xD900   las 24 fichas de pantalla de 88 bytes (marca FF <numero> FF en el byte 84 de cada una)
+0xD900 0xDAC8   los textos del monitor de Loriciels, de "PC= SP=" a "Verification", y detras una tabla de codigos de baldosa
+0xDFD2 0xDFE0   catorce ceros de relleno antes del tampon final

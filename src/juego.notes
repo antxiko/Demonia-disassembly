@@ -1,0 +1,3943 @@
+B 0x8000 ======================================================================
+B 0x8000  DEMONIA / L'INTRUSION - el bloque del juego
+B 0x8000 ======================================================================
+B 0x8000 Veinticuatro kilobytes que la cinta carga en 0x8000 y arranca en
+B 0x8000 0x8100. Es el ultimo fichero de la cinta y el unico que se ejecuta
+B 0x8000 donde se carga.
+B 0x8000
+B 0x8000 EL MAPA DE MEMORIA CON EL QUE TRABAJA. Los siete trozos anteriores han
+B 0x8000 dejado 26 KB debajo de la ROM del BASIC:
+B 0x8000     0x0000-0x1F31  242 sprites de 16x16 (banco 1)
+B 0x8000     0x1F32-0x3AC7  214 sprites de 16x16 (banco 2)
+B 0x8000     0x4000-0x5467  26 mapas de pantalla comprimidos
+B 0x8000     0x5480-....    donde se descomprime el mapa en curso
+B 0x8000     0x6000-0x6FFF  patrones y colores de SCREEN 2
+B 0x8000     0x7900-0x7FE7  la musica
+B 0x8000 Nada de eso se ve mientras la ROM esta puesta. Hay dos rutinas para
+B 0x8000 conmutar y la diferencia entre ellas es la clave de todo el bloque:
+B 0x8000     0x8126  pone en RAM SOLO la pagina 1 (0x4000-0x7FFF) y deja la
+B 0x8000             pagina 0 con la ROM, asi que la BIOS sigue estando.
+B 0x8000     0x8139  pone en RAM las paginas 0 y 1. Ahi no hay BIOS: cualquier
+B 0x8000             CALL a una direccion baja seria un salto a un dibujo. Por
+B 0x8000             eso todos los usos de 0x8139 son un LDIR corto y vuelta.
+B 0x8000
+B 0x8000 EL VECTOR DE SONIDO. El juego se apropia de los cinco bytes del gancho
+B 0x8000 H.KEYI (0xFD9A): 0x83D6 escribe alli un JP 0x838D y 0x8492 escribe un
+B 0x8000 RET para apagarlo. Los mas de cuarenta CALL 0xFD9A repartidos por el
+B 0x8000 codigo son llamadas a ese vector.
+B 0x8000
+B 0x8000 EL POLIZON. Dentro de este bloque, de 0xC000 en adelante, viaja un
+B 0x8000 MONITOR DE CODIGO MAQUINA entero: "MONITEUR MSX / Copyright (C) 1984
+B 0x8000 LORICIELS / Auteur: Claude SABLATOU" (los textos, en 0xD948-0xD988).
+B 0x8000 El mismo Claude Sablatou firma la portada del juego. Su punto de
+B 0x8000 entrada, 0xC924, se sigue llamando desde 0x9C72; pero sus ordenes ya
+B 0x8000 no funcionan, porque los datos del juego se han escrito encima de la
+B 0x8000 tabla que las reconoce. Esta contado en docs/LO-QUE-SOBRA.md.
+
+D 0x8000 0x8100 variables  Los 256 bytes de trabajo del juego. Comparando la cinta con la RAM del emulador con el juego en marcha, 83 de estos bytes ya han cambiado nada mas arrancar y ninguno de los 24320 restantes lo hace: aqui viven TODAS las variables del bloque, salvo 0x8C5E
+F 0x8000 16
+
+D 0x872A 0x8738 rotulos_del_marcador  Los dos rotulos del marcador, uno detras de otro y sin terminador: "SCORE=" en 0x872A (lo carga 0x8701) y "RECORD=" en 0x8730 (lo carga 0x8716)
+F 0x872A 6,7,1
+
+D 0x8778 0x877E rotulo_force  El rotulo "FORCE=", que carga 0x8781
+F 0x8778 6
+
+D 0x89F1 0x8A1C tabla_de_baldosas_1  43 codigos de baldosa que recorre 0x8A2A
+F 0x89F1 16
+
+D 0x8C58 0x8C94 tabla_de_animacion  60 bytes que leen 0x91FB-0x9211; 0x8C5E es ademas el UNICO byte de este bloque fuera de 0x8000-0x80FF que cambia mientras se juega, o sea que es una variable metida dentro de la tabla
+F 0x8C58 12
+
+D 0x8D23 0x8D80 tabla_de_codigos_de_baldosa  Traduccion a codigos de baldosa; el indice entra por 0x8D28 desde 0x8CA4. Los codigos son los de la fuente: '"' '#' '$'... y luego las letras minusculas
+F 0x8D23 16
+
+D 0x8E4F 0x8E58 datos_8E4F  Nueve bytes entre dos rutinas de teclado. Ninguna instruccion los apunta
+
+D 0x944A 0x9468 datos_944A  Treinta bytes sueltos entre dos rutinas. Ninguna instruccion los apunta
+F 0x944A 15
+
+D 0x990F 0x991C rotulo_game_over  " GAME" en 0x9910 y "OVER " en 0x9916, las dos mitades del cartel que escribe 0x9BFE
+F 0x990F 1,5,6,1
+
+D 0x9B47 0x9BC0 tabla_9B47  121 bytes que recorre 0x9B40 (carga 0x9B48)
+F 0x9B47 16
+
+D 0x9D95 0x9DB0 datos_9D95  Veintisiete bytes entre dos rutinas. Ninguna instruccion los apunta
+F 0x9D95 16
+
+D 0xA0EF 0xA100 datos_A0EF  Diecisiete bytes justo delante de 0xA100, que es lo primero que llama el arranque. Ninguna instruccion los apunta
+F 0xA0EF 17
+
+D 0xA37F 0xA390 tabla_A37F  Diecisiete bytes con los codigos de baldosa '+', '{', '|', '}', '~' seguidos de ceros
+F 0xA37F 17
+
+D 0xA5E4 0xA600 tabla_A5E4  Veintiocho bytes que cargan cuatro sitios distintos (0xA5DE, 0xA64B, 0xA669 y 0xA687), siempre con LD HL,0xA5E4
+F 0xA5E4 14
+
+D 0xA7FF 0xA811 tabla_A7FF  Dieciocho bytes; 0xA9D1 carga 0xA801 en BC
+F 0xA7FF 18
+
+D 0xA830 0xA850 tabla_de_baldosas_2  Treinta y dos codigos de baldosa que recorre 0xA854
+F 0xA830 16
+
+D 0xA89F 0xA8AC datos_A89F  Trece bytes entre dos rutinas. Ninguna instruccion los apunta
+
+D 0xAA20 0xAA38 tabla_de_opcodes  La tabla de saltos del interprete de guiones: doce punteros, uno por opcode, que lee 0xAA17. Los opcodes 0, 1, 2 y 11 apuntan a 0xFD9A, o sea al vector de sonido
+F 0xAA20 w1
+
+D 0xB4F0 0xB538 tabla_de_siete_partes  Siete registros de diez bytes que recorre 0xB4E3 (carga 0xB4F0), mas dos ceros de cola. Los campos avanzan a paso fijo de un registro al siguiente: +0x18 en el tercer byte, +0x300 en la pareja siguiente y +1 en el octavo
+F 0xB4F0 10
+
+D 0xB540 0xB550 tabla_B540  Dieciseis bytes que cargan 0xB604 y 0xB635 en DE
+F 0xB540 16
+
+D 0xBA64 0xBA72 tabla_BA64  Catorce bytes, una serie que baja de 0x60 a 0x30 de ocho en ocho; la cargan 0xBA3F y 0xBA98
+F 0xBA64 w1
+
+D 0xBBFE 0xBC08 datos_BBFE  Diez bytes entre dos rutinas. Ninguna instruccion los apunta
+
+D 0xBDB1 0xBDC3 tabla_BDB1  Dieciocho bytes que carga 0xD9ED en DE
+F 0xBDB1 w1
+
+D 0xC076 0xC24D variables_del_monitor  El area de trabajo del monitor de Loriciels: su pila termina en 0xC0FF (0xC254 y 0xC94B hacen LD SP,0xC0FF), la copia de los registros del programa detenido esta por 0xC144 y sus banderas en 0xC1B9-0xC1E3. Dentro quedan dos textos que el juego no usa: "Press any key for retry" en 0xC085 y "MSXDOS  SYS" en 0xC0A0
+F 0xC076 16
+
+D 0xC748 0xC756 datos_C748  Catorce bytes dentro del monitor. Ninguna instruccion los apunta
+
+D 0xCC5F 0xCC63 tampon_del_paso_a_paso  Cuatro bytes donde el monitor copia la instruccion del programa detenido para ejecutarla (0xCBB9 los pone a cero, 0xCBDB los llena). En la cinta han quedado con "2A 78 80 00", que es LD HL,(0x8078): la ultima instruccion que el monitor ejecuto paso a paso antes de grabar, y 0x8078 esta dentro de las variables de este mismo juego
+
+D 0xCC74 0xCC78 vuelta_del_paso_a_paso  Los cuatro bytes de LD (0xC1F6),SP con los que el monitor recupera el control despues del tampon; los apuntan 0xCBF1 y 0xCC28
+
+D 0xCFD4 0xD000 tablas_del_desensamblador  Lo que queda del desensamblador del monitor entre 0xCFD4 y 0xD000
+F 0xCFD4 16
+
+D 0xD000 0xD030 punteros_de_pantalla  Veinticuatro punteros, uno por pantalla, a su mapa comprimido en la RAM escondida (todos caen entre 0x43DE y 0x53C7). Las entradas 13 y 14 apuntan las dos a 0x4D44
+F 0xD000 w4
+
+D 0xD030 0xD0C0 tabla_de_conducta  Veinticuatro filas de CUATRO punteros a rutina, una fila por pantalla. Los huecos se rellenan con 0xFD9A, o sea con el vector de sonido: "aqui no hay nada que hacer"
+F 0xD030 w4
+
+D 0xD0C0 0xD900 fichas_de_pantalla  Veinticuatro fichas de 88 bytes, una por pantalla. Se reconocen porque todas llevan en el byte 84 la marca FF <numero de pantalla en ASCII> FF: 0xD114 la primera y 0xD8FC la ultima, siempre a 88 bytes de distancia. Encima de estas fichas han quedado enterradas la tabla de ordenes del monitor (0xD5C6) y sus tablas de nemonicos (0xD64A en adelante), que por eso estan a ceros
+F 0xD0C0 88
+
+D 0xD900 0xDA37 textos_del_monitor  Los textos del monitor de Loriciels: la cabecera del volcado de registros en 0xD905, "Auteur:Claude SABLATOU" en 0xD948, "MONITEUR MSX" en 0xD95F, "Copyright (C) 1984 LORICIELS" en 0xD96C y los mensajes de error a partir de 0xD98D
+F 0xD900 16
+
+D 0xDA37 0xDAA3 textos_del_monitor_2  El resto de los textos del monitor: "Resultat= " en 0xDA39 (lo carga 0xC5C6), "Indicateur= " en 0xDA44 (lo carga 0xC995), "Interruptions " / "autorisees" / "interdites", "ADRESSES ", " A ", "ASCII  ", "Chargement" y "Verification"
+F 0xDA37 16
+
+D 0xDAA3 0xDAC8 tabla_de_baldosas_3  Treinta y siete bytes detras de los textos del monitor: codigos de baldosa (0x5B-0x5E, 0x2B, 0x7B-0x80, 0x95-0x98, 0xB0-0xB3), los mismos rangos que la tabla de 0xA830. Ninguna instruccion los apunta
+F 0xDAA3 16
+
+D 0xDAD7 0xDBB8 tabla_DAD7  225 bytes; 0x84E4 carga 0xDB00. El principio, 0xDAD7-0xDAFF, no lo apunta nadie
+F 0xDAD7 16
+
+D 0xDD9B 0xDDA4 datos_DD9B  Nueve bytes entre dos rutinas. Ninguna instruccion los apunta
+
+D 0xDFC1 0xDFD2 datos_DFC1  Diecisiete bytes de cola del bloque. Ninguna instruccion los apunta
+F 0xDFC1 17
+
+D 0xDFD2 0xDFE0 relleno_cero  Catorce ceros hasta el tampon del final
+F 0xDFD2 14
+
+D 0xDFE0 0xE000 tampon_final  Los ultimos 32 bytes del bloque, a cero en la cinta. Se usan de tampon: 0xBE5B y 0xDBC6 cargan 0xDFE0 en HL y 0x94B5 y 0xA1B5 cargan 0xDFFF en DE
+F 0xDFE0 16
+
+B 0x8000
+B 0x8000 --- las variables ---
+B 0x8000 Lo que se ha podido atar a una variable concreta:
+B 0x8000   0x8049  palabra, la escribe 0x82F8
+B 0x8000   0x804B  contador del efecto de sonido (0x838D)
+B 0x8000   0x804C  cuenta atras del parpadeo del canal A (0x83AF/0x83C3)
+B 0x8000   0x804D  interruptor de ese parpadeo, y guardia del vector de 0x804E
+B 0x8000   0x804E  vector de rutina: lo carga 0x85CD y lo salta 0x85D8
+B 0x8000   0x804F  cuenta atras del cambio de tono del efecto
+B 0x8000   0x806C  contador que apaga la musica al llegar a 0x69 (0x7F90)
+B 0x8000   0x80C0  puntero del guion que esta interpretando 0xAA0D
+B 0x8000   0x80FB  cuenta atras del paso de la melodia, se recarga a 14
+B 0x8000   0x80FC  puntero de la melodia; arranca en 0x7900 y rebobina a 0x79C8
+
+L 0x8100 arranca  Punto de arranque que declara la cabecera BIN de la cinta
+C 0x8100 Preparativos
+C 0x8103 Y al bucle principal, que ya no vuelve
+
+L 0x8106 pon_pantalla  Fondo y borde negros y la tabla de nombres a cero
+C 0x8106 HL = 0
+C 0x8109 BAKCLR y BDRCLR: negro
+C 0x810c CLIKSW = 0 (sin clic de tecla) y CSRY = 0
+C 0x8117 A = 0, la baldosa vacia
+C 0x8118 La tabla de nombres de SCREEN 2
+C 0x811b Las 24x32 casillas
+C 0x811e FILVRM: rellena la VRAM con A
+
+L 0x8126 pagina1_a_ram  Conmuta SOLO la pagina 1 a RAM; la 0 se queda con la ROM, asi que la BIOS sigue disponible
+C 0x8126 Nada de interrupciones con los slots a medias
+C 0x8127 A' guarda el A del que llama: esta rutina no puede tocar registros
+C 0x8128 El registro de primarios con la RAM, que dejo el trozo 3 de la carga
+C 0x812b AND 0xFC deja la pagina 0 en el slot 0, o sea con la ROM
+C 0x812f Y el de secundarios, tambien con la pagina 0 sin tocar
+C 0x8137 Devuelve el A original
+
+L 0x8139 todo_a_ram  Conmuta las paginas 0 y 1 a RAM. Aqui NO hay BIOS: todo uso de esta rutina es un LDIR corto y vuelta a 0x8126
+C 0x8139 Sin interrupciones: el vector de 0x0038 tampoco esta
+C 0x813a Guarda el A del que llama
+C 0x813b El registro de primarios completo, con la pagina 0 tambien en RAM
+C 0x8140 Y el de secundarios completo
+
+L 0x8150 sube_los_decorados  Sube patrones y colores de SCREEN 2 desde la RAM escondida
+C 0x8150 Origen: los patrones, en 0x6000
+C 0x8153 Destino: la tabla de patrones de la VRAM
+C 0x8159 Origen: los colores, en 0x6800
+C 0x815c Destino: la tabla de color de la VRAM
+
+L 0x8164 sube_tres_tercios  Sube tres veces 2048 bytes, o sea el mismo dibujo a los tres tercios
+C 0x8164 Tres tercios
+C 0x8169 2048 bytes por tercio
+C 0x816c LDIRVM
+C 0x816f Siguiente tercio en la VRAM
+C 0x8177 Otra vuelta
+
+L 0x817A toca_el_sonido  Tres bytes: llama al vector de 0xFD9A y vuelve
+C 0x817a El vector conmutable: la rutina de sonido, o un RET si esta apagada
+
+L 0x8292 pinta_un_sprite  Sube al VDP el sprite numero B del banco C y su color
+C 0x8292 Esta rutina no ensucia nada de quien la llama
+C 0x8297 CALPAT: donde vive el patron del sprite numero A
+C 0x829c Banco 1: los sprites empiezan en 0x0000
+C 0x829f El selector viene en C
+C 0x82a2 Cualquier otro banco: empiezan en 0x1F32
+C 0x82a5 Si B es cero no hay que avanzar nada
+C 0x82a9 33 bytes por registro: 32 de patron y 1 de color
+C 0x82ac Avanza B registros
+C 0x82af Se leen DOS registros de golpe: el juego usa los sprites de dos en dos
+C 0x82b2 Tampon en la RAM que siempre esta visible
+C 0x82b5 Conmuta las dos paginas: aqui ya no hay BIOS
+C 0x82b8 Los 66 bytes al tampon
+C 0x82ba Y vuelta a tener BIOS antes de llamar a nada
+C 0x82bd Ahora si, desde el tampon
+C 0x82c1 Los 32 bytes del primer patron
+C 0x82c4 LDIRVM al sitio que dijo CALPAT
+C 0x82c7 El segundo patron va 32 bytes mas alla
+C 0x82cb El byte 33 del primer registro es su color
+C 0x82cf El segundo patron
+C 0x82d2 El byte 33 del segundo registro
+C 0x82d7 CALATR: donde vive el atributo del sprite numero A
+C 0x82da El color esta en el cuarto byte del atributo
+C 0x82de Escribe el color del primer plano
+C 0x82e1 Cuatro bytes mas alla: el atributo del sprite siguiente
+C 0x82e6 Y el color del segundo plano
+C 0x82ed Deja B y A apuntando al par siguiente
+
+L 0x838D suena_el_efecto  La rutina de sonido que 0x83D6 instala como JP en el gancho 0xFD9A
+C 0x838d Cuenta atras del cambio de tono
+C 0x8391 Todavia no toca
+C 0x8392 Se recarga a 3
+C 0x8394 El tono en curso
+C 0x8398 Registro 2 del PSG: tono fino del canal B
+C 0x839d Cuenta atras del barrido de tono
+C 0x83a1 Todavia no
+C 0x83a3 Se recarga a 8
+C 0x83a5 Y sube el tono un punto
+C 0x83a9 Interruptor del parpadeo del canal A
+C 0x83ad Si esta encendido, toca apagarlo
+C 0x83af Cuenta atras del parpadeo
+C 0x83b3 Todavia no
+C 0x83b4 Se recarga a 4
+C 0x83b8 Enciende
+C 0x83bb Registro 8 del PSG: volumen del canal A
+C 0x83bd A 16, o sea con envolvente
+C 0x83c8 Se recarga a 4
+C 0x83ca Apaga
+C 0x83ce Registro 8 otra vez
+C 0x83d0 Volumen cero
+
+L 0x83D6 enciende_el_sonido  Escribe JP 0x838D en el gancho H.KEYI (0xFD9A), que el juego usa de vector conmutable
+C 0x83d6 La rutina de sonido
+C 0x83d9 Los dos bytes de direccion del JP
+C 0x83dc El opcode del JP
+C 0x83de Y ya esta armado: los CALL 0xFD9A del resto del codigo iran a 0x838D
+C 0x83e6 Una espera larga
+
+L 0x83F0 espera  Cuenta atras de BC llamando de paso al vector de sonido
+
+L 0x8492 apaga_el_sonido  Escribe un RET en 0xFD9A: los CALL 0xFD9A dejan de hacer nada
+C 0x8492 El opcode de RET
+C 0x8494 Encima del JP que puso 0x83D6
+
+L 0x85CD guarda_el_vector  Guarda HL en 0x804E y enciende el guardia de 0x804D
+L 0x85D8 salta_al_vector  Salta a la rutina de 0x804E, si el guardia esta encendido
+C 0x85d8 El guardia
+C 0x85dc Apagado: no hay rutina que llamar
+C 0x85df La rutina guardada
+C 0x85e2 Salto indirecto: los unicos valores posibles son 0x85E3 y 0x8638, que cargan 0x85C0 y 0x85C5
+
+L 0xAA0D interpreta_un_guion  Interprete de guiones: lee el opcode de (HL) y salta por la tabla de 0xAA20
+C 0xaa0d Guarda el puntero del guion donde lo puedan ver los manejadores
+C 0xaa10 El opcode
+C 0xaa12 El cero termina el guion
+C 0xaa13 Por dos, que la tabla es de palabras
+C 0xaa17 La tabla de saltos
+C 0xaa1b El manejador
+C 0xaa1e PUSH y RET: asi el manejador vuelve directamente a quien llamo aqui
+
+L 0xC924 entra_el_monitor  Punto de entrada del monitor de Loriciels. Guarda los diez registros del programa detenido y le pasa el mando al interprete de ordenes
+C 0xc924 La pila del programa detenido
+C 0xc928 Modo de interrupcion 1
+C 0xc92b Pila propia del monitor
+C 0xc92e Los diez registros, en el orden en que los pinta el volcado
+C 0xc93c Recupera la pila del programa para sacar la direccion de vuelta
+C 0xc945 Tres atras: la del CALL que trajo aqui
+C 0xc948 Ese es el PC que se ensena
+C 0xc94b Y ahora si, la pila del monitor
+
+B 0x8148 Ocho bytes que no alcanza nadie. Leidos como codigo son "di / jp 0xA0F0"
+B 0x8148 y, detras, "ld (0xFFFF),a / ret", que son las dos ultimas instrucciones
+B 0x8148 de una restauracion de slot como la de 0x8139 y 0x8126. O sea el cadaver
+B 0x8148 de una tercera conmutadora a la que alguien le metio un salto por medio.
+D 0x8148 0x8150 conmutadora_muerta  Ocho bytes huerfanos: "di / jp 0xA0F0" y la cola de una restauracion de slot. Ninguna instruccion salta aqui
+F 0x8148 8
+
+D 0x817E 0x8180 dos_ret_sueltos  Dos RET seguidos que nadie llama, justo antes de la tabla del cargador de cinta
+D 0x8191 0x8193 salto_corto_huerfano  Los dos bytes 0x18 0x0A, un "jr +10" al que no llega nadie
+D 0x85A6 0x85A8 dos_ret_sueltos  Dos RET a los que no llega ningun salto
+D 0x85CA 0x85CD carga_vector_nulo  "ld hl,0x0000" y de ahi cae en 0x85CD, que guarda el vector: es la tercera variante, la de "ninguna rutina". Nadie la llama
+D 0x8CAE 0x8CB0 dos_ret_sueltos  Dos RET huerfanos
+D 0x8DDD 0x8DE0 tres_ret_sueltos  Tres RET huerfanos
+D 0x8E0E 0x8E10 dos_ret_sueltos  Dos RET huerfanos
+D 0x8ED5 0x8ED8 datos_8ED5  Los tres bytes 16 89 00, iguales que los tres primeros de 0x8EEA
+D 0x8EEA 0x8EF0 datos_8EEA  Seis bytes, 16 89 00 00 00 00. Nadie los apunta
+F 0x8EEA 6
+D 0x8F0B 0x8F10 salto_huerfano  "jp 0x8A85" y dos ceros. Ninguna instruccion llega a estos cinco bytes
+F 0x8F0B 5
+D 0x9C8F 0x9C90 bandera_9C8F  Un byte de bandera; lo leen y escriben catorce instrucciones (0x9B38, 0x9CBA, 0x9CE0...). Esta suelto en medio del codigo, no en la pagina de variables
+D 0x9F93 0x9F95 or_a_ret_z_huerfano  Los dos bytes B7 C8, "or a / ret z", a los que no llega nadie
+D 0xA09E 0xA0A0 dos_ret_sueltos  Dos RET huerfanos
+D 0xA229 0xA22E ret_y_relleno_ff  Un RET y cuatro 0xFF de relleno hasta 0xA22E
+F 0xA229 5
+D 0xA4D5 0xA4D8 datos_A4D5  Tres bytes, 00 46 1A. Nadie los apunta
+D 0xA634 0xA638 salto_huerfano  "jp 0xDAD0" y un cero. Ninguna instruccion llega aqui, y 0xDAD0 cae dentro de los textos del monitor
+F 0xA634 4
+D 0xA7BF 0xA7C0 bandera_A7BF  Un byte de bandera que leen y escriben 0xA3CA y 0xA3CF
+D 0xA7E5 0xA7E8 datos_A7E5  Tres bytes, BB 88 00. Nadie los apunta
+D 0xAA95 0xAA98 llamada_al_monitor_huerfana  Tres bytes: "call 0xC924", o sea una llamada al monitor de Loriciels, a la que no llega ningun salto. Es la segunda que aparece en el bloque; la otra, en 0x9C72, si esta viva
+D 0xB3F6 0xB3F8 dos_ret_sueltos  Dos RET huerfanos
+D 0xB78D 0xB78E byte_B78D  Un 0x80 suelto entre dos rutinas
+D 0xCB7D 0xCB85 monitor_cr_y_prompt  Ocho bytes del monitor: "ld a,0x0D / call 0xCD16 / jp 0xC24D", o sea imprime un retorno de carro y vuelve al interprete de ordenes. Nadie salta aqui
+F 0xCB7D 8
+D 0xCDE2 0xCDE8 monitor_cola_de_espera  Seis bytes del monitor: "dec bc / ld a,b / or c / jr nz,-5 / ret", la cola de un bucle de espera cuya cabeza ya no esta
+F 0xCDE2 6
+D 0xCE1F 0xCE27 monitor_pon_direccion_vdp  Ocho bytes del monitor: "ld a,l / out (0x99),a / ld a,h / nop / out (0x99),a / ret", que es poner una direccion en el VDP. Nadie la llama
+F 0xCE1F 8
+D 0xCF8E 0xCF93 monitor_imprime_coma  Cinco bytes del monitor: "ld a,',' / ld (de),a / inc de / ret". Nadie la llama
+F 0xCF8E 5
+D 0xCF9B 0xCFA3 monitor_lee_bandera  Ocho bytes del monitor: lee 0xC1E3, lo incrementa y lo vuelve a guardar. Nadie la llama
+F 0xCF9B 8
+
+L 0xBE00 bucle_principal  A donde salta 0x8103. Pinta la portada y se queda con el juego
+C 0xbe00 Preparativos de la pantalla
+C 0xbe03 El mapa comprimido de la portada, el que lleva el titulo
+C 0xbe06 Lo descomprime y lo sube
+C 0xbe09 Vector de sonido
+
+L 0xA100 preparativos  Lo primero que hace 0x8100
+C 0xa100 Monta la pantalla y las tablas
+C 0xa103 Y el estado inicial de la partida
+
+L 0x8338 pon_los_sprites_del_marcador  Once llamadas seguidas a 0x8330 con parejas fijas, y despues arma el sonido
+C 0x8338 Cada DE es una pareja (numero de sprite, dato)
+C 0x837a El bloque de cinco variables del efecto de sonido
+C 0x837d 0x804B, el tono de partida
+C 0x8380 0x804C, la cuenta atras del parpadeo
+C 0x8383 0x804D, el interruptor del parpadeo
+C 0x8386 0x804E, parte baja del vector de rutina
+C 0x8389 0x804F, la cuenta atras del cambio de tono
+C 0x838b Y a instalar la rutina de sonido en 0xFD9A
+
+L 0x8330 pon_un_sprite  Coloca el sprite que dice DE
+L 0x8500 pinta_el_mapa  Descomprime el mapa de (HL) y lo sube a la pantalla
+L 0x819D descomprime  El descompresor de mapas: 0xFF <baldosa> <cuantas>, y literal cualquier otro byte
+C 0x819d Guarda A
+C 0x819e Destino: el tampon de la RAM escondida
+C 0x81a2 640 baldosas, o sea 32 columnas por 20 filas
+L 0x81A6 lee_un_codigo
+C 0x81a6 El byte del mapa
+C 0x81a8 INC A pone Z si el byte era 0xFF
+C 0x81a9 No es 0xFF: es una baldosa suelta
+C 0x81ab C = la baldosa que se repite
+C 0x81ad B = cuantas veces
+L 0x81B0 escribe_baldosa
+C 0x81b0 Escribe una
+C 0x81b2 El contador de 640 va en el juego alternativo
+C 0x81b6 Se acabaron las 640: corta aunque la carrera no haya terminado
+C 0x81b9 Sigue la carrera
+
+L 0xA6D0 mira_si_hay_algo_cerca  Recorre una lista y, si el jugador esta a tiro, la borra de la pantalla
+C 0xa6d0 Primer byte de la ficha: cero significa "no hay nada"
+C 0xa6d4 Segundo byte: la coordenada X, en octavos
+C 0xa6d6 Por ocho: de casillas a pixeles
+C 0xa6da Tercer byte: la Y, igual
+C 0xa6e0 La X del jugador
+C 0xa6e3 Catorce pixeles por delante
+C 0xa6e5 Si el objeto queda mas a la derecha, no toca
+C 0xa6e7 Treinta pixeles de ventana
+C 0xa6e9 Si queda mas a la izquierda, tampoco
+C 0xa6eb La Y del jugador
+C 0xa6f2 Misma comprobacion en vertical
+C 0xa6f8 Vector de sonido
+C 0xa706 Borra la ficha: ya no hay nada aqui
+C 0xa708 D era la fila; +4 por el marco de arriba
+C 0xa70e Por 32: cinco desplazamientos a la izquierda son las 32 columnas
+C 0xa716 Y el origen de la tabla de nombres de la VRAM
+C 0xa71a La baldosa vacia
+C 0xa71b Borra las cuatro casillas del objeto: dos arriba...
+C 0xa722 ...y las dos de la fila de abajo, 0x20 casillas mas alla
+C 0xa72d Quince pasos de la animacion de recogida
+C 0xa738 El registro de refresco vale de dado
+C 0xa73a Un numero de 0 a 31
+C 0xa73c Y nunca menos de cuatro
+
+L 0x9E30 sortea_una_aparicion  Cada 18 pasos, y si no hay ninguno ya en pantalla, saca uno nuevo
+C 0x9e30 Lo que toque hacer antes
+C 0x9e33 Cuenta atras hasta el proximo sorteo
+C 0x9e37 Todavia no
+C 0x9e38 Se recarga a 18
+C 0x9e3a La bandera que congela el juego
+C 0x9e3e Con ella puesta no se sortea nada
+C 0x9e3f Si ya hay uno en pantalla...
+C 0x9e43 ...se atiende al que hay
+C 0x9e46 El registro de refresco de la CPU, que hace de dado
+C 0x9e48 Solo sale uno de cada treinta y dos veces
+C 0x9e4b Marca que ya hay uno
+C 0x9e50 Y le da 30 pasos de vida
+C 0x9e64 Vector de sonido
+C 0x9e6a Segun donde este el jugador, aparece a un lado o al otro
+
+L 0xCB16 monitor_lee_una_tecla  Lee del teclado y traduce las teclas de control del monitor
+C 0xcb16 Espera una tecla
+C 0xcb19 Y devuelve las interrupciones
+C 0xcb1a 3 es CTRL+C: cancelar
+C 0xcb1e De 0x85 a 0x88, las cuatro flechas
+C 0xcb32 Los codigos con el bit 7 puesto no valen
+C 0xcb36 Retorno de carro
+C 0xcb3a Borrado
+C 0xcb3e Inicio de linea
+C 0xcb43 Tabulador
+C 0xcb54 0x7F, la tecla de borrar
+C 0xcb58 0x0C, limpiar pantalla
+C 0xcb5c Por debajo de 0x10 no hay nada imprimible
+
+L 0xC924 entra_el_monitor  Punto de entrada del monitor de Loriciels. Guarda los diez registros del programa detenido y le pasa el mando al interprete de ordenes
+
+L 0x8208 sube_filas_hacia_abajo  Sube B filas de 32 casillas a la VRAM, avanzando
+C 0x8209 32 casillas, una fila entera
+C 0x820d LDIRVM
+C 0x8211 Origen: la fila siguiente
+C 0x8212 Destino: una casilla mas alla
+C 0x8215 Siguiente fila
+C 0x8217 Retoque de la columna
+C 0x821d Y la siguiente pasada
+
+L 0x825F sube_filas_hacia_arriba  Igual que 0x8208 pero el destino va hacia atras
+C 0x8260 32 casillas, una fila entera
+C 0x8264 LDIRVM
+C 0x8268 Origen: la fila siguiente
+C 0x826a Destino
+C 0x826c Siguiente fila
+C 0x8272 Aqui el destino RETROCEDE: es la diferencia con 0x8208
+C 0x8274 Y la siguiente pasada
+
+L 0x8411 anima_la_espera  El bucle de la pantalla de espera: lee el mando, mueve el sprite y alterna su dibujo
+C 0x8412 Cuenta de la espera
+C 0x8415 Espera contando y tocando el sonido
+C 0x8418 Lee el joystick / cursores
+C 0x841b El contador de la animacion
+C 0x8422 El sprite que toca ahora
+C 0x8426 Banco 1 de sprites
+C 0x8428 Numero de sprite en el VDP
+C 0x842a Los dos planos de color, uno detras de otro
+C 0x8430 Cuenta atras del cambio de dibujo
+C 0x8434 Todavia no
+C 0x8436 Se recarga a 2
+C 0x8439 Al llegar al ultimo dibujo...
+C 0x843d ...vuelve al primero
+
+L 0x849A suena_la_partitura  Cada cuatro pasos, saca la nota siguiente de la partitura de 0xFD95
+C 0x849a Cuenta atras del paso
+C 0x849e Todavia no
+C 0x849f Se recarga a 4
+C 0x84a1 El interruptor de la partitura
+C 0x84a5 Apagada: no suena nada
+C 0x84a6 El puntero de la partitura
+C 0x84ab 0xFF marca una cosa...
+C 0x84ae ...y 0xFE otra
+C 0x84b1 Ni una ni otra: es un numero de registro del PSG
+C 0x84b3 El valor que va en ese registro
+C 0x84b5 Y se escribe
+
+L 0x8548 bucle_de_la_presentacion  Espera, suena y cuenta hasta que toca cambiar de escena
+C 0x8548 Lo que haya que dibujar en este paso
+C 0x854b Cuenta de la espera
+C 0x854e Espera
+C 0x8551 Un paso de la partitura
+C 0x8554 Cuenta atras del paso de escena
+C 0x8558 Todavia no
+C 0x855b Se recarga a 2
+C 0x855d El numero de escena
+C 0x8562 En la escena 0x3E se cambia de rutina...
+C 0x8567 ...en la 0x82, a otra...
+C 0x856c ...y en la 0xE6 se acaba
+
+L 0x8571 paso_de_la_presentacion  Un paso: dibuja, mira el STOP y anima el sprite
+C 0x8571 Lo que toque dibujar
+C 0x8574 Una bandera de la BIOS que el juego usa de aviso de abandono
+C 0x8578 Si esta puesta, reinicia el juego
+C 0x857b Cuenta atras del cambio de dibujo
+C 0x857f Todavia no: solo el vector de rutina
+C 0x8582 Se recarga a 3
+C 0x8584 El dibujo en curso
+C 0x8588 Banco 1
+C 0x858a Numero de sprite en el VDP
+C 0x858c Los dos planos de color
+C 0x8593 Al llegar al ultimo...
+C 0x8597 ...vuelve al primero
+
+L 0x8604 sube_y_baja_una_banda  Copia una banda de la VRAM a 0x8058 y la vuelve a escribir una fila mas abajo
+C 0x8605 Tampon en la pagina de variables
+C 0x8609 LDIRMV: de la VRAM a la memoria
+C 0x860c Una fila
+C 0x8616 Y de vuelta a la VRAM, en la fila de al lado
+C 0x8619 Sube dos filas: 0xFFC0 es -64
+C 0x861f Una banda menos
+C 0x8626 El limite de la zona de juego en la VRAM
+C 0x8629 RST 20h = DCOMPR, compara HL con DE
+
+L 0x8864 arranca_la_partida  Pone a su valor inicial las veintitantas variables de la partida
+C 0x8866 0x8048: cuenta de paso
+C 0x8869 0x8049 y 0x804A: la posicion del jugador, X y Y
+C 0x886f 0x804C: cuenta atras del cambio de dibujo
+C 0x8874 0x804B: el primer dibujo del jugador
+C 0x8878 0x804D a 0x8050 a cero
+C 0x8885 0x8051 a uno
+C 0x8889 0x8052 y 0x8053 a cero
+C 0x8892 0x8054 y 0x8056, dos palabras a cero
+C 0x8898 0x8058 a cero
+C 0x889d 0x805D: el paso base, seis
+C 0x88a0 Vector de sonido
+C 0x88a6 El sprite del jugador, banco 1
+C 0x88ab Sus dos planos de color
+
+L 0x88F8 un_paso_del_juego  El paso de partida: mira los tres avisos y, si no hay ninguno, hace todo lo demas
+C 0x88f8 Cuenta atras del paso
+C 0x88fc Todavia no toca
+C 0x88fd El paso base
+C 0x8901 Coge la ficha de la pantalla en curso
+C 0x8904 Primer aviso de la ficha
+C 0x8907 Si no es cero, se atiende y se sale
+C 0x890a Segundo aviso
+C 0x8910 Tercer aviso
+C 0x8916 Y si no hay ninguno, el paso completo:
+C 0x8919 ...
+C 0x891c ...
+C 0x891f ...
+C 0x8922 ...
+C 0x8925 ...
+C 0x8928 Vector de sonido
+
+L 0x8AE0 reparte_por_tipo  Segun el tipo, a una rutina o a otra
+C 0x8ae1 Si no es del tipo 1, a otro sitio
+C 0x8ae7 El subtipo
+C 0x8aea Subtipo 1
+C 0x8aef Subtipo 0xFF
+C 0x8af8 Prueba tres posiciones seguidas
+C 0x8b05 Y una bandera mas
+
+L 0x9518 aparicion_por_un_lado  Cada tantos pasos saca uno nuevo por el lado que corresponda
+C 0x951b Cuenta atras
+C 0x951c Todavia no
+C 0x951d El periodo, que se recarga
+C 0x9521 Si ya hay uno...
+C 0x9525 ...se atiende al que hay
+C 0x9527 Marca que hay uno
+C 0x952f El registro de refresco de la CPU, que hace de dado
+C 0x9531 Se mira solo el bit de arriba
+C 0x9535 Segun el estado, sale por un lado o por otro
+C 0x9540 Toma la X del jugador
+C 0x9546 Y una Y fija
+
+L 0x95A4 pinta_al_que_persigue  Sube sus dos planos de sprite y avanza su animacion
+C 0x95a4 Numero de sprite en el VDP
+C 0x95a6 Primer plano de color
+C 0x95aa El dibujo en curso
+C 0x95af Segundo plano
+C 0x95b2 Cuenta atras del cambio de dibujo
+C 0x95b6 Todavia no
+C 0x95b7 Se recarga a 2
+C 0x95bf Avanza el dibujo
+C 0x95c0 Y si llega a uno de los cuatro finales de ciclo...
+C 0x95ce ...rebobina
+
+B 0xA1C6
+B 0xA1C6 --- el modo de calcular una casilla ---
+B 0xA1C6 De aqui en adelante aparece muchas veces el mismo bloque de doce
+B 0xA1C6 instrucciones, y conviene leerlo una vez:
+B 0xA1C6
+B 0xA1C6     ld a,h / exx / ld l,a / ld h,0 / add hl,hl x5 / exx
+B 0xA1C6     ld a,l / exx / ld e,a / ld d,0 / add hl,de
+B 0xA1C6     ld de,0x5480 / add hl,de
+B 0xA1C6
+B 0xA1C6 Con una posicion empaquetada en HL -H la fila, L la columna- calcula
+B 0xA1C6 la direccion de esa casilla en el mapa descomprimido:
+B 0xA1C6     0x5480 + fila*32 + columna
+B 0xA1C6 Los cinco ADD HL,HL son el por 32, y el juego alternativo se usa solo
+B 0xA1C6 para no perder el HL de partida. 0x5480 es donde 0x819E deja el mapa.
+
+L 0x9638 mira_si_toca_al_perseguidor  Compara la posicion del jugador con la del perseguidor y, si coinciden, lo despierta
+C 0x963d La X del jugador
+C 0x9640 La X del perseguidor
+C 0x9643 Dieciseis pixeles por delante
+C 0x9646 Mas a la derecha: no toca
+C 0x9647 Treinta y dos de ventana
+C 0x964a Mas a la izquierda: tampoco
+C 0x964c La Y
+C 0x9651 Misma comprobacion en vertical, con ventana de 48
+C 0x965a Estado 4: tocado
+C 0x965f Y el dibujo con el que empieza esa animacion
+
+L 0x96F8 mira_si_pisa_la_casilla  Con la casilla en HL, mira si el jugador esta encima y sube su estado a 4
+C 0x96f8 La Y del jugador
+C 0x96fb Dieciseis pixeles de margen por arriba
+C 0x96fe Por encima: no la pisa
+C 0x96ff Treinta y dos de ventana
+C 0x9703 Y ahora la X
+C 0x970e La ficha de esa casilla
+C 0x9712 Si ya iba por 4 o mas, se deja como esta
+C 0x9715 Si no, a 4
+
+L 0x988C anima_lo_que_cae  Espera, mueve el sprite que cae y le da la vuelta al llegar al final del ciclo
+C 0x988d Cuenta de la espera
+C 0x9893 Cuenta atras del cambio de dibujo
+C 0x9899 Se recarga a 2
+C 0x989b El dibujo en curso
+C 0x989f Banco 1
+C 0x98a1 Numero de sprite en el VDP
+C 0x98a3 Primer plano de color
+C 0x98a8 Segundo plano, dos registros mas atras
+C 0x98b1 Los dos finales de ciclo
+C 0x98b9 Al llegar, rebobina
+
+L 0x994F anima_el_marcador  Cuenta atras y alterna dos dibujos del marcador
+C 0x9952 Cuenta atras
+C 0x9956 El periodo, que se recarga
+C 0x995a El interruptor del parpadeo
+C 0x9961 Se recarga a 2
+C 0x9965 Y se pone el otro dibujo
+C 0x996b Un par de sprites...
+C 0x9970 ...o el otro
+
+L 0x9D30 un_paso_de_la_otra_fase  Igual que 0x88F8 pero con otra tabla de avisos
+C 0x9d33 Cuenta atras del paso
+C 0x9d35 El paso base
+C 0x9d39 Coge la ficha
+C 0x9d3c Primer aviso
+C 0x9d42 Segundo aviso
+C 0x9d48 Tercer aviso
+C 0x9d4e Si el jugador esta ocupado...
+C 0x9d54 ...se mira que tecla hay
+C 0x9d57 Solo la 1 hace algo aqui
+
+L 0x9E88 persigue_al_jugador  Mueve al perseguidor hacia el jugador y acelera cada cuatro pasos
+C 0x9e88 Solo si el estado es 2
+C 0x9e8c La posicion en curso
+C 0x9e8f El paso de avance
+C 0x9e93 Avanza
+C 0x9e94 La posicion completa
+C 0x9e97 Numero de sprite en el VDP
+C 0x9e9c Cuenta atras de la aceleracion
+C 0x9ea1 Se recarga a 4
+C 0x9ea6 Y el paso sube de dos en dos
+C 0x9eab Treinta y dos pixeles por delante
+C 0x9eb0 Comparado con la Y del jugador
+
+L 0x9EE8 pinta_al_perseguidor  Estado 3: solo animarlo, sin moverlo
+C 0x9ee8 Solo si el estado es 3
+C 0x9eec Cuenta atras del cambio de dibujo
+C 0x9ef2 Se recarga a 1
+C 0x9ef4 El dibujo en curso
+C 0x9ef8 Banco 1
+C 0x9efa Numero de sprite en el VDP
+C 0x9f05 Los dos finales de ciclo
+
+L 0xA1B2 monta_la_ficha_de_pantalla  Copia los 88 bytes de la ficha a 0xDFFF y dibuja lo que declara
+C 0xa1b2 Vector de sonido
+C 0xa1b5 Destino: el tampon del final del bloque
+C 0xa1b8 0x58 = 88 bytes, una ficha entera
+C 0xa1c0 El primer campo de la ficha
+C 0xa1c4 A cero: no hay nada que dibujar
+C 0xa1c6 La posicion, empaquetada
+C 0xa1db El mapa descomprimido
+C 0xa1df 31, para bajar de fila al escribir la segunda pareja
+C 0xa1e2 La baldosa 0x91, la primera de las cuatro
+C 0xa1e6 Y las otras tres, de dos en dos
+
+L 0xA1F0 dibuja_el_otro_objeto  Igual, con el campo de 0xE02C de la ficha
+C 0xa1f0 El campo que dice si hay objeto
+C 0xa1f4 A cero: nada
+C 0xa1f7 Su posicion, empaquetada
+C 0xa20c El mapa descomprimido
+C 0xa211 Los dibujos que le tocan
+C 0xa215 Ocho filas
+
+L 0xA22E anima_al_bicho  Cuenta atras, sortea si se mueve y actualiza su posicion
+C 0xa22e La pareja de guiones de despues
+C 0xa231 Se mete en la pila para volver ahi al terminar
+C 0xa232 El campo que dice si el bicho existe
+C 0xa236 No existe: nada que hacer
+C 0xa237 Su cuenta atras
+C 0xa23b Todavia no
+C 0xa23c El periodo, que se recarga
+C 0xa240 Si ya esta en movimiento...
+C 0xa244 ...se sigue moviendo
+C 0xa247 Y si no, se sortea
+C 0xa24d El dado
+C 0xa250 Una de cada sesenta y cuatro veces
+C 0xa253 Marca que arranca
+C 0xa258 El registro de refresco, otra vez de dado
+C 0xa25a De 0 a 127
+
+L 0xA49F borra_cuatro_casillas  Pone a cero las cuatro casillas de la posicion de 0xE03B
+C 0xa49f La posicion, empaquetada
+C 0xa4b3 El mapa descomprimido
+C 0xa4b7 Cuatro casillas
+C 0xa4b9 La baldosa vacia
+C 0xa4ba 31, para bajar de fila
+
+L 0xA60A dibuja_dos_por_dos  Escribe en el mapa el dibujo de (DE) en la casilla de HL
+C 0xa60b La posicion, empaquetada
+C 0xa61c El mapa descomprimido
+C 0xa622 Dos filas de dos
+
+L 0xA638 dibuja_el_objeto_uno  Si 0xE049 no es cero, dibuja lo que diga en la posicion de 0xE04A
+C 0xa638 El numero de dibujo
+C 0xa63c Cero: no hay objeto
+C 0xa63f Un "cp 0" detras de un "or a" que ya lo ha decidido, y cuatro NOP: aqui habia algo mas
+C 0xa645 De numero a indice
+C 0xa646 Por cuatro: las fichas son de cuatro baldosas
+C 0xa64b La tabla de dibujos
+C 0xa650 La posicion
+
+L 0xA656 dibuja_el_objeto_dos  Lo mismo con 0xE04C y 0xE04D
+C 0xa656 El numero de dibujo
+C 0xa65a Cero: no hay objeto
+C 0xa65d Seis NOP seguidos: la comprobacion que habia aqui se quito
+C 0xa663 De numero a indice
+C 0xa664 Por cuatro
+C 0xa669 La tabla de dibujos
+C 0xa66e La posicion
+
+L 0x99C9 estado_dos_del_bicho  Tres rutinas de dibujo y, si el contador llega a 7, un salto de seis atras
+C 0x99c9 Solo si el estado es 2
+C 0x99cd Tres pasos de dibujo seguidos
+C 0x99d6 El contador de fase
+C 0x99d9 Solo el valor 7 sigue
+C 0x99e1 Suma 0xFA, o sea resta seis
+C 0x99e8 Y pasa al estado 4
+
+L 0xAAB5 comprueba_el_camino  Rechaza la casilla si esta fuera de rango y prueba las dos de debajo
+C 0xaab5 La baldosa de la casilla
+C 0xaab6 De 0xF0 para arriba no vale
+C 0xaabb Y la 0 tampoco
+C 0xaac0 La casilla en curso del mapa
+C 0xaac3 El sentido de la marcha
+C 0xaac7 0xFF, o sea -1: hacia el otro lado
+C 0xaac9 0x40 = dos filas de 32
+C 0xaacd Prueba la primera casilla
+C 0xaad3 Y la de al lado
+C 0xaada Avanza la posicion
+
+L 0xAB0C pinta_al_bicho  Sube los dos planos del sprite del bicho y avanza su dibujo
+C 0xab0d Cuenta atras del cambio de dibujo
+C 0xab11 Todavia no
+C 0xab13 Se recarga a 2
+C 0xab15 El dibujo en curso
+C 0xab19 El banco de sprites: este byte lo REESCRIBE 0xABB3 en marcha
+C 0xab1c Primer plano de color
+C 0xab1f Dos registros mas atras: el segundo plano
+C 0xab23 Al llegar al final del ciclo...
+C 0xab27 ...rebobina
+
+L 0xABAA cambia_de_banco_de_sprites  Reescribe el operando de 0xAB1A para pintar del banco 1 o del 2
+C 0xabaa El periodo, que se recarga
+C 0xabb1 Banco 1...
+C 0xabb3 ...escrito ENCIMA del "ld c,n" de 0xAB19: codigo que se modifica solo
+C 0xabb6 Pinta con el banco 1
+C 0xabb9 Y ahora el banco 2
+C 0xabbe El dibujo en curso
+C 0xabc1 Si ha llegado a 0x90...
+C 0xabc5 ...cinco pasos de la fase siguiente
+C 0xabca ...y una cuenta larga
+C 0xabd4 Vuelve al banco 1
+C 0xabdc El dibujo con el que empieza
+C 0xabe2 Vector de sonido
+
+L 0xACD8 pinta_y_avanza  Sube los dos planos y avanza el dibujo hasta uno de los cuatro finales de ciclo
+C 0xacd8 Calcula el numero de sprite
+C 0xacdb Primer plano
+C 0xacdf El dibujo en curso
+C 0xace4 Segundo plano
+C 0xace9 El paso de la animacion
+C 0xaced Dos NOP: aqui habia algo
+C 0xacef Los cuatro finales de ciclo
+
+L 0xADD8 pinta_estado_tres  Igual, con el ciclo entre 0x8E y 0xA6
+C 0xadd8 Solo si el estado es 3
+C 0xade0 Banco 1
+C 0xade2 Numero de sprite
+C 0xade5 Primer plano
+C 0xadea Segundo plano
+C 0xaded Vector de sonido
+C 0xadf1 Guarda el dibujo nuevo
+C 0xadf4 Principio del ciclo
+C 0xadf8 Y final
+
+L 0xAED2 avanza_y_mira_el_tramo  Suma el paso, mira en que tramo cae y cambia el dibujo si ha cambiado
+C 0xaed2 La posicion
+C 0xaed5 El paso
+C 0xaed9 Avanza
+C 0xaedd La posicion nueva
+C 0xaee0 En que tramo cae
+C 0xaee7 Si es el mismo de antes, nada que hacer
+C 0xaeec Guarda el tramo nuevo
+C 0xaef0 Un dibujo para un tramo...
+C 0xaef4 ...y otro para el otro
+
+L 0xAF10 avanza_dentro_de_los_topes  Cada seis pasos avanza, y comprueba los dos topes
+C 0xaf13 Cuenta atras
+C 0xaf17 Todavia no
+C 0xaf18 Se recarga a 6
+C 0xaf1d El paso
+C 0xaf21 Avanza
+C 0xaf27 Tope de un lado
+C 0xaf2d Tope del otro
+
+L 0xAF4C mira_si_lo_coge  Con el estado 2 y sin nada pendiente, mira si el jugador pisa la casilla
+C 0xaf4f El estado
+C 0xaf52 Solo el 2
+C 0xaf55 Y solo si no hay nada pendiente
+C 0xaf5a Un NOP suelto
+C 0xaf5b La posicion
+C 0xaf5e Mira si el jugador la pisa
+C 0xaf64 Otro NOP
+C 0xaf66 La ficha de la casilla
+C 0xaf68 Y otro
+C 0xaf69 De 5 para arriba no vale
+C 0xaf70 Reinicia la cuenta
+C 0xaf79 Cuenta atras de las que quedan
+
+L 0xAFE4 arranca_la_animacion  Cada tantos pasos pinta el sprite siguiente y prepara el tramo
+C 0xafe4 Cuenta atras
+C 0xafe8 Todavia no
+C 0xafeb El periodo, que se recarga
+C 0xafef El estado
+C 0xaff2 Solo el 1
+C 0xaff5 El dibujo en curso
+C 0xaff8 El siguiente par
+C 0xaffb Banco 1
+C 0xaffd Numero de sprite
+C 0xb000 Lo pinta
+C 0xb003 Y le da dieciseis pasos
+C 0xb00a Pasa al estado 2
+C 0xb00d En que tramo esta
+
+L 0xB0BE avanza_si_toca  Suma el paso solo en los estados 1 y 3, y cada dos pasos sube el contador
+C 0xb0be La posicion
+C 0xb0c1 El paso
+C 0xb0c5 El estado
+C 0xb0c8 Estado 1
+C 0xb0cc Estado 3; cualquier otro se va
+C 0xb0d0 Avanza
+C 0xb0d5 Cuenta atras del contador
+C 0xb0da Se recarga a 2
+C 0xb0dd Y sube el contador
+
+L 0xB2E8 prepara_una_ficha  Con el jugador por debajo de la fila 0x60, rellena a mano los diez campos de 0x80A0
+C 0xb2e8 La Y del jugador
+C 0xb2eb Por encima de 0x60 no se hace nada
+C 0xb2f1 Los diez bytes de la ficha, uno a uno
+C 0xb30e Y se pone en marcha
+
+L 0xB61A un_paso_de_lo_que_cae  Mueve el objeto que cae, le cambia el dibujo y, al llegar abajo, lo vuelve a sacar arriba
+C 0xb61a Su posicion en la VRAM; el juego usa 0xF420-0xF429 de area de trabajo
+C 0xb621 Una fila mas abajo
+C 0xb628 El dibujo que le toca
+C 0xb62e Por ocho: ocho bytes por patron
+C 0xb631 La tabla de patrones del segundo tercio
+C 0xb635 Los ocho bytes del dibujo
+C 0xb63f 0x2000: la tabla de color, misma posicion
+C 0xb64d Su posicion otra vez
+C 0xb658 Si el sitio no esta libre, se queda
+C 0xb65b Vector de sonido
+C 0xb661 Borra la casilla que ocupaba
+C 0xb668 El dibujo de partida
+C 0xb670 0xFF20 = -0x E0, o sea siete filas mas arriba
+C 0xb677 El registro de refresco hace de dado: de 1 a 8
+C 0xb67f Y otro de 1 a 128
+
+L 0xB7D8 pinta_y_cicla  Sube los dos planos y rebobina en uno de los cuatro finales de ciclo
+C 0xb7d8 Numero de sprite
+C 0xb7db Primer plano
+C 0xb7df El dibujo en curso
+C 0xb7e4 Segundo plano
+C 0xb7e9 El paso
+C 0xb7ed Guarda el dibujo nuevo
+C 0xb7f0 Los cuatro finales de ciclo
+
+B 0x81CF
+B 0x81CF --- el desplazamiento de pantalla ---
+B 0x81CF Las cuatro rutinas de aqui abajo son las dos mitades del mismo truco,
+B 0x81CF una version para cada sentido. El MSX1 no desplaza la pantalla por
+B 0x81CF hardware, asi que hay que mover las 20 filas de la tabla de nombres a
+B 0x81CF mano. Como la VRAM no se puede leer y escribir a la vez sin pasar por
+B 0x81CF la memoria, el juego usa un tampon en 0x5700, en la RAM escondida:
+B 0x81CF primero baja la columna que se pierde, despues escribe las filas
+B 0x81CF corridas y por ultimo sube la columna nueva.
+B 0x81CF El paso de 0x21 -33- en vez de 0x20 es lo que produce el corrimiento
+B 0x81CF de una casilla.
+
+L 0x81DA baja_una_columna  Se trae 0x21 bytes por fila de la VRAM al tampon
+C 0x81db 33 bytes: la fila y una casilla mas
+C 0x81de LDIRMV: de la VRAM a la memoria
+C 0x81e1 Siguiente fila en la VRAM
+C 0x81e9 El tampon de la RAM escondida
+C 0x81ee Veinte filas
+
+L 0x81F0 corre_las_filas  Escribe cada fila una casilla mas alla que la anterior
+C 0x81f3 33: una casilla mas que la fila, y de ahi el corrimiento
+C 0x81f8 32: la fila justa
+C 0x8200 El tampon
+C 0x8203 La tabla de nombres de la VRAM
+C 0x8206 Veinte filas
+
+L 0x8230 baja_una_columna_2  Igual que 0x81DA pero para el otro sentido
+C 0x8231 32 bytes: la fila justa
+C 0x8234 LDIRMV
+C 0x823b Y una casilla mas en el destino
+C 0x8240 El tampon
+C 0x8245 Veinte filas
+
+L 0x8247 corre_las_filas_2  La mitad simetrica de 0x81F0
+C 0x824a 33: el corrimiento
+C 0x824f 32: la fila justa
+C 0x8257 El tampon
+C 0x825a La tabla de nombres de la VRAM
+C 0x825d Veinte filas
+
+L 0x8300 pinta_al_jugador  Sube los dos planos del sprite del jugador, el segundo diez pixeles mas abajo
+C 0x8303 Numero de sprite en el VDP
+C 0x8309 Diez pixeles de separacion entre los dos planos
+C 0x830e Dos NOP
+
+L 0x83F8 muestra_el_titulo  Pinta el sprite del titulo y espera
+C 0x83f8 El sprite y el banco
+C 0x83fb Numero de sprite en el VDP
+C 0x83fd Los dos planos de color
+C 0x8403 Una espera larga
+C 0x840e Arranca la cuenta del dibujo
+
+L 0x8512 escribe_carrera  El cuerpo del bucle del descompresor: escribe una baldosa y descuenta
+C 0x8512 Una baldosa
+C 0x8515 La cuenta global de 640
+C 0x8518 Se acabaron: corta la carrera a medias
+C 0x851b Sigue la carrera
+
+L 0x8638 escena_dos  Coloca la segunda escena de la presentacion y parchea dos operandos
+C 0x8638 Solo si el estado es 1
+C 0x863e Pone el estado 2
+C 0x8641 La posicion de partida
+C 0x8649 Y el paso
+C 0x864e Escribe ENCIMA de un operando de 0x8603: codigo que se modifica solo
+C 0x8653 Y de otro de 0x8623
+
+L 0x86E2 espera_y_arranca  Espera B pasos con musica y monta la pantalla del juego
+C 0x86e3 Cuenta de la espera
+C 0x86e9 Un paso de la partitura
+C 0x86ed Otra vuelta
+C 0x86f5 Descomprime y sube el mapa
+C 0x86f8 ENASCR: enciende la pantalla
+C 0x86fb Y la pila del juego
+
+L 0x8963 casilla_a_direccion_vram  Divide A entre 2 elevado a B y suma la tabla de nombres
+C 0x8963 SCF + CCF pone el acarreo a cero antes de rotar
+C 0x8965 Divide por dos, B veces
+C 0x896c La tabla de nombres de la VRAM
+C 0x8970 Y se guarda para quien la pida
+C 0x8973 Vector de sonido
+
+L 0x89BA anima_del_banco_dos  Cambia de dibujo cada dos pasos, con el banco 2
+C 0x89bd Cuenta atras
+C 0x89c0 Se recarga a 2
+C 0x89c4 Banco 2
+C 0x89c6 Numero de sprite
+C 0x89cf Final del ciclo
+C 0x89d3 Rebobina
+
+L 0x8A48 anima_del_banco_uno  Lo mismo con el banco 1 y otro ciclo
+C 0x8a4b Cuenta atras
+C 0x8a4e Se recarga a 2
+C 0x8a52 Banco 1
+C 0x8a54 Numero de sprite
+C 0x8a5d Final del ciclo
+C 0x8a61 Rebobina
+
+L 0x8AB3 prepara_el_salto  Deja el subtipo, el paso y el sprite que toque segun el sentido
+C 0x8ab6 Paso de seis
+C 0x8abe Treinta y dos pasos de cuenta
+C 0x8ac3 Sprite y banco para un sentido...
+C 0x8acc ...y para el otro
+
+L 0x8B64 prueba_dos_casillas_abajo  Mira las dos casillas que hay cuatro filas mas abajo
+C 0x8b67 0x80 = cuatro filas de 32
+C 0x8b6b La primera casilla
+C 0x8b72 Y la de al lado
+C 0x8b78 Una bandera de la ficha
+C 0x8b7f Un NOP
+
+L 0x8B80 cae_un_escalon  Baja al jugador el paso que diga 0x805F, hasta un maximo de ocho
+C 0x8b85 La Y del jugador
+C 0x8b88 El paso de caida
+C 0x8b8c Baja
+C 0x8b91 El paso crece hasta nueve...
+C 0x8b95 ...y se queda en ocho
+
+L 0x8BA9 aterriza  Borra el vector, recarga la cuenta y elige el sprite segun el sentido
+C 0x8ba9 Sin rutina en el vector
+C 0x8baf Treinta y dos pasos
+C 0x8bb5 Sprite y banco para un sentido...
+C 0x8bbe ...y para el otro
+
+L 0x8C0A sube_un_escalon  Al reves que 0x8B80: resta el paso de la Y
+C 0x8c0a Prueba una casilla
+C 0x8c11 Y la de al lado
+C 0x8c17 El paso
+C 0x8c1e Sube
+C 0x8c21 Cuando el paso llega a cero, se acabo
+
+L 0x8C34 mira_el_suelo  Comprueba las dos casillas de cuatro filas mas abajo con la otra prueba
+C 0x8c37 0x80 = cuatro filas
+C 0x8c3f Este segundo RET NZ no puede ejecutarse: el de arriba ya ha vuelto
+C 0x8c45 Y este tampoco
+C 0x8c46 Una bandera de la ficha
+
+L 0x8D92 sube_un_escalon_2  El gemelo de 0x8C0A para la otra fase
+C 0x8d9f El paso
+C 0x8da6 Sube
+C 0x8da9 Cuando llega a cero, se acabo
+
+L 0x8E29 empieza_a_caer  Guarda la posicion, pone el estado 4 y elige el sprite
+C 0x8e2e Estado 4
+C 0x8e31 La posicion en curso
+C 0x8e37 Sprite y banco para un sentido...
+C 0x8e40 ...y para el otro
+
+L 0x8E58 mueve_el_disparo  Con el estado 1, avanza el disparo si no ha llegado al tope
+C 0x8e58 Solo si el estado es 1
+C 0x8e5c La posicion
+C 0x8e62 El tope
+C 0x8e63 Ya esta: no se mueve mas
+C 0x8e66 Banco 2
+C 0x8e68 Numero de sprite
+
+L 0x8E7B mira_dos_casillas  Prueba dos casillas seguidas y, si las dos valen, pone el estado 2
+C 0x8e7e Guarda el sentido
+C 0x8e81 Primera casilla
+C 0x8e84 Un NOP
+C 0x8e88 Segunda casilla
+C 0x8e90 Las dos valen: estado 2
+C 0x8e93 Vector de sonido
+
+L 0x8F2F dispara  Pinta el disparo, apunta su casilla y espera
+C 0x8f2f Numero de sprite
+C 0x8f34 La posicion del jugador
+C 0x8f3d 0x40 = dos filas de 32
+C 0x8f41 La casilla del disparo
+C 0x8f44 Una espera
+
+L 0x8F88 avanza_el_disparo  Adelanta dos casillas y mira si choca
+C 0x8f88 La casilla del disparo
+C 0x8f8b El sentido
+C 0x8f8f 0xFF quiere decir "ninguno"
+C 0x8f92 Dos casillas mas alla
+C 0x8f9a Dos NOP
+
+L 0x9030 anima_al_jugador_a  Cada tres pasos cambia el dibujo del jugador, ciclo 0xE6-0xF2
+C 0x9033 Cuenta atras del cambio de dibujo
+C 0x9036 Se recarga a 3
+C 0x9038 El dibujo en curso
+C 0x903c Banco 1
+C 0x903e Numero de sprite
+C 0x9040 Los dos planos de color
+C 0x9047 Final del ciclo
+C 0x904b Rebobina
+
+L 0x9054 anima_al_jugador_b  Como 0x9030 pero el ciclo va hacia atras, de ocho en ocho
+C 0x9057 Cuenta atras
+C 0x905a Se recarga a 3
+C 0x905c El dibujo en curso
+C 0x9060 Banco 1
+C 0x9062 Numero de sprite
+C 0x906b Retrocede ocho, que es un dibujo
+C 0x906d Principio del ciclo
+C 0x9071 Rebobina
+
+L 0x9140 lee_el_mando  Lee el mando, guarda lo leido y calcula la casilla de delante
+C 0x9143 Un NOP
+C 0x9144 Compara con 0x3F, y el resultado lo usa 0x916B
+C 0x9149 Guarda lo que se ha pedido
+C 0x914d Mira si se puede ir
+C 0x9151 Con acarreo, no se puede
+C 0x9155 Dos NOP
+C 0x9158 La casilla de delante
+
+L 0x9288 reparte_por_estado  Cero no hace nada; el 7 y el 3 tienen rutina propia
+C 0x9288 El estado
+C 0x928c Cero: nada que hacer
+C 0x928d Estado 7
+C 0x9292 Estado 3; cualquier otro, a la general
+C 0x9297 El sentido
+C 0x929a 0xFF quiere decir "ninguno"
+C 0x929d Dibujo de partida
+C 0x92a4 Y sentido 1
+
+L 0x92A7 anima_estado_tres  Cambia de dibujo cada dos pasos, banco 2, ciclo hasta 0x4A
+C 0x92aa Cuenta atras
+C 0x92ad Se recarga a 2
+C 0x92b1 Banco 2
+C 0x92b3 Numero de sprite
+C 0x92b9 Final del ciclo
+C 0x92bd Rebobina
+
+L 0x92D3 anima_estado_siete  Igual, con el ciclo hasta 0x60
+C 0x92d6 Cuenta atras
+C 0x92d9 Se recarga a 2
+C 0x92dd Banco 2
+C 0x92df Numero de sprite
+C 0x92e5 Final del ciclo
+C 0x92e9 Rebobina
+
+L 0x93C8 anima_al_jugador_c  Otra pareja de ciclo, esta hasta 0xE6
+C 0x93cb Cuenta atras
+C 0x93ce Se recarga a 3
+C 0x93d4 Banco 1
+C 0x93d6 Numero de sprite
+C 0x93df Final del ciclo
+C 0x93e3 Rebobina
+
+L 0x93EC anima_al_jugador_d  Y el gemelo que va hacia atras
+C 0x93ef Cuenta atras
+C 0x93f2 Se recarga a 3
+C 0x93f8 Banco 1
+C 0x93fa Numero de sprite
+C 0x9403 Retrocede un dibujo
+C 0x9405 Principio del ciclo
+C 0x9409 Rebobina
+
+L 0x941C mira_y_para  Si la casilla no deja pasar, borra el vector y elige el sprite parado
+C 0x9420 Prueba la casilla
+C 0x9423 Deja pasar: sigue
+C 0x9426 Sin rutina en el vector
+C 0x9429 El sentido
+C 0x942d Dibujo parado para un sentido...
+C 0x9431 ...y para el otro
+
+L 0x9480 salta_por_la_tabla_de_7034  Coge de la tabla de 0x7034 la rutina que toque y salta con PUSH DE / RET
+C 0x9482 El indice, en L
+C 0x9483 La tabla, en la RAM escondida
+C 0x9486 Deja HL en la entrada
+C 0x9489 La direccion de la rutina
+C 0x948e PUSH y RET: asi se salta sin tocar mas registros
+
+L 0x94E0 salta_por_la_tabla_de_7030  Igual, pero la entrada trae ademas un dato de dos bytes
+C 0x94e0 El indice
+C 0x94e4 La tabla, en la RAM escondida
+C 0x94ea La direccion de la rutina
+C 0x94ee Y el dato que la acompana
+C 0x94f1 Que se guarda para ella
+C 0x94f5 PUSH y RET
+
+L 0x9589 pinta_al_perseguidor_2  Sube sus dos planos, el segundo dieciseis pixeles mas abajo
+C 0x9589 Su posicion
+C 0x958c Numero de sprite
+C 0x9592 Dieciseis pixeles entre los dos planos
+C 0x9598 Segun el estado...
+C 0x959c ...un par de sprites...
+C 0x95a1 ...o el otro
+
+L 0x95E8 cuenta_atras_larga  Descuenta hasta 0x78 y entonces pasa al estado 2
+C 0x95eb Uno menos
+C 0x95ed El limite
+C 0x95f0 Estado 2
+C 0x95f5 Vector de sonido
+C 0x95f8 Y se recarga la cuenta
+
+L 0x9600 acerca_al_perseguidor  Con el estado 1, lo trae hacia el jugador si esta en rango
+C 0x9600 Solo si el estado es 1
+C 0x9604 Vector de sonido
+C 0x9607 El sentido
+C 0x960b 0xFF quiere decir "ninguno"
+C 0x960e Su posicion
+C 0x9611 La del jugador
+C 0x9614 Por encima de 0xF8 no vale
+C 0x9619 Ochenta pixeles de ventana
+
+L 0x9801 corre_hasta_el_borde  Avanza al jugador de golpe hasta la columna 0x78
+C 0x9802 Lo pinta donde este
+C 0x9806 El borde
+C 0x980b Avanza el paso
+C 0x980f Una espera corta
+C 0x9815 Y otra vuelta
+
+L 0x9846 anima_hasta_el_final  Repite el par de sprites hasta llegar al dibujo 0xA6
+C 0x9846 Numero de sprite
+C 0x9848 Primer plano
+C 0x984d Segundo plano, dos registros mas atras
+C 0x9851 El dibujo final
+C 0x9856 Espera entre dibujo y dibujo
+
+L 0x9860 monta_la_escena_final  Espera, coloca dos sprites fijos y prepara los contadores
+C 0x9860 Una espera
+C 0x9866 Numero de sprite
+C 0x9868 Uno en la fila 0x74...
+C 0x986e ...y otro en la 0x84
+C 0x9873 La Y del jugador
+C 0x9876 Dieciocho pixeles mas arriba
+C 0x987d Treinta pasos de cuenta
+C 0x9884 Y estado 2
+
+L 0x9975 estado_uno_del_bicho  Si no esta ocupado, mira si el jugador esta a tiro
+C 0x9975 Solo si el estado es 1
+C 0x9979 Una bandera de ocupado
+C 0x997d Ocupado: a la otra rutina
+C 0x9983 Si devuelve 1, se acabo
+C 0x9987 Su posicion
+C 0x998a La del jugador
+C 0x998d Veinticuatro pixeles de margen
+
+L 0x99A8 estado_uno_bis  Tres dibujos y, si el contador esta a cero, pasa al estado 3
+C 0x99a8 Solo si el estado es 1
+C 0x99ac Tres pasos de dibujo
+C 0x99b5 El contador de fase
+C 0x99b9 Si no es cero, no cambia de estado
+C 0x99bc Estado 3
+C 0x99c1 Y dieciseis pasos de cuenta
+
+L 0x9A6A mira_si_lo_pisa  Pinta y, si nada lo impide, comprueba que el jugador este encima
+C 0x9a6d Su posicion
+C 0x9a73 La bandera de ocupado
+C 0x9a77 Ocupado: no se mira nada
+C 0x9a7b Mira si el jugador lo pisa
+C 0x9a81 Un NOP
+
+L 0x9A99 estado_dos_bis  Con el estado 2 y la fase 5, pinta el sprite 0x92
+C 0x9a99 Solo si el estado es 2
+C 0x9aa0 La fase
+C 0x9aa3 Solo la 5 sigue
+C 0x9aa8 El sprite y el banco
+C 0x9aab Numero de sprite
+
+L 0x9C14 copia_un_patron  Se trae los ocho bytes del patron A desde 0x6000 a 0xE0F8
+C 0x9c14 Ocho filas
+C 0x9c18 La tabla de patrones de la RAM escondida
+C 0x9c1e Por ocho: ocho bytes por patron
+C 0x9c22 Destino: un tampon de la RAM alta
+
+L 0x9C39 rota_ocho_filas  Rota a la izquierda ocho bytes separados por DE
+C 0x9c39 Rota una fila, metiendo el acarreo
+C 0x9c3c Salta a la fila de abajo
+C 0x9c40 0x89 para pasar a la columna siguiente
+C 0x9c44 Una columna menos
+
+L 0x9C95 espera_una_tecla  Espera contando; si tocan la tecla 6 o se agota la cuenta, sale
+C 0x9c95 Cuenta de la espera
+C 0x9c9b Tecla 6
+C 0x9ca0 Pulsada: se acabo
+C 0x9ca7 Un paso mas
+C 0x9cad Y otra condicion de salida
+C 0x9cb4 La cuenta larga
+
+L 0x9CB8 pone_al_jugador_al_principio  Coloca al jugador en 0x7860 y enciende la bandera de 0x9C8F
+C 0x9cba La bandera que congela el juego
+C 0x9cc0 Dibujo de partida
+C 0x9cc5 Posicion de partida
+C 0x9cc8 El sprite y el banco
+C 0x9ccb Numero de sprite
+C 0x9ccd Los dos planos
+C 0x9cd3 Guarda la posicion
+C 0x9cd9 Vector de sonido
+
+L 0x9D00 monta_la_pantalla  Coge la ficha de 0x7000 y llama a lo que diga
+C 0x9d00 La tabla de la RAM escondida
+C 0x9d09 Prepara la pantalla
+C 0x9d0f La entrada de la tabla
+C 0x9d12 La direccion que trae
+C 0x9d18 Un NOP
+
+L 0x9D5F lee_el_guion_de_la_fase  Cada tantos pasos coge del guion de 0x80C5 el estado siguiente
+C 0x9d62 Cuenta atras del paso
+C 0x9d66 Todavia no
+C 0x9d67 El puntero del guion
+C 0x9d6b El estado nuevo
+C 0x9d6f Y el byte que lo acompana
+C 0x9d71 Se guarda el puntero para el que siga
+
+L 0x9F30 acerca_por_arriba  Sube el paso y, si el jugador queda por debajo, cambia de sentido
+C 0x9f31 Guarda la posicion nueva
+C 0x9f35 El paso
+C 0x9f38 0xFF quiere decir "hacia arriba"
+C 0x9f3c La Y del jugador
+C 0x9f3f Treinta y dos pixeles de margen
+C 0x9f44 Y a partir de aqui, hacia abajo
+
+L 0x9F95 esta_a_tiro  Devuelve Z si HL cae dentro de la ventana del jugador
+C 0x9f95 La X guardada
+C 0x9f98 Ocho pixeles por delante
+C 0x9f9d Dieciseis de ventana
+C 0x9fa1 La Y guardada
+C 0x9fa4 Dieciseis por arriba
+C 0x9fa9 Veinticuatro de ventana
+C 0x9fad Todo dentro: Z
+
+L 0xA170 baja_al_jugador  Si la bandera esta puesta, baja una fila hasta la 0xC1
+C 0xa170 La bandera
+C 0xa174 Sin ella no hay caida
+C 0xa177 Lo pinta
+C 0xa17a La Y
+C 0xa17d Una fila mas abajo
+C 0xa17f El suelo
+C 0xa183 Todavia no ha llegado: se quita la vuelta de la pila
+
+L 0xA217 copia_de_cuatro_en_cuatro  Copia B grupos de cuatro bytes, saltando 0x1C entre grupo y grupo
+C 0xa218 Cuatro bytes
+C 0xa21e 0x1C: lo que hay hasta el grupo siguiente
+C 0xa224 Otro grupo
+
+L 0xA28D arranca_el_bicho  Marca que se mueve y elige el par de dibujos segun el sentido
+C 0xa28f La bandera de "en marcha"
+C 0xa292 Su posicion
+C 0xa295 0xA0 = cinco filas de 32
+C 0xa299 El sentido
+C 0xa29c 0xFF quiere decir "hacia un lado"
+C 0xa29d Un par de dibujos...
+C 0xa2a2 ...o el otro
+
+L 0xA2A6 sigue_el_bicho  Recarga su cuenta y calcula la casilla de delante
+C 0xa2a9 El periodo
+C 0xa2ac Se recarga
+C 0xa2af Vector de sonido
+C 0xa2b2 Su posicion
+C 0xa2b5 0xBF: casi seis filas
+C 0xa2ba El sentido
+C 0xa2c0 Seis casillas mas si va hacia el otro lado
+
+L 0xA5D0 dibuja_el_objeto_tres  Si 0xE046 no es cero, saca su dibujo de la tabla de 0xA5E4
+C 0xa5d0 El numero de dibujo
+C 0xa5d4 Cero: no hay objeto
+C 0xa5d7 Un NOP
+C 0xa5d8 De numero a indice
+C 0xa5d9 Por cuatro: cuatro baldosas por dibujo
+C 0xa5de La tabla de dibujos
+
+L 0xA624 escribe_dos_por_fila  Escribe dos baldosas por fila, B filas, en el mapa
+C 0xa625 Primera baldosa
+C 0xa629 Segunda
+C 0xa62c 0x1F: lo que falta para la fila de abajo
+C 0xa631 Otra fila
+
+L 0xA758 casilla_del_marcador  Convierte la posicion de 0x806C en una casilla de la fila 0x1840
+C 0xa758 La posicion
+C 0xa762 Se queda con los multiplos de ocho
+C 0xa764 Y divide por ocho
+C 0xa767 La fila del marcador en la VRAM
+C 0xa76f Un NOP
+
+L 0xA7A5 compara_y_guarda  Compara dos cadenas y, si la primera no es menor, copia seis bytes
+C 0xa7a5 Byte a byte
+C 0xa7a9 Con acarreo, la primera es menor
+C 0xa7aa Iguales: sigue comparando
+C 0xa7ac Origen
+C 0xa7af Destino
+C 0xa7b2 Seis bytes
+
+L 0xA8D8 mira_la_baldosa  Lee la baldosa de la VRAM y solo actua con las de 0xB0 a 0xB3
+C 0xa8d8 Lee la casilla
+C 0xa8db Por debajo de 0xB0 no vale
+C 0xa8de Y de 0xB4 para arriba tampoco
+C 0xa8e4 Lo que toque hacer con ella
+
+L 0xA976 acaba_la_pausa  Cuando la cuenta llega a cero, quita la bandera y repone el paso
+C 0xa979 Cuenta atras
+C 0xa97d Todavia no
+C 0xa97f Quita la bandera de ocupado
+C 0xa984 Paso base, seis
+C 0xa98a Y repone el sentido guardado
+
+L 0xA990 prepara_el_dibujo  Calcula un desplazamiento por ocho y deja un par de dibujos en BC
+C 0xa991 El indice
+C 0xa996 Por ocho
+C 0xa999 Se guarda
+C 0xa99d El par de dibujos
+
+L 0xAA4F apunta_la_casilla  Guarda la casilla de delante y prueba las dos de al lado
+C 0xaa4f Un NOP
+C 0xaa51 La posicion
+C 0xaa54 A casilla del mapa
+C 0xaa57 Se guarda
+C 0xaa60 El sentido
+C 0xaa63 0xFF quiere decir "hacia atras"
+C 0xaa66 Dos casillas mas alla
+
+L 0xAC48 esta_en_la_franja  Devuelve sin acarreo si B cae en la franja de 0x30 a 0x50
+C 0xac48 Sin interrupciones
+C 0xac4c Cuarenta y ocho por delante
+C 0xac4f Por encima: fuera
+C 0xac50 Ochenta de ventana
+C 0xac53 Por debajo: fuera
+
+L 0xAC80 arranca_el_movimiento  Cada tantos pasos, si esta en el estado 1, elige el dibujo del tramo
+C 0xac83 Cuenta atras
+C 0xac84 Todavia no
+C 0xac87 El periodo, que se recarga
+C 0xac8b El estado
+C 0xac8e Solo el 1
+C 0xac91 La posicion
+C 0xac94 En que tramo cae
+C 0xac9b Un dibujo para un tramo...
+C 0xac9f ...y otro para el otro
+
+L 0xAD12 avanza_y_mira_los_topes  Suma el paso y comprueba los dos extremos
+C 0xad12 La posicion
+C 0xad15 El paso
+C 0xad19 Avanza
+C 0xad20 Tope de arriba
+C 0xad24 Y tope de abajo
+
+L 0xAD34 sortea_el_giro  Una de cada dos veces mira si hay que dar la vuelta
+C 0xad34 El dado
+C 0xad37 Solo 0 y 1 siguen
+C 0xad3c La posicion
+C 0xad3f En que tramo cae
+C 0xad42 0xFF: no hay tramo
+C 0xad45 El sentido
+C 0xad4c Da la vuelta
+C 0xad51 Y el dibujo que le toca
+
+L 0xADFD monta_la_caida  Coloca el par 0xC2C2 y pasa al estado 5
+C 0xadfd El par de dibujos
+C 0xae0a El sprite y el banco
+C 0xae0d Lo pinta
+C 0xae13 Estado 5
+
+L 0xAEA6 elige_el_sprite_del_tramo  Cada tres pasos, un numero de sprite u otro segun el tramo
+C 0xaea9 Cuenta atras
+C 0xaeac Se recarga a 3
+C 0xaeb2 El tramo
+C 0xaeb6 Sprite y banco de un tramo...
+C 0xaebb ...y del otro
+
+L 0xAEBD pinta_los_dos_planos  Sube los dos planos y avanza el dibujo
+C 0xaebe Primer plano
+C 0xaec2 El dibujo en curso
+C 0xaec7 Segundo plano
+C 0xaeca Dos registros mas atras
+C 0xaecf Guarda el dibujo nuevo
+
+L 0xAFB8 arranca_si_esta_parado  Con el estado 0, pinta y pasa al estado 1
+C 0xafbe El estado
+C 0xafc2 Si no es cero, ya esta en marcha
+C 0xafc4 El dibujo en curso
+C 0xafc8 Banco 1
+C 0xafca Numero de sprite
+C 0xafcd Lo pinta
+C 0xafd5 Estado 1
+
+L 0xB020 estado_dos_del_movil  Si esta en la franja, se para; si no, elige el paso
+C 0xb020 Solo si el estado es 2
+C 0xb024 La bandera de fase
+C 0xb02b Mira si el jugador esta en la franja
+C 0xb02e Lo esta: se queda
+C 0xb031 Estado 0
+C 0xb039 El tramo
+C 0xb03d Un paso para un tramo...
+C 0xb041 ...y otro para el otro
+
+L 0xB07D anima_entre_diez_y_veinticuatro  Cada dos pasos avanza el dibujo dentro de su ciclo
+C 0xb07d Solo si el estado es 1
+C 0xb081 Cuenta atras
+C 0xb087 Se recarga a 2
+C 0xb08c Principio del ciclo
+C 0xb090 Final del ciclo
+C 0xb094 Y avanza de dos en dos
+
+L 0xB0E1 retrocede_y_cuenta  Resta el paso y, cada dos veces, baja el contador
+C 0xb0e2 Retrocede
+C 0xb0e7 Cuenta atras
+C 0xb0eb Todavia no
+C 0xb0ec Se recarga a 2
+C 0xb0ef Y baja el contador
+
+L 0xB112 retrocede_el_dibujo  Con el estado 2, baja el dibujo de dos en dos hasta 4 o 0x0C
+C 0xb112 Solo si el estado es 2
+C 0xb117 Pinta lo que haya
+C 0xb11a El dibujo en curso
+C 0xb11e Dos menos
+C 0xb122 Un final de ciclo...
+C 0xb126 ...y el otro
+
+L 0xB148 mira_si_choca  Dos comprobaciones seguidas; si las dos fallan, sigue como estaba
+C 0xb14b La primera
+C 0xb14e Tres NOP
+C 0xb153 La bandera de estado
+C 0xb15a La segunda
+C 0xb15d Dos NOP
+
+L 0xB165 pasa_al_estado_tres  Guarda la casilla y elige el dibujo segun el tramo
+C 0xb16a Estado 3
+C 0xb16d La posicion
+C 0xb173 A casilla del mapa
+C 0xb176 Se guarda
+C 0xb179 El tramo
+C 0xb17d Un dibujo para un tramo...
+C 0xb181 ...y otro para el otro
+
+L 0xB256 mira_la_baldosa_2  Como 0xA8D8 pero con la franja de baldosas 0x95 a 0x98
+C 0xb256 Lee la casilla
+C 0xb259 Por debajo de 0x95 no vale
+C 0xb25c Y de 0x99 para arriba tampoco
+C 0xb262 Lo que toque hacer con ella
+
+L 0xB28D pinta_y_cicla_2  Sube el sprite y rebobina entre 0x8E y 0xA6
+C 0xb28d El dibujo en curso
+C 0xb291 Banco 1
+C 0xb293 Numero de sprite
+C 0xb296 Lo pinta
+C 0xb29a Guarda el dibujo nuevo
+C 0xb29d Principio del ciclo
+C 0xb2a1 Y final
+
+L 0xB312 reparte_la_ficha  Cada cuatro pasos mira el tipo de la ficha de 0x80A0
+C 0xb315 Cuenta atras
+C 0xb316 Todavia no
+C 0xb317 Se recarga a 4
+C 0xb319 El tipo
+C 0xb31d Cero: la rutina general
+C 0xb321 Tipo 1: reinicia el juego
+C 0xb325 Y cualquiera que no sea el 2, tambien
+
+L 0xB350 pinta_una_columna  Sube B sprites, cada uno dieciseis pixeles por debajo del anterior
+C 0xb354 Dieciseis pixeles de separacion
+C 0xb359 Otro sprite
+C 0xb35c Sube 0x40, o sea cuatro sprites
+C 0xb35f Y se corre dieciseis a la derecha
+C 0xb365 Cuatro mas
+
+L 0xB373 avanza_la_ficha  Suma el paso y, cada dos pasos, sube el numero de dibujo hasta nueve
+C 0xb376 El paso
+C 0xb37a Avanza
+C 0xb37e Cuenta atras
+C 0xb381 Se recarga a 2
+C 0xb386 Sube el dibujo
+C 0xb388 Al llegar a nueve...
+C 0xb38d ...la ficha se apaga
+
+L 0xB393 parpadea_el_par  Cada dieciseis pasos alterna entre dos parejas de sprites
+C 0xb396 Cuenta atras
+C 0xb399 Se recarga a 16
+C 0xb39b El interruptor
+C 0xb39e Lo cambia de valor
+C 0xb3a4 Una pareja...
+C 0xb3a9 ...o la otra
+
+L 0xB3AC pinta_el_par  Sube los dos sprites de la pareja, cada uno con su numero
+C 0xb3ad Numero del primero
+C 0xb3af Banco 2
+C 0xb3b8 Numero del segundo
+C 0xb3ba Lo pinta
+
+L 0xB3C0 avanza_dentro_de_la_pista  Suma el paso y comprueba los dos bordes de la pista
+C 0xb3c3 El paso
+C 0xb3c7 Avanza
+C 0xb3c9 Borde de abajo
+C 0xb3cd Y borde de arriba
+C 0xb3d1 El dado
+C 0xb3d4 Solo el 0 sigue
+
+L 0xB55D recorre_diez_en_diez  Llama B veces a 0xB56E, avanzando de diez en diez
+C 0xb55f Una vuelta
+C 0xb564 Diez bytes por elemento
+C 0xb568 El siguiente
+
+L 0xB590 escribe_y_apunta_el_patron  Escribe la casilla de abajo y calcula donde vive su patron
+C 0xb590 Una fila mas abajo
+C 0xb595 WRTVRM
+C 0xb59c Por ocho: ocho bytes por patron
+C 0xb59f La tabla de patrones del segundo tercio
+C 0xb5a2 La fila por la que va
+C 0xb5a7 Ocho filas
+
+L 0xB5A9 desplaza_el_patron  Rota las ocho filas del patron una posicion
+C 0xb5aa Lee la fila
+C 0xb5ae La escribe corrida
+C 0xb5b2 Otra fila
+C 0xb5b4 La ultima queda a cero
+C 0xb5b8 El contador de filas
+C 0xb5bd Al llegar a dieciseis, se acabo
+
+L 0xB728 escribe_cuatro_casillas  Escribe las cuatro casillas del bloque de dos por dos
+C 0xb728 La casilla de arriba a la izquierda
+C 0xb72f La de al lado
+C 0xb732 0x1F: hasta la fila de abajo
+C 0xb73a Y la ultima
+
+L 0xB75F cuenta_para_el_aviso  Con la bandera puesta, cada dieciseis pasos escribe el aviso
+C 0xb75f La bandera
+C 0xb763 Sin ella no hay aviso
+C 0xb767 Cuenta atras
+C 0xb769 Se recarga a 16
+C 0xb76b La posicion
+C 0xb76e El dibujo del aviso
+
+L 0xB78E para_si_esta_en_la_franja  Con el estado 1, se para si el jugador esta en la franja
+C 0xb78f El estado
+C 0xb792 Solo el 1
+C 0xb795 Mira la franja
+C 0xb798 Esta dentro: no se para
+C 0xb79c Estado 0
+C 0xb79f Y la cuenta a cero
+
+L 0xB7C0 anima_cada_seis  Con el estado 2, cambia de dibujo cada seis pasos
+C 0xb7c0 Solo si el estado es 2
+C 0xb7c4 Cuenta atras
+C 0xb7ca Se recarga a 6
+C 0xb7cc El tramo
+C 0xb7d0 Sprite y banco de un tramo...
+C 0xb7d5 ...y del otro
+
+L 0xB8E6 arranca_el_movil_2  Cada tantos pasos pasa del estado 1 al 2 y elige el dibujo del tramo
+C 0xb8e9 Cuenta atras
+C 0xb8ea Todavia no
+C 0xb8ed El periodo, que se recarga
+C 0xb8f1 El estado
+C 0xb8f4 Solo el 1
+C 0xb8f9 Estado 2
+C 0xb8fc En que tramo esta
+C 0xb903 Un dibujo para un tramo...
+C 0xb907 ...y otro para el otro
+
+L 0xB913 estado_dos_del_movil_2  Cada seis pasos avanza el dibujo dentro de su ciclo
+C 0xb913 Solo si el estado es 2
+C 0xb917 La bandera de fase
+C 0xb91e Cuenta atras
+C 0xb924 Se recarga a 6
+C 0xb926 El dibujo en curso
+C 0xb929 Final del ciclo
+C 0xb92d Rebobina
+
+L 0xB9B8 monta_el_recorrido  Guarda el periodo viejo y pone los contadores del recorrido
+C 0xb9bb El periodo en curso
+C 0xb9be Se guarda para luego
+C 0xb9c2 Y la bandera de sentido a cero
+C 0xb9c7 Periodo nuevo, dos
+C 0xb9cc Cuenta a uno
+C 0xb9d4 Y nueve pasos
+
+L 0xB9DA retrocede_y_cuenta_2  Resta el paso y, cuando las dos cuentas se agotan, sortea
+C 0xb9da Solo si el estado es 1
+C 0xb9e3 Retrocede
+C 0xb9ea Cuenta atras
+C 0xb9ee Se recarga a 2
+C 0xb9f2 Y la cuenta larga
+C 0xb9fb El dado
+C 0xb9fd Solo de 0x30 para arriba sigue
+
+L 0xBA05 avanza_si_cabe  Prueba la posicion siguiente y, si no cabe, cambia de cuenta
+C 0xba05 La bandera de sentido
+C 0xba0c La posicion
+C 0xba0f El paso
+C 0xba13 Mira si cabe
+C 0xba16 No cabe
+C 0xba1b Cuenta atras
+C 0xba1f Se recarga a 2
+
+L 0xBA44 busca_el_tramo_por_debajo  Recorre la tabla hasta encontrar el tramo que queda por debajo de la X del jugador
+C 0xba44 La X del jugador
+C 0xba48 La posicion
+C 0xba4b Menos el limite del tramo
+C 0xba4d Con acarreo: este es el tramo
+C 0xba4f Dos bytes por entrada
+C 0xba53 Ninguno vale: devuelve 1
+
+L 0xBA72 vuelve_al_periodo_viejo  Si cabe, repone el periodo que 0xB9B8 habia guardado
+C 0xba75 El paso
+C 0xba79 Mira si cabe
+C 0xba7c No cabe
+C 0xba80 Bandera de sentido a cero
+C 0xba83 El periodo guardado
+C 0xba89 Y se repone
+
+L 0xBA9D busca_el_tramo_por_encima  El gemelo de 0xBA44 para el otro sentido
+C 0xba9d La X del jugador
+C 0xbaa1 La posicion
+C 0xbaa4 Mas el limite del tramo
+C 0xbaa6 Sin acarreo: este es el tramo
+C 0xbaa8 Dos bytes por entrada
+C 0xbaac Ninguno vale: devuelve 8
+
+L 0xBAB5 mira_las_dos_alturas  Con el estado 2, prueba la casilla y la de dieciseis pixeles mas alla
+C 0xbab8 Solo el estado 2
+C 0xbabe La primera prueba
+C 0xbac1 Un NOP
+C 0xbac4 La posicion
+C 0xbac7 Dieciseis pixeles mas alla
+C 0xbad1 Otro NOP
+
+L 0xBADD mira_las_dos_alturas_2  Lo mismo con la bandera de 0x8050
+C 0xbadd La bandera
+C 0xbae0 Solo el valor 2
+C 0xbae6 La posicion
+C 0xbae9 Dieciseis pixeles mas alla
+
+L 0xBAF1 anima_tres_sprites  Con el estado 2, mueve tres sprites a la vez y cicla entre 0x8E y 0xA6
+C 0xbaf1 Solo si el estado es 2
+C 0xbaf5 La posicion
+C 0xbaf8 Ocho pixeles a un lado
+C 0xbafc Numero del primer sprite
+C 0xbb05 Banco 1
+C 0xbb09 Lo pinta
+C 0xbb0e El segundo, dos registros mas alla
+C 0xbb14 Guarda el dibujo nuevo
+C 0xbb17 Final del ciclo
+C 0xbb1b Y principio
+
+L 0xBB20 monta_la_caida_2  Coloca los tres sprites de la caida y pasa al estado 5
+C 0xbb20 Estado 5
+C 0xbb27 Cuenta a cero
+C 0xbb2c El par de dibujos
+C 0xbb32 La posicion
+C 0xbb35 Ocho pixeles abajo...
+C 0xbb39 ...y ocho a un lado
+C 0xbb44 El sprite y el banco
+C 0xbb47 Lo pinta
+
+L 0xBB60 mueve_al_bicho_de_la_ficha  Anima al bicho y, si la ficha lo pide, lo desplaza
+C 0xbb60 Primero el bicho de siempre
+C 0xbb63 El campo de la ficha que enciende esto
+C 0xbb67 Apagado: nada
+C 0xbb68 Vector de sonido
+C 0xbb6e Cuenta atras
+C 0xbb70 El periodo, que se recarga
+C 0xbb77 El paso
+C 0xbb7b Avanza
+C 0xbb7c Un tope...
+C 0xbb82 ...y el otro
+
+L 0xBBA2 mira_si_toca_al_de_la_ficha  Ventana de 16x8 alrededor del jugador
+C 0xbba2 La X del jugador
+C 0xbba5 La del bicho
+C 0xbba8 Ocho pixeles por delante
+C 0xbbac Dos NOP
+C 0xbbae Dieciseis de ventana
+C 0xbbb3 Y ahora la Y
+C 0xbbb6 Cuarenta por arriba
+C 0xbbba Ocho de ventana
+C 0xbbbe Se quita la vuelta de la pila: no se vuelve a quien llamo
+C 0xbbc4 El sentido decide con que sprite se pinta
+
+L 0xBC3F pinta_cuatro_sprites  Sube cuatro sprites seguidos con la misma pareja
+C 0xbc3f Numero del primero
+C 0xbc41 El par de dibujos, banco 2
+C 0xbc4e El dibujo en curso
+C 0xbc5b Cuatro sprites
+
+L 0xBC6B cuenta_y_alterna  Cada diez pasos y cada tres, alterna entre 0x8E y 0xD4
+C 0xbc6d Cuenta atras larga
+C 0xbc71 Se recarga a 10
+C 0xbc76 Cuenta atras corta
+C 0xbc79 Se recarga a 3
+C 0xbc7e El dibujo en curso
+C 0xbc81 Si es 0x8E...
+C 0xbc83 ...pasa a 0xD4...
+C 0xbc87 ...y si no, al reves
+
+L 0xBCB6 mira_si_esta_debajo  Con la bandera a 2, compara la posicion con la del jugador
+C 0xbcb6 La bandera
+C 0xbcb9 Solo el valor 2
+C 0xbcbc La posicion
+C 0xbcc2 Ocho pixeles de margen
+C 0xbcc6 La otra coordenada
+C 0xbcc9 El limite
+C 0xbcd4 Cuenta atras
+
+L 0xBD33 pinta_cuatro_filas  Escribe cuatro filas del mapa, la de arriba, la de en medio y la de abajo
+C 0xbd34 Una fila por encima del mapa
+C 0xbd3a El principio del mapa
+C 0xbd40 Una fila por debajo
+C 0xbd46 Y otra vez la de en medio
+C 0xbd4d Otra vuelta
+
+L 0xBDC6 pinta_al_azar  Sortea una casilla y escribe en ella una pareja de la tabla de DE
+C 0xbdc6 El dado
+C 0xbdc9 Repite hasta sacar uno menor que B
+C 0xbdcc CCF + RLCA: por dos, con el bit de abajo a cero
+C 0xbdd3 La entrada de la tabla
+C 0xbdd4 La baldosa
+C 0xbdd6 Y su acompanante
+C 0xbdd8 WRTVRM
+
+L 0xBE15 monta_el_final  Se trae una banda de la VRAM y escribe las tres franjas del cierre
+C 0xbe16 Una fila
+C 0xbe19 LDIRMV: de la VRAM a la memoria
+C 0xbe1c Siguiente fila
+C 0xbe21 Otra vuelta
+C 0xbe26 La posicion de partida del cierre
+C 0xbe2c Veinticuatro filas hacia un lado...
+C 0xbe33 ...siete hacia el otro...
+C 0xbe3a ...y siete de vuelta
+C 0xbe44 Una espera
+C 0xbe49 Y catorce mas
+
+L 0xBE60 sube_una_fila_si_cabe  Sube una fila a la VRAM solo si la direccion esta por debajo de 0x1800
+C 0xbe65 El limite de la tabla de nombres
+C 0xbe68 RST 20h = DCOMPR: compara HL con DE
+C 0xbe6a Por encima: no se sube
+C 0xbe6d Una fila
+C 0xbe70 LDIRVM
+
+L 0xBE73 avanza_la_fila  Suma 32 al origen y al destino y repite
+C 0xbe74 Una fila
+C 0xbe7d Otra vuelta
+C 0xbe7f Una espera
+C 0xbe85 La posicion
+C 0xbe88 El sentido
+C 0xbe8b Hacia abajo...
+C 0xbe91 ...o hacia arriba (0xFFE0 es -32)
+
+L 0xBF20 pinta_y_mira_los_cuatro_hitos  Pinta y, en cuatro dibujos concretos, llama a 0xBF40
+C 0xbf20 Lo pinta
+C 0xbf27 Primer hito
+C 0xbf2c Segundo
+C 0xbf31 Tercero
+C 0xbf36 Y cuarto
+
+L 0xC251 monitor_prepara_la_pantalla  Limpia, escribe el titulo y se pone a pedir ordenes
+C 0xc251 Bandera de estado a cero
+C 0xc254 La pila del monitor
+C 0xc259 Bandera de modo, 2
+C 0xc25c Posicion de partida en la VRAM
+C 0xc262 El numero de casillas que va a limpiar
+C 0xc265 Sin interrupciones para escribir en el VDP
+C 0xc266 Pone la direccion en el VDP
+C 0xc269 0x78 = 120 casillas
+C 0xc26b El espacio
+
+L 0xC26D monitor_borra_la_linea  Escribe 120 espacios seguidos por el puerto de datos del VDP
+C 0xc26d Puerto de datos del VDP
+C 0xc26f Ciento veinte veces
+C 0xc271 Y vuelven las interrupciones
+C 0xc275 El caracter de aviso
+C 0xc277 Lo imprime
+C 0xc27a Lee la linea que se teclee
+C 0xc280 Baja la bandera de eco
+C 0xc288 El caracter tecleado
+C 0xc289 RES 5 lo pasa a mayusculas
+C 0xc28d La tabla de ordenes... que en esta cinta esta a ceros
+C 0xc290 Quince ordenes
+
+L 0xC2D1 monitor_recoge_la_linea  Va guardando lo tecleado hasta el retorno de carro
+C 0xc2d3 Retorno de carro: linea terminada
+C 0xc2d7 Borrado
+C 0xc2db Otro borrado
+C 0xc2e0 Si no cabe mas, no se guarda
+C 0xc2e3 Guarda el caracter
+C 0xc2e7 Y lo imprime
+
+L 0xC352 monitor_elige_la_base  Segun la letra final, la base es 10, 16 u 8
+C 0xc353 El caracter
+C 0xc35a Base diez por defecto
+C 0xc35c Por debajo de la 'A' es un digito
+C 0xc361 'D': decimal
+C 0xc365 Base dieciseis
+C 0xc367 'H': hexadecimal
+C 0xc36b Base ocho
+C 0xc36d 'O': octal
+
+L 0xC386 monitor_multiplica_por_la_base  Suma B veces y anade el digito
+C 0xc386 Suma la base
+C 0xc387 Desbordamiento
+C 0xc389 B veces
+C 0xc38b El digito
+C 0xc38f Desbordamiento
+
+L 0xC3A8 monitor_lee_un_numero  Prepara el acumulador y mira si el numero lleva signo
+C 0xc3a8 Guarda la pila
+C 0xc3ac Acumulador a cero
+C 0xc3b5 El signo, por defecto '+'
+C 0xc3b9 Un '+'
+C 0xc3bd Un '-'
+C 0xc3c1 Y se apunta
+
+L 0xC3D3 monitor_cierra_el_numero  Devuelve el numero si no habia signo ni digitos pendientes
+C 0xc3d5 El signo
+C 0xc3d9 Los digitos
+C 0xc3dd El resultado
+
+L 0xC418 monitor_salta_hasta_el_separador  Avanza hasta el ';', el ')' o la coma
+C 0xc418 El caracter
+C 0xc419 Por debajo del espacio, se acabo
+C 0xc41c Punto y coma
+C 0xc420 Parentesis
+C 0xc424 Coma
+C 0xc428 Sigue buscando
+
+L 0xC4A9 monitor_arranca  Pone a cero sus banderas y su area de trabajo
+C 0xc4ac Posicion de la ventana
+C 0xc4b2 Banderas a cero
+C 0xc4ba Y la de eco a uno
+C 0xc4bd El area de registros
+C 0xc4c0 Veinte bytes
+
+L 0xC4C2 monitor_escribe_la_cabecera  Borra el area y escribe "MONITEUR MSX" y los creditos
+C 0xc4c2 Un byte a cero
+C 0xc4c5 Los veinte
+C 0xc4c7 "MONITEUR MSX"
+C 0xc4cd Un espacio
+C 0xc4d2 La direccion de su propio principio, en hexadecimal
+C 0xc4d8 El siguiente texto
+C 0xc4e4 Retorno de carro
+C 0xc4e9 "Auteur:Claude SABLATOU"
+C 0xc4ef "Copyright (C) 1984 LORICIELS"
+C 0xc4fa El limite de memoria
+C 0xc500 Veinticuatro registros
+
+L 0xC517 monitor_lee_dos_parametros  Lee un parametro y, si hay coma, el segundo
+C 0xc517 El sufijo del primero
+C 0xc51a Su valor
+C 0xc51e Por defecto, 0xFFFF
+C 0xc522 Retorno de carro: solo habia uno
+C 0xc526 Y si no hay coma, la orden esta mal
+C 0xc52c El segundo valor
+
+L 0xC550 monitor_avanza_por_la_lista  Suma el tamano leido a IX y sigue con el siguiente
+C 0xc550 El tamano de lo ultimo leido
+C 0xc556 Avanza IX
+C 0xc558 Al desbordar, se vuelve al aviso
+C 0xc55c Los que queden
+C 0xc55e La bandera de eco
+C 0xc561 El bit 3 decide si se hace una pausa
+
+L 0xC582 monitor_escribe_los_bytes  Escribe B bytes en hexadecimal separados por espacios
+C 0xc582 Un espacio
+C 0xc587 El byte
+C 0xc588 En hexadecimal
+C 0xc58c Los que queden
+C 0xc58e El tamano
+C 0xc591 Cuatro menos, cambiado de signo
+C 0xc596 Por tres: tres columnas por byte
+
+L 0xC5DE monitor_prueba_varias_direcciones  Cuatro comprobaciones seguidas sobre la pila guardada
+C 0xc5de La pila del programa detenido
+C 0xc5e4 La primera
+C 0xc5ef La segunda
+C 0xc5f4 La tercera
+C 0xc601 Y la cuarta
+
+L 0xC617 monitor_pone_un_punto_de_parada  Guarda los tres bytes originales y escribe encima un CALL 0xC924
+C 0xc617 La direccion del punto de parada
+C 0xc61e Tres bytes: los que ocupa un CALL
+C 0xc621 Se guardan para poder deshacerlo
+C 0xc626 La direccion en curso
+C 0xc631 La entrada del monitor
+C 0xc634 El opcode de CALL
+C 0xc637 Y su direccion, byte a byte
+
+L 0xC63F monitor_devuelve_el_mando  Repone los diez registros del programa detenido y se va
+C 0xc642 La direccion de vuelta
+C 0xc645 Se escribe ENCIMA del operando del JP de 0xC65E: codigo que se modifica solo
+C 0xc648 La pila donde estan los registros guardados
+C 0xc64b Los diez, en orden inverso al que los metio 0xC924
+C 0xc659 Y la pila del programa
+C 0xc65e Salta a donde se quedo. El operando lo acaba de escribir 0xC645
+
+L 0xC691 monitor_busca_el_igual  Avanza hasta el '=', contando de cuatro en cuatro
+C 0xc692 El caracter
+C 0xc693 Un '='
+C 0xc699 Cuatro por nombre de registro
+C 0xc69d Si aqui tampoco hay '=', la orden esta mal
+
+L 0xC6A2 monitor_apunta_al_registro  Calcula donde vive el registro y le escribe el valor
+C 0xc6a3 Doce registros
+C 0xc6a6 Por dos: son palabras
+C 0xc6aa El area de registros guardados
+C 0xc6ae Y el que toca
+C 0xc6b0 El valor tecleado
+C 0xc6b3 Se escribe, byte bajo...
+C 0xc6b8 ...y byte alto
+
+L 0xC6D7 monitor_lee_una_lista  Lee valores separados por comas y los va escribiendo
+C 0xc6d8 Retorno de carro: se acabo la lista
+C 0xc6dd Coma
+C 0xc6df Sin coma, la orden esta mal
+C 0xc6e3 El valor
+C 0xc6e7 Tiene que caber en un byte
+C 0xc6eb Se escribe
+C 0xc6f1 El siguiente
+C 0xc6f4 Y al final, retorno de carro
+
+L 0xC710 monitor_busca_el_byte  Recorre la memoria con CPIR buscando el patron
+C 0xc710 El byte que se busca
+C 0xc713 CPIR: busca hasta encontrarlo o agotar BC
+C 0xc715 No esta
+C 0xc717 Cuantos bytes tiene el patron
+C 0xc71b Uno solo: ya esta
+C 0xc720 El resto del patron
+
+L 0xC75A monitor_recorre_paginas  Avanza de 128 en 128 hasta el limite
+C 0xc75d La bandera de eco
+C 0xc760 El bit 3 dice si se sigue
+C 0xc764 0x80 = 128 bytes
+C 0xc768 Al desbordar, se vuelve al aviso
+C 0xc76b El limite
+C 0xc76f Se compara
+
+L 0xC781 monitor_coloca_el_cursor  De la direccion en IX saca fila y columna de la pantalla
+C 0xc784 Los bits 3 a 6 dan la fila
+C 0xc787 Divididos por ocho
+C 0xc78d Los tres de abajo, la columna
+C 0xc790 Por tres: tres columnas por byte
+C 0xc792 Y seis de margen
+C 0xc795 El desplazamiento de la ventana
+
+L 0xC7C3 monitor_mueve_el_cursor_a_la_izquierda  Con la tecla 0x1D, retrocede una posicion
+C 0xc7c6 El caracter que habia debajo
+C 0xc7d1 Quita el bit alto de la direccion
+C 0xc7d3 0x1D es la flecha a la izquierda
+C 0xc7d7 Mira si se puede
+C 0xc7dc Ya esta en el principio
+C 0xc7e0 Una posicion atras
+
+L 0xC7E8 monitor_mueve_el_cursor_a_la_derecha  Y con la otra flecha, avanza
+C 0xc7e8 Mira si se puede
+C 0xc7f0 Quita el bit alto
+C 0xc7f3 El final de la linea
+C 0xc7f7 Una posicion adelante
+
+L 0xC83C monitor_mezcla_el_nibble  Segun la mitad que se este editando, combina el digito con el byte
+C 0xc83f El byte que hay
+C 0xc843 Que mitad se edita
+C 0xc84a Por dieciseis: el digito va arriba
+C 0xc850 Y se conserva la mitad baja
+
+L 0xC862 monitor_escribe_el_byte_y_su_ascii  Imprime el byte y, al lado, su caracter
+C 0xc862 Donde escribir
+C 0xc866 El byte
+C 0xc869 En hexadecimal
+C 0xc870 Los tres bits de abajo, la columna
+C 0xc872 Mas 0x1E: la columna del ASCII
+C 0xc878 Por debajo del espacio no es imprimible
+C 0xc87c Se pone un punto
+
+L 0xC8BE monitor_escribe_un_registro  Pinta el nombre, los dos puntos y el valor
+C 0xc8be El caracter del nombre
+C 0xc8c4 Los dos puntos
+C 0xc8c9 El valor, byte bajo...
+C 0xc8cc ...y byte alto
+C 0xc8cf En hexadecimal
+C 0xc8d2 Cuatro digitos
+
+L 0xC8F1 monitor_lee_registro_igual_valor  Lee "N=valor" y lo escribe en el registro N
+C 0xc8f1 El caracter
+C 0xc8f2 Retorno de carro: se acabo
+C 0xc8f6 De ASCII a numero
+C 0xc8f8 No es un digito
+C 0xc8fb Y tiene que ser menor que diez
+C 0xc900 Por dos: son palabras
+C 0xc904 Detras tiene que ir un '='
+C 0xc90c El area de registros
+C 0xc90f El que toca
+C 0xc914 Sin valor detras, se pone cero
+C 0xc919 El valor tecleado
+
+L 0xC95F monitor_quita_los_puntos_de_parada  Repone los tres bytes que guardo 0xC617
+C 0xc95f La direccion, byte bajo...
+C 0xc962 ...y byte alto
+C 0xc968 Tres bytes
+C 0xc96b Se reponen
+C 0xc96f El siguiente punto
+
+L 0xC9B6 monitor_conmuta_las_interrupciones  Escribe "Interruptions" y alterna entre las dos palabras
+C 0xc9b6 Donde escribir
+C 0xc9bc "Interruptions "
+C 0xc9c2 El byte que guarda el estado; esta DENTRO del codigo de 0xC65D
+C 0xc9c5 Lo cambia de valor
+C 0xc9ca "interdites"...
+C 0xc9cf ...o "autorisees"
+
+L 0xC9D8 monitor_cabecera_del_volcado  Escribe "ADRESSES" y la direccion de la linea
+C 0xc9dc Al principio de la linea
+C 0xc9e2 "ADRESSES "
+C 0xc9ea La direccion, en hexadecimal
+C 0xc9ed " A "
+C 0xc9f6 Mas 0x7F: la ultima de la linea
+C 0xc9fc Once espacios
+
+L 0xC9FE monitor_espacios  Escribe B espacios y despues la cabecera del ASCII
+C 0xc9fe Un espacio
+C 0xca03 Los que queden
+C 0xca05 "ASCII  "
+C 0xca0b La bandera de eco
+C 0xca0e El bit 3 decide si hay salto de linea
+C 0xca17 Dieciseis lineas
+
+L 0xCA28 monitor_volcado_en_hexadecimal  Ocho bytes en hexadecimal, separados por espacios
+C 0xca28 El byte
+C 0xca29 En hexadecimal
+C 0xca2d Un espacio
+C 0xca33 Los que queden
+C 0xca36 Vuelve ocho atras: ahora toca el ASCII
+C 0xca39 Ocho otra vez
+
+L 0xCA42 monitor_volcado_en_ascii  Los mismos ocho bytes, como caracteres
+C 0xca42 Lo imprime
+C 0xca47 Los que queden
+C 0xca49 La bandera de eco
+C 0xca4c El bit 3 decide si hay salto de linea
+C 0xca53 La linea siguiente
+
+L 0xCA81 monitor_escribe_nombre_y_valor  Imprime C caracteres del nombre y el valor del registro
+C 0xca81 Un caracter del nombre
+C 0xca87 Los que queden
+C 0xca8a Por dos: son palabras
+C 0xca8e El area de registros
+C 0xca92 El valor
+C 0xca96 En hexadecimal
+C 0xca99 Si hay ventana, dos espacios de separacion
+
+L 0xCADE monitor_borra_con_espacios  Escribe espacios por el puerto del VDP hasta agotar BC
+C 0xcade El espacio
+C 0xcae0 Puerto de datos del VDP
+C 0xcae2 Uno menos
+C 0xcae5 Hasta acabar
+C 0xcae7 Y vuelven las interrupciones
+
+L 0xCBB9 monitor_prepara_el_paso_a_paso  Limpia el tampon y copia en el la instruccion que toca ejecutar
+C 0xcbb9 Cuatro bytes a cero...
+C 0xcbc2 La pila del monitor
+C 0xcbc7 Banderas a cero
+C 0xcbcd La direccion del programa detenido
+C 0xcbd7 Cuantos bytes ocupa la instruccion
+C 0xcbdb El tampon donde se va a ejecutar
+
+L 0xCBDE monitor_copia_la_instruccion  Mete los bytes de la instruccion en el tampon
+C 0xcbde Un byte del programa
+C 0xcbe1 Al tampon
+C 0xcbe5 Los que queden
+C 0xcbe7 El tipo de instruccion
+C 0xcbed Tipo 1
+
+L 0xCC04 monitor_arregla_un_call  Si la instruccion era un RST, lo cambia por un CALL
+C 0xcc04 Tipo 3
+C 0xcc08 La bandera
+C 0xcc0e El primer byte del tampon
+C 0xcc11 Los bits que distinguen un RST
+C 0xcc17 El opcode de CALL
+C 0xcc19 Y se pone en su lugar
+
+L 0xCC78 monitor_recupera_el_mando  Igual que 0xC924: guarda los diez registros del programa
+C 0xcc78 Modo de interrupcion 1
+C 0xcc7b La pila del monitor
+C 0xcc7e Los diez registros
+C 0xcc8c Y se vuelve a la del monitor
+C 0xcc99 La bandera del paso a paso
+C 0xcca1 Cuantos bytes ocupaba la instruccion
+C 0xcca5 La direccion de partida
+C 0xcca9 Y la de despues
+
+L 0xCCAE monitor_cierra_el_paso  Deja el PC nuevo y, si era un CALL, arregla la direccion de vuelta
+C 0xccae La direccion siguiente
+C 0xccb4 El tipo de instruccion
+C 0xccb7 Solo el 3 sigue
+C 0xccbb La pila del programa
+C 0xccbe La direccion de partida
+C 0xccc2 Mas tres, que es lo que ocupa el CALL
+C 0xccc5 Y se escribe como vuelta
+
+L 0xC5B6 monitor_imprime_el_resultado  Escribe "Resultat= " y el valor calculado
+C 0xc5b6 El valor tecleado
+C 0xc5ba Detras tiene que ir un retorno de carro
+C 0xc5bc Si no, la orden esta mal
+C 0xc5c0 La ventana de resultados
+C 0xc5c6 El texto "Resultat= "
+C 0xc5cd Y el valor, en hexadecimal
+
+L 0xCCC8 monitor_deshace_el_paso  Con el tipo 4, recupera la pila y la direccion de vuelta
+C 0xccc8 El tipo de instruccion
+C 0xcccb Solo el 4
+C 0xcccf Sin interrupciones para tocar la pila
+C 0xccd0 La pila guardada
+C 0xccd4 La bandera del paso
+C 0xccda La direccion de vuelta que dejo la instruccion
+
+L 0xCCF0 monitor_imprime_un_caracter  Lo saca por la ventana propia o por la pantalla del BASIC
+C 0xccf2 La bandera de eco
+C 0xccf5 El bit 3 elige el destino
+C 0xccf9 Puesto: por la pantalla del BASIC
+C 0xccfc La posicion de la ventana
+C 0xcd00 Retorno de carro
+C 0xcd04 Lo escribe en la VRAM
+C 0xcd07 Una columna mas
+C 0xcd09 Ancho de la ventana, 38
+
+L 0xCD3D monitor_borra_hacia_atras  Escribe un espacio y retrocede una posicion, con vuelta de linea
+C 0xcd3e La posicion de la ventana
+C 0xcd42 El codigo de borrado
+C 0xcd46 Un espacio
+C 0xcd48 Lo escribe
+C 0xcd4b Una columna atras
+C 0xcd4f Al pasarse, a la ultima columna...
+C 0xcd51 ...y una fila arriba
+C 0xcd55 Y si tampoco cabe, a la primera
+
+L 0xCD84 monitor_imprime_en_decimal  Divide por 10000, 1000, 100 y 10 y escribe cada digito
+C 0xcd84 Diez mil
+C 0xcd8a Mil
+C 0xcd90 Cien
+C 0xcd96 Diez
+C 0xcd9c Y lo que queda son las unidades
+C 0xcd9d De numero a ASCII
+C 0xcda2 Un espacio detras
+
+L 0xCDCD monitor_casilla_de_la_ventana  De fila y columna saca la direccion de la VRAM
+C 0xcdce La fila
+C 0xcdd1 Por ocho...
+C 0xcdd6 ...y por cuatro mas, o sea por 40 en total
+C 0xcdd9 Dos de margen
+C 0xcddf Mas la columna
+
+L 0xCDEE monitor_escribe_en_la_ventana  Calcula la casilla y escribe el caracter, con el slot bien puesto
+C 0xcdf0 La casilla
+C 0xcdf4 Sin interrupciones
+C 0xcdf5 Escribe
+C 0xcdf8 El registro de slots
+C 0xcdfa Solo se devuelven las interrupciones si la pagina 0 es la ROM
+
+L 0xCE34 monitor_prepara_el_desensamblado  Limpia la linea y mira el prefijo de la instruccion
+C 0xce34 Un espacio
+C 0xce37 Toda la linea
+C 0xce3d La direccion que se desensambla
+C 0xce41 Dos bytes por defecto
+C 0xce46 El nemonico por defecto; se escribe en 0xD64E, que en esta cinta son datos del juego
+C 0xce4c El primer byte
+C 0xce4f Prefijo CB
+C 0xce53 Prefijo ED
+C 0xce58 Prefijo DD
+C 0xce5c Prefijo FD
+C 0xce60 Sin prefijo: un byte
+
+L 0xCEA3 monitor_busca_el_opcode  Recorre la tabla y decide cuantos operandos lleva
+C 0xcea3 Compara con la tabla
+C 0xcea6 Siguiente entrada
+C 0xcea9 Por encima de 0x7E ya no hay tabla
+C 0xceb4 0x76 es HALT
+C 0xceb8 0x36 es LD (HL),n
+C 0xcebc De 0x40 a 0x77 son los LD r,r'
+C 0xcec8 Los tres bits de abajo dicen el origen
+C 0xceca El 6 es (HL)
+
+L 0xCF1A monitor_salta_por_la_tabla_de_formatos  Elige como imprimir los operandos
+C 0xcf1b El codigo de formato
+C 0xcf1c Copia el nemonico
+C 0xcf21 Por dos: son punteros
+C 0xcf23 La tabla de formatos, que en esta cinta la tapan datos del juego
+C 0xcf29 El puntero
+C 0xcf2e El tampon donde se escribe
+C 0xcf31 Y salta. Con la tabla borrada, este salto va donde diga la ficha de pantalla
+
+L 0xCF37 monitor_copia_el_nemonico  Se trae los cuatro caracteres del nemonico
+C 0xcf39 La tabla de nemonicos
+C 0xcf3c Por cuatro: cuatro letras cada uno
+C 0xcf45 El tampon del nemonico
+C 0xcf48 Cuatro letras
+
+L 0xCF51 monitor_escribe_el_operando  Copia el nombre del registro y, si es un salto, la direccion
+C 0xcf54 La tabla de nombres de registro
+C 0xcf58 Copia una letra
+C 0xcf5a El codigo 6 lleva mas
+C 0xcf5d El nemonico en curso
+C 0xcf65 0x48 es 'H': una direccion
+C 0xcf69 La bandera de prefijo
+C 0xcf6d El byte siguiente...
+C 0xcf72 ...o el anterior, si habia prefijo
+
+L 0xCFA3 monitor_byte_en_hexadecimal  Escribe los dos digitos de un byte
+C 0xcfa5 El digito de abajo
+C 0xcfaa Y por cuatro rotaciones, el de arriba
+C 0xcfae Lo escribe
+
+L 0xCFC0 monitor_nombre_del_par  Saca del opcode el par de registros y copia su nombre
+C 0xcfc0 El opcode
+C 0xcfc3 Los bits 4 y 5 dicen el par
+C 0xcfc5 Divididos por ocho
+C 0xcfcb La tabla de nombres de par, tapada tambien por datos del juego
+C 0xcfcf Dos letras
+
+L 0xDC00 copia_las_tablas_de_pantalla  Se lleva las dos tablas de 0xD000 a la RAM escondida
+C 0xdc00 Sin interrupciones
+C 0xdc01 Seis NOP: aqui habia una conmutacion de slot
+C 0xdc07 Las tablas de pantalla
+C 0xdc0a Destino: 0x7000, en la pagina 1 escondida
+C 0xdc0d 0x900 = 2304 bytes: las dos tablas y las fichas
+C 0xdc12 Y otros seis NOP donde estaba la vuelta
+
+L 0xDCA0 anima_dos_sprites  Cada 32 pasos mueve dos sprites separados seis pixeles
+C 0xdca3 Cuenta atras
+C 0xdca5 Se recarga a 32
+C 0xdca7 El dibujo en curso
+C 0xdcab Banco 2
+C 0xdcad Numero del primero
+C 0xdcb2 Seis mas para el segundo
+C 0xdcb6 Su numero
+C 0xdcbc Diez atras
+C 0xdcbf El paso
+C 0xdcc5 Guarda el dibujo nuevo
+C 0xdcc8 Un final de ciclo...
+C 0xdccc ...y el otro
+
+L 0xDCD9 sube_al_jugador  Cada seis pasos lo sube una fila hasta 0xFF
+C 0xdcdc Cuenta atras
+C 0xdcde Se recarga a 6
+C 0xdce0 Lo pinta
+C 0xdce3 La Y
+C 0xdce6 Ya esta arriba del todo
+C 0xdcea Una fila mas
+C 0xdcf1 Sesenta y cuatro pasos de pausa
+C 0xdcf8 El sprite y el banco
+C 0xdd03 Dibujo de partida
+C 0xdd06 Vector de sonido
+
+L 0xDD0A anima_al_jugador_arriba  Cambia de dibujo cada dos pasos, ciclo hasta 0xD2
+C 0xdd0d Cuenta atras
+C 0xdd10 Se recarga a 2
+C 0xdd14 Banco 1
+C 0xdd16 Numero de sprite
+C 0xdd1f Final del ciclo
+C 0xdd23 Rebobina
+
+L 0xDE3C dibuja_dos_por_dos_en_vram  Escribe las cuatro casillas del bloque directamente en la VRAM
+C 0xde3c La posicion
+C 0xde3f La primera baldosa
+C 0xde42 0x1F: hasta la fila de abajo
+C 0xde49 La siguiente, de dos en dos
+C 0xde4f Y la de la fila de abajo
+
+L 0xDE7B baja_una_fila  Con el estado 1, baja una fila y mira que hay dos filas mas abajo
+C 0xde7c El estado
+C 0xde7f Solo el 1
+C 0xde88 Una fila
+C 0xde8f Se redibuja
+C 0xde95 0x40 = dos filas
+C 0xde99 Lee la casilla
+C 0xde9c Por debajo de 0x0A esta libre
+
+L 0xDEC4 elige_el_lado  Al chocar, sortea si sigue por la izquierda o por la derecha
+C 0xdec4 Casilla vacia: sigue
+C 0xdecb Vector de sonido
+C 0xded0 Estado 2
+C 0xded3 El dado
+C 0xded6 Mitad y mitad
+C 0xded8 A la derecha...
+C 0xdedd ...o a la izquierda
+
+L 0xDEE7 avanza_de_lado  Con el estado 2, se mueve el paso guardado y mira los dos topes
+C 0xdee7 Solo si el estado es 2
+C 0xdef1 El paso
+C 0xdef6 Guarda la posicion
+C 0xdef9 Se redibuja
+C 0xdf00 El primer tope...
+C 0xdf06 ...y el segundo
+
+L 0xDF9D mira_si_esta_en_la_trampa  Solo las baldosas de 0x7B a 0x7E cuentan
+C 0xdf9d Lee la casilla
+C 0xdfa0 Por debajo de 0x7B no vale
+C 0xdfa3 Y de 0x7F para arriba tampoco
+C 0xdfa9 Estado 3
+C 0xdfae Treinta y dos pasos de cuenta
+C 0xdfb6 El dibujo de la trampa
+C 0xdfbe Dos POP: no se vuelve a quien llamo, sino dos niveles mas arriba
+
+L 0x81CF desplaza_a_la_derecha  Prepara el desplazamiento: origen la VRAM, destino el tampon de 0x5700
+C 0x81d1 Origen: la tabla de nombres de la VRAM
+C 0x81d4 Destino: el tampon de la RAM escondida
+C 0x81d7 Veinte filas
+
+L 0x8225 desplaza_a_la_izquierda  Igual pero con el tampon corrido una casilla
+C 0x8227 Origen: la tabla de nombres de la VRAM
+C 0x822a Destino: el tampon, una casilla mas alla
+C 0x822d Veinte filas
+
+L 0x83F1 cuenta_atras  El cuerpo del bucle de espera: descuenta BC hasta cero
+C 0x83f1 Uno menos
+C 0x83f4 Hasta agotar la cuenta
+
+L 0x8473 avanza_y_espera  Guarda el dato, adelanta al jugador una posicion y espera
+C 0x8473 Se escribe ENCIMA de un operando de 0x8457
+C 0x8476 La posicion del jugador
+C 0x847d Una espera corta
+
+L 0x8488 mira_si_se_acabo  Con L a cero, apaga el sonido; si no, vuelve a empezar
+C 0x8489 El contador que trae la pila
+C 0x848b A cero: se acabo
+C 0x848d Se reinicia
+
+L 0x84BC apaga_la_partitura  Baja el interruptor y calla el canal C
+C 0x84bd El interruptor de la partitura
+C 0x84c0 Registro 7 del PSG: el mezclador
+C 0x84c2 0xBF cierra el canal C
+
+L 0x84E4 monta_la_segunda_escena  Sube los graficos, pone al jugador y descomprime su mapa
+C 0x84e4 La tabla de 0xDB00
+C 0x84ea Borra los sprites
+C 0x84ed Posicion del jugador
+C 0x84f3 El mapa de esta escena
+C 0x84f9 El sprite y el banco
+
+L 0x8508 lee_un_codigo_2  El otro descompresor, igual que el de 0x81A6
+C 0x8508 El byte del mapa
+C 0x850a INC A pone Z si el byte era 0xFF
+C 0x850b No es 0xFF: baldosa suelta
+C 0x850d C = la baldosa que se repite
+C 0x850f B = cuantas veces
+
+L 0x8533 pinta_la_escena  Pone al jugador, su sprite y la musica en marcha
+C 0x8533 Lo pinta
+C 0x8536 Numero de sprite
+C 0x853e La musica
+C 0x8541 Y la bandera de abandono a cero
+
+L 0x85E3 escena_uno  La primera escena: posicion, paso y estado 2 del parpadeo
+C 0x85e3 Solo si el estado es 1
+C 0x85e6 La posicion de partida
+C 0x85ec Y el paso
+C 0x85f1 Estado 2 del parpadeo
+
+L 0x8696 avanza_y_espera_2  El gemelo de 0x8473 con otra espera
+C 0x8696 Se escribe ENCIMA de un operando de 0x867A
+C 0x8699 La posicion del jugador
+C 0x86a0 Una espera mas corta
+
+L 0x86AB mira_si_se_acabo_2  El gemelo de 0x8488
+C 0x86ac El contador que trae la pila
+C 0x86ae A cero: se acabo
+C 0x86b0 Se reinicia
+
+L 0x87C2 elige_el_digito  Segun donde caiga la casilla, un ':' o el caracter siguiente
+C 0x87c2 La casilla del marcador
+C 0x87c5 El limite
+C 0x87c8 RST 20h = DCOMPR
+C 0x87c9 Los dos puntos
+C 0x87cd Y si esta por encima, el de al lado
+
+L 0x87EF divide_entre_ocho  Tres rotaciones a la derecha, saliendo si hay resto
+C 0x87ef SCF + CCF pone el acarreo a cero
+C 0x87f1 Por dos
+C 0x87f2 Con resto, se acabo
+C 0x87f6 Y la tercera
+
+L 0x88BB tanda_del_bucle_principal  Las seis rutinas que se ejecutan en cada vuelta
+C 0x88bb El marcador
+C 0x88be Los que aparecen
+C 0x88c1 El jugador
+C 0x88c4 Los objetos
+C 0x88c7 La musica
+C 0x88ca Y el teclado
+
+L 0x88D6 mira_el_abandono  Con las interrupciones puestas, mira si se ha pulsado STOP
+C 0x88d6 Vuelven las interrupciones
+C 0x88d7 INTFLG, la bandera de STOP de la BIOS
+C 0x88da El valor 3 es CTRL+STOP
+C 0x88dc Reinicia el juego
+C 0x88df Y cualquier otro valor tiene su rutina
+
+L 0x899A reparte_por_estado_2  Los estados 3, 5 y 7 tienen rutina propia
+C 0x899a Estado 3
+C 0x899f Estado 5
+C 0x89a4 Estado 7
+C 0x89a8 Y cualquier otro no hace nada
+
+L 0x89AA vuelve_a_un_lado  Cambia el sentido a -1 y pone el dibujo de ese lado
+C 0x89aa El sentido
+C 0x89ad Si ya era -1, solo hay que animar
+C 0x89b0 Sentido -1
+C 0x89b5 Y su dibujo de partida
+
+L 0x89E4 mira_la_casilla_de_atras  Prueba la casilla anterior y, si no vale, deja la X como esta
+C 0x89e4 La casilla del jugador
+C 0x89e7 Una atras
+C 0x89e8 La prueba
+C 0x89eb No vale: se queda
+C 0x89ec La X del jugador
+
+L 0x8A38 vuelve_al_otro_lado  El gemelo de 0x89AA con sentido +1
+C 0x8a38 El sentido
+C 0x8a3b Si ya era 1, solo hay que animar
+C 0x8a3e Sentido 1
+C 0x8a43 Y su dibujo de partida
+
+L 0x8A72 mira_la_casilla_de_delante  El gemelo de 0x89E4 hacia el otro lado
+C 0x8a72 La casilla del jugador
+C 0x8a75 Dos adelante
+C 0x8a76 La prueba
+C 0x8a7a No vale: se queda
+
+L 0x8A9A mira_la_tecla_de_saltar  Con la tecla 6 pulsada, prepara el salto
+C 0x8a9a La tecla 6
+C 0x8a9f Un NOP
+C 0x8aa0 No esta pulsada
+C 0x8aa1 Y ademas tiene que haber suelo
+
+L 0x8ACF salta  Pinta al jugador saltando y arranca la subida
+C 0x8acf Numero de sprite
+C 0x8ad1 Los dos planos
+C 0x8ad7 Estado 1 del salto
+
+L 0x8B19 baja_un_paso  Resta el paso a la Y y descuenta
+C 0x8b19 La Y del jugador
+C 0x8b1c El paso
+C 0x8b1f Baja
+C 0x8b23 Un paso menos
+
+L 0x8B2E cae  Estado 2 y paso de diez, con el sprite del lado que toque
+C 0x8b30 Estado 2
+C 0x8b33 Paso de caida, diez
+C 0x8b38 Sprite y banco de un lado...
+C 0x8b3f ...y del otro
+
+L 0x8B50 termina_el_salto  Con el estado 2, descuenta el paso y pasa al estado 3
+C 0x8b50 Solo si el estado es 2
+C 0x8b54 El paso
+C 0x8b58 Se recarga a uno
+C 0x8b5d Estado 3
+
+L 0x8BA0 alinea_la_casilla  Deja H a multiplo de ocho y devuelve la columna en A
+C 0x8ba0 Guarda la columna
+C 0x8ba2 Redondea la fila a multiplo de ocho
+C 0x8ba5 Y devuelve la columna
+
+L 0x8BC1 pinta_y_sigue  Sube el sprite del jugador y hace la tanda de siempre
+C 0x8bc1 Numero de sprite
+C 0x8bc3 Los dos planos
+C 0x8bc9 Lo que toque despues
+
+L 0x8BF8 mira_la_casilla_de_abajo  Con la bandera puesta va a subir; si no, prueba la casilla anterior
+C 0x8bfb La bandera de sentido
+C 0x8bff Puesta: sube
+C 0x8c02 La prueba
+
+L 0x8C28 sigue_o_para  Si el subtipo es 0xFF se para; si no, sigue animando
+C 0x8c28 El subtipo
+C 0x8c2b Cero: nada que hacer
+C 0x8c2d 0xFF: a un lado
+C 0x8c31 Y si no, al otro
+
+L 0x8CB8 deja_de_saltar  Pone a cero las tres variables del salto y el estado 3
+C 0x8cb9 Subtipo a cero
+C 0x8cbc Paso a cero
+C 0x8cbf Y el parpadeo tambien
+C 0x8cc2 Estado 3
+
+L 0x8CC8 mira_el_estado_y_el_sentido  Sin estado no hace nada; con el, mira hacia donde va
+C 0x8cc9 El estado
+C 0x8ccd Cero: nada
+C 0x8cd0 La casilla
+C 0x8cd3 El sentido
+
+L 0x8CF8 casilla_de_un_lado  Devuelve la casilla de la izquierda, si el sentido lo permite
+C 0x8cf8 El sentido
+C 0x8cfc No: se sale
+C 0x8cfe La casilla en curso
+C 0x8d01 La prueba
+
+L 0x8D0D casilla_del_otro_lado  Y la de la derecha
+C 0x8d0d El sentido
+C 0x8d11 No: se sale
+C 0x8d13 La casilla en curso
+C 0x8d16 Dos adelante
+C 0x8d17 La prueba
+
+L 0x8D80 mira_la_casilla_de_abajo_2  El gemelo de 0x8BF8 en la otra fase
+C 0x8d83 La bandera de sentido
+C 0x8d87 Puesta: sube
+C 0x8d8a La prueba
+
+L 0x8DB0 mira_el_estado_y_el_sentido_2  El gemelo de 0x8CC8
+C 0x8db1 El estado
+C 0x8db5 Cero: nada
+C 0x8db8 La casilla
+C 0x8dbb El sentido
+
+L 0x8E18 prepara_el_disparo  Estado 1 y posicion de partida segun el sentido
+C 0x8e1a Estado 1
+C 0x8e1d El sentido
+C 0x8e21 Sale por un lado...
+C 0x8e26 ...o por el otro
+
+L 0x8EA7 mira_la_casilla_anterior  Retrocede una y hace las dos comprobaciones
+C 0x8ea7 Una casilla atras
+C 0x8ea8 La primera prueba
+C 0x8eab La segunda
+C 0x8eae Dos NOP
+
+L 0x8F1A pinta_el_disparo  Sube el sprite del disparo con el par que toque
+C 0x8f1a Banco 2
+C 0x8f1c Numero del sprite del disparo
+C 0x8f21 Y ahora el del jugador
+C 0x8f26 Un par...
+C 0x8f2c ...o el otro
+
+L 0x9008 reparte_por_lo_leido  Segun lo que devuelva 0x90A2, una animacion u otra
+C 0x9008 Lo que se ha pedido
+C 0x900b El valor 5
+C 0x9010 Y el 1; cualquier otro, a la general
+C 0x9018 La bandera de bloqueo
+
+L 0x90B8 pinta_si_esta_libre  Solo pinta si las dos banderas estan a cero
+C 0x90b8 La primera bandera
+C 0x90bc Puesta: no se pinta
+C 0x90bd La segunda
+C 0x90c2 El sprite y el banco
+
+L 0x90E0 lee_la_entrada  Saca de la tabla en curso la direccion que toca
+C 0x90e0 El puntero de la tabla
+C 0x90e3 La direccion que trae
+
+L 0x910B avanza_en_la_tabla  Suma DE al puntero y llama a la direccion nueva
+C 0x910b Avanza el puntero
+C 0x910c Se guarda
+C 0x910f La direccion que trae
+C 0x9112 Y se llama
+
+L 0x9134 cuenta_del_marcador  Descuenta 0x8058 y, al llegar a cero, refresca el marcador
+C 0x9134 Este LD HL esta REPETIDO: el de abajo hace exactamente lo mismo
+C 0x9137 La cuenta
+C 0x913a Todavia no
+C 0x913b Refresca
+
+L 0x925F pone_el_dibujo_del_lado  Enciende una bandera y elige el dibujo segun el lado
+C 0x925f La bandera
+C 0x9264 De que lado
+C 0x9268 Un dibujo...
+C 0x926c ...o el otro
+
+L 0x9278 tanda_del_bicho  Las cinco rutinas del bicho en cada paso
+C 0x9278 El estado
+C 0x927e El reparto por estado
+C 0x9284 Y la tecla de saltar
+
+L 0x92C3 vuelve_al_lado_contrario  Sentido -1 y su dibujo de partida
+C 0x92c3 El sentido
+C 0x92c7 Si ya era -1, solo hay que animar
+C 0x92c9 Dibujo de partida de ese lado
+C 0x92ce Sentido -1
+
+L 0x92F0 elige_el_par_del_lado  Segun el sentido, un par de sprites u otro
+C 0x92f0 Solo si hace falta
+C 0x92f2 El sentido
+C 0x92f5 Un par...
+C 0x92fb ...o el otro
+
+L 0x9320 baja_hasta_el_suelo  Suma el paso de caida y se para en la fila 0x9D
+C 0x9320 La Y del jugador
+C 0x9323 El paso de caida
+C 0x9327 Baja
+C 0x932a El suelo
+C 0x932e Y el paso se marca como terminado
+
+L 0x933C traduce_el_estado  De estado a numero de dibujo
+C 0x933c El estado
+C 0x9340 Cero: el dibujo cero
+C 0x9342 Estado 3
+C 0x9346 Le toca el dibujo 1
+
+L 0x93A0 reparte_por_lo_leido_2  El gemelo de 0x9008 en la otra fase
+C 0x93a0 Lo que se ha pedido
+C 0x93a3 El valor 5
+C 0x93a8 Y el 1; cualquier otro, a la general
+C 0x93b0 La bandera de bloqueo
+
+L 0x9468 cambia_de_pantalla  Prepara la pantalla nueva y descomprime su mapa
+C 0x946a Deja la pantalla lista
+C 0x946f Coge el mapa que toca
+C 0x9472 Y lo descomprime
+
+L 0x94A0 apunta_la_ficha  De la entrada de 0x8072 saca la ficha de 0x70C0
+C 0x94a0 La entrada en curso
+C 0x94a4 La tabla de fichas de la RAM escondida
+C 0x94a7 El numero, dividido por dos
+C 0x94ab 0x58 = 88 bytes, una ficha
+
+L 0x94CC espera_una_tecla_o_stop  Se queda esperando hasta que se pulse algo
+C 0x94cc Con interrupciones, que si no el teclado no se lee
+C 0x94cd INTFLG, la bandera de STOP
+C 0x94d0 El valor 3 es CTRL+STOP
+C 0x94d2 Reinicia el juego
+C 0x94d6 Nada pulsado: otra vuelta
+C 0x94d9 Y se limpia la bandera
+
+L 0x94F8 prepara_al_perseguidor  Lo apaga, coloca dos sprites y monta su tabla
+C 0x94fb Estado cero
+C 0x9500 Numero de sprite
+C 0x9502 Su posicion
+C 0x9505 Los dos planos
+
+L 0x95D0 da_la_vuelta  Guarda el dibujo y cambia el paso de signo
+C 0x95d0 El dibujo nuevo
+C 0x95d4 Si el paso era -2...
+C 0x95d6 ...pasa a +2...
+C 0x95da ...y al reves
+
+L 0x9730 mira_si_esta_a_tiro  Rango de 0x50 pixeles a un lado
+C 0x9730 Su posicion
+C 0x9733 La del jugador
+C 0x9736 Por debajo de ocho, fuera
+C 0x973b Ochenta pixeles de rango
+C 0x9741 Y se ajusta la posicion
+
+L 0x9798 sube_hasta_el_tope  Sube el contador y, al llegar a 0x98, apaga
+C 0x9798 Lo pinta
+C 0x979e Uno mas
+C 0x97a0 El tope
+C 0x97a4 Estado cero
+
+L 0x98C9 coloca_dos_sprites  Deja dos sprites en la columna 0x70 y 0x82
+C 0x98c9 La posicion
+C 0x98cc Columna 0x70
+C 0x98ce Numero de sprite
+C 0x98d3 Y columna 0x82
+
+L 0x98E0 sube_una_fila_y_compara  Sube una fila y mira si ha llegado
+C 0x98e1 Una fila mas
+C 0x98e4 Contra el limite
+C 0x98e5 Se guarda
+
+L 0x98EB baja_mientras_pueda  Va bajando y pintando hasta agotar la cuenta
+C 0x98eb Anima lo que cae
+C 0x98ee Una fila menos
+C 0x98f2 Se guarda
+C 0x98f5 La cuenta
+C 0x98f9 Y se repinta al jugador
+
+L 0x9900 espera_animando  Repite la animacion hasta agotar la cuenta
+C 0x9900 Anima lo que cae
+C 0x9903 Y al jugador
+C 0x9906 La cuenta
+C 0x990a Otra vuelta
+
+L 0x9928 opcode_seis_del_guion  Mueve y comprueba, y si no esta ocupado lo arranca
+C 0x9928 Lo mueve
+C 0x992b Mira si el jugador lo pisa
+C 0x992e El estado
+C 0x9933 Ya esta en marcha
+
+L 0x9935 arranca_con_su_par  Estado 1 y el par de sprites del lado que toque
+C 0x9935 Estado 1
+C 0x9937 El lado
+C 0x993b Un par...
+C 0x9940 ...o el otro
+
+L 0x9995 pone_estado_uno  Guarda el dibujo y arranca los contadores
+C 0x9995 El dibujo
+C 0x999a Estado 1
+C 0x999d Cuenta a uno
+C 0x99a2 Y seis pasos
+
+L 0x99F0 avanza_dos_y_cicla  Sube el dibujo de dos en dos entre 0x5A y 0x68
+C 0x99f3 El dibujo en curso
+C 0x99f6 Dos mas
+C 0x99fb Un final de ciclo...
+C 0x99ff ...y el otro
+
+L 0x9A04 para_y_retrocede  Apaga la fase, retrocede ocho y da una cuenta larga
+C 0x9a04 Fase cero
+C 0x9a09 El dibujo en curso
+C 0x9a0c Ocho atras
+C 0x9a11 Sesenta y cuatro pasos de cuenta
+
+L 0x9A19 mira_si_lo_alcanza  Veinticuatro pixeles de margen sobre la X del jugador
+C 0x9a19 Su posicion
+C 0x9a1c La del jugador
+C 0x9a1f Veinticuatro de margen
+C 0x9a24 Dibujo de alcance
+
+L 0x9A29 elige_el_dibujo_del_tramo  Segun el tramo, 0x50 o 0x5E
+C 0x9a29 En que tramo esta
+C 0x9a2c Se guarda
+C 0x9a30 Un dibujo...
+C 0x9a34 ...o el otro
+
+L 0x9A58 mira_la_franja_y_arranca  Si esta en la franja arranca; si no, devuelve el tramo
+C 0x9a58 Mira la franja
+C 0x9a5b El tramo
+C 0x9a5e Dentro: se devuelve el tramo
+C 0x9a5f Se quita la vuelta de la pila
+C 0x9a63 Cuenta a cero
+
+L 0x9A83 mira_la_ficha_y_arranca  Solo con la ficha por debajo de 4
+C 0x9a83 La ficha de la casilla
+C 0x9a84 De 4 para arriba no vale
+C 0x9a8a El tramo
+C 0x9a90 Se guarda como sentido
+
+L 0x9AD2 espera_pintando  Repite hasta agotar BC
+C 0x9ad2 Un paso
+C 0x9ad5 Uno menos
+C 0x9ad8 Hasta agotar la cuenta
+
+L 0x9CE8 arranca_la_partida_2  Pone a cero las banderas del comienzo
+C 0x9ce9 Escribe en 0x0000: con la pagina 0 en ROM esto no hace nada
+C 0x9cec La bandera de caida
+C 0x9cf1 Dieciseis pasos de cuenta
+
+L 0x9D1C tanda_de_la_otra_fase  Las cinco rutinas del paso en la segunda fase
+C 0x9d1c El marcador
+C 0x9d22 La cuenta del marcador
+C 0x9d28 Y el paso completo
+
+L 0x9D80 apunta_el_guion  Guarda el periodo y el puntero del guion de la fase
+C 0x9d83 Se recupera el puntero
+C 0x9d85 El periodo
+C 0x9d8a Y donde sigue el guion
+
+L 0x9DB0 pinta_el_par_c1c1  Dos sprites en la misma posicion
+C 0x9db0 Numero de sprite
+C 0x9db2 El par de dibujos
+C 0x9db8 El segundo
+
+L 0x9DD8 prepara_al_que_cae  Posicion de partida y dieciseis pasos de cuenta
+C 0x9dd8 Su posicion en la VRAM
+C 0x9dde Dieciseis pasos
+
+L 0x9F4B acerca_por_abajo  Sube el paso y, si el jugador queda por encima, cambia de sentido
+C 0x9f4b Uno mas
+C 0x9f4c La Y del jugador
+C 0x9f4f Doce pixeles de margen
+C 0x9f54 Y a partir de aqui, hacia arriba
+
+L 0x9F79 mira_el_estado_del_disparo  Con el estado 3 no hace nada
+C 0x9f7c El estado
+C 0x9f7f Solo el 3 se salta el resto
+C 0x9f82 Y si no, se sigue
+
+L 0xA0B0 invierte_la_bandera  Devuelve 1 si 0x809E vale cero
+C 0xa0b0 La bandera
+C 0xa0b4 Puesta: por otro lado
+C 0xa0b7 Devuelve uno
+
+L 0xA1A0 apunta_la_ficha_2  El gemelo de 0x94A0
+C 0xa1a0 La entrada en curso
+C 0xa1a4 La tabla de fichas de la RAM escondida
+C 0xa1a7 El numero, dividido por dos
+C 0xa1ab 0x58 = 88 bytes, una ficha
+
+L 0xA25F sigue_al_bicho  Calcula su casilla y prueba las de al lado
+C 0xa25f Su posicion
+C 0xa262 0xA0 = cinco filas de 32
+C 0xa266 El sentido
+C 0xa26f Una casilla mas alla
+
+L 0xA2C8 estado_dos_del_bicho_2  Con el estado 2, sigue por donde iba
+C 0xa2c8 Solo si el estado es 2
+C 0xa2cc Su posicion guardada
+C 0xa2cf El sentido
+
+L 0xA3CA alterna_el_color  Cambia 0xA7BF de valor y devuelve 15 o 1
+C 0xa3ca La bandera, que vive suelta en medio del codigo
+C 0xa3cd La cambia de valor
+C 0xa3d3 Un color...
+C 0xa3d7 ...o el otro
+
+L 0xA4BD escribe_dos_por_fila_2  Dos baldosas iguales por fila, B filas
+C 0xa4bd La primera
+C 0xa4bf Y la de al lado
+C 0xa4c0 Salta a la fila de abajo
+C 0xa4c1 Otra fila
+
+L 0xA4D8 cuenta_para_el_dibujo  Cada dieciseis pasos, escribe el dibujo 0x0E
+C 0xa4db Cuenta atras
+C 0xa4dc Todavia no
+C 0xa4dd Se recarga a 16
+C 0xa4df La posicion
+
+L 0xA500 coloca_el_aviso  Con la bandera puesta, deja el aviso en 0x1A67
+C 0xa500 La bandera
+C 0xa504 Sin ella, nada
+C 0xa505 La casilla del aviso
+
+L 0xA5C0 mira_si_esta_congelado  Con 0x9C8F puesto no hace nada
+C 0xa5c1 La bandera que congela el juego
+C 0xa5c5 Puesta: por otro lado
+C 0xa5c8 Y si no, la musica
+
+L 0xA698 apunta_la_ficha_3  El tercer gemelo de 0x94A0
+C 0xa698 La entrada en curso
+C 0xa69c El numero, dividido por dos
+C 0xa69e La tabla de fichas de la RAM escondida
+C 0xa6a4 0x58 = 88 bytes, una ficha
+
+L 0xA6AB copia_la_ficha  Se trae los 88 bytes de la ficha al tampon
+C 0xa6ac Lo que haya que hacer antes
+C 0xa6af 0x58 = 88 bytes
+C 0xa6b2 Se copia
+
+L 0xA948 arranca_la_pausa  Enciende la bandera y sortea cuanto dura
+C 0xa948 Dos NOP
+C 0xa94a La bandera de ocupado
+C 0xa94f El registro de refresco hace de dado
+C 0xa951 De 0 a 31
+C 0xa953 Y nunca menos de ocho
+
+L 0xA960 mira_si_esta_ocupado  Con la bandera puesta, atiende la pausa
+C 0xa960 La bandera de ocupado
+C 0xa964 Libre: a lo suyo
+C 0xa967 Se quita la vuelta de la pila
+C 0xa968 El sentido
+C 0xa971 Y a ver si la pausa se acaba
+
+L 0xA9A1 prepara_el_dibujo_2  Suma cuatro, multiplica por ocho y devuelve un par
+C 0xa9a1 El indice
+C 0xa9a4 Cuatro mas
+C 0xa9a6 Por ocho
+C 0xa9a9 Se guarda
+C 0xa9ac El par de dibujos
+
+L 0xA9B0 refresca_con_la_bandera  Pinta con 0x0000 a uno y lo vuelve a dejar a cero
+C 0xa9b0 Lo pinta
+C 0xa9b5 Escribe en 0x0000: con la pagina 0 en ROM esto no hace nada
+C 0xa9b8 Refresca el marcador
+C 0xa9bc Y lo deshace
+
+L 0xA9C8 pinta_y_elige_el_par  Pinta y deja preparado el par del lado que toque
+C 0xa9c8 Lo pinta
+C 0xa9cd El sentido
+C 0xa9d1 Un par...
+C 0xa9d6 ...o el otro
+
+L 0xAA38 copia_el_guion  Se trae los 19 bytes del guion en curso a 0x80AB
+C 0xaa38 El puntero del guion
+C 0xaa3b 0x13 = 19 bytes
+C 0xaa3e El area de trabajo
+C 0xaa43 Y devuelve donde empieza
+
+L 0xAA88 prueba_la_de_abajo  Baja una fila y prueba la casilla
+C 0xaa8a Una fila
+C 0xaa8e La prueba
+
+L 0xAAA2 prueba_las_de_alrededor  Prueba la anterior y la de una fila mas abajo
+C 0xaaa2 Una atras
+C 0xaaa3 La prueba
+C 0xaaa8 Una fila
+C 0xaaac La prueba
+C 0xaab1 Y retrocede la posicion
+
+L 0xAAE0 prueba_las_de_arriba  0xFFE0 es -32: una fila mas arriba
+C 0xaae0 Una fila hacia arriba
+C 0xaae4 La prueba
+C 0xaaeb Y la de al lado
+C 0xaaf1 Retrocede la posicion
+
+L 0xAB00 elige_el_numero_de_sprite  Segun el guion, el sprite 8 o el 0x0C
+C 0xab00 El puntero del guion
+C 0xab04 El primer byte
+C 0xab06 Sprite 8...
+C 0xab0a ...o el 0x0C
+
+L 0xAB8C pasa_al_estado_cuatro  Estado 4, dibujo 0x80 y salida por dos niveles
+C 0xab8c Estado 4
+C 0xab91 Dibujo de partida
+C 0xab99 Dos POP: no se vuelve a quien llamo
+
+L 0xABED cierra_el_estado_cinco  Con el estado 5, borra el guion y coloca el par 0xC2C2
+C 0xabed Solo el estado 5
+C 0xabf3 Borra el primer byte del guion
+C 0xabf6 El par de dibujos
+C 0xabfc Un NOP
+
+L 0xAC38 elige_el_numero_de_sprite_2  El gemelo de 0xAB00, con el juego alternativo
+C 0xac39 El puntero del guion
+C 0xac3d El primer byte
+C 0xac3f Sprite 8...
+C 0xac43 ...o el 0x0C
+
+L 0xAC58 en_que_tramo  Devuelve -1 o 1 segun a que lado del limite caiga
+C 0xac58 Sin interrupciones
+C 0xac59 El limite
+C 0xac5d Un lado...
+C 0xac60 ...o el otro
+
+L 0xAC69 pinta_dos_planos  Dos sprites, el segundo dieciseis pixeles mas abajo
+C 0xac69 El primero
+C 0xac6d Dieciseis pixeles de separacion
+C 0xac72 Y el segundo
+
+L 0xACA1 arranca_el_estado_dos  Guarda el dibujo, la cuenta y el estado
+C 0xaca1 El dibujo
+C 0xaca6 Cuenta a uno
+C 0xacab Estado 2
+
+L 0xACB1 mira_la_franja_y_para  Con el estado 2, se para si el jugador esta en la franja
+C 0xacb1 Solo si el estado es 2
+C 0xacb5 La posicion
+C 0xacb8 Mira la franja
+C 0xacbb Dentro: se queda
+C 0xacbe Estado cero
+
+L 0xACC4 elige_el_par_del_tramo  Cada cuatro pasos, un par u otro segun el tramo
+C 0xacc7 Cuenta atras
+C 0xacca Se recarga a 4
+C 0xaccc El tramo
+C 0xacd0 Un par...
+C 0xacd5 ...o el otro
+
+L 0xACFF invierte_el_paso  Cambia el paso entre +2 y -2
+C 0xad00 El paso
+C 0xad03 Si era 2...
+C 0xad05 ...pasa a -2...
+C 0xad09 ...y al reves
+
+L 0xAD59 da_la_vuelta_2  Si el sentido no es 1, lo pone a 1 y cambia el dibujo
+C 0xad59 El sentido
+C 0xad5d Ya era 1: nada
+C 0xad60 Sentido 1
+C 0xad65 Y su dibujo
+
+L 0xAD7E prueba_dos_alturas  La casilla y la de quince pixeles mas abajo
+C 0xad7f La primera
+C 0xad83 Quince pixeles
+C 0xad87 Y la segunda
+
+L 0xAD8B mira_los_dos_campos  Mira los campos de 0xE005 y 0xE01A de la ficha
+C 0xad8b El primero
+C 0xad91 El segundo
+C 0xad97 Y devuelve el tampon
+
+L 0xAD9B reparte_por_el_campo  Solo los valores 1 y de 4 en adelante hacen algo
+C 0xad9b El campo
+C 0xad9c El valor 1
+C 0xada1 Por debajo de 4, nada
+
+L 0xADC0 estado_cuatro_al_azar  Estado 4 y, a suertes, uno de dos dibujos
+C 0xadc0 Estado 4
+C 0xadc5 El dado
+C 0xadca Un dibujo...
+C 0xadce ...o el otro
+
+L 0xAE1B coloca_el_par_c2c2  Pinta el par fijo y borra el guion
+C 0xae1b El par de dibujos
+C 0xae1e Numero de sprite
+C 0xae24 Borra el primer byte del guion
+
+L 0xAE6C elige_el_par_del_tramo_2  Pinta y, segun el tramo, prepara un par u otro
+C 0xae6c Numero de sprite
+C 0xae70 En que tramo esta
+C 0xae73 Se guarda
+C 0xae77 Un par...
+C 0xae7c ...o el otro
+
+L 0xAE8C cuenta_y_sigue  Cuenta atras y, al llegar a cero, recarga y sigue
+C 0xae8f Cuenta atras
+C 0xae90 Todavia no
+C 0xae93 El periodo, que se recarga
+
+L 0xB049 mira_la_distancia  Segun el tramo, compara con la X del jugador
+C 0xb049 El tramo
+C 0xb04c La X del jugador
+C 0xb050 Su posicion
+C 0xb056 Sesenta y cuatro pixeles por delante
+C 0xb05c El paso
+
+L 0xB06B pinta_y_vuelve  Sube el sprite y devuelve el mando al bucle
+C 0xb06b El dibujo en curso
+C 0xb06f Banco 1
+C 0xb071 Numero de sprite
+C 0xb074 Lo pinta
+
+L 0xB09E avanza_y_topa  Suma el paso y comprueba los dos extremos
+C 0xb09e La posicion
+C 0xb0a1 El paso
+C 0xb0a5 Avanza
+C 0xb0a6 Tope de arriba
+C 0xb0aa Y tope de abajo
+
+L 0xB100 arranca_el_estado_tres  Contadores a cero, ocho pasos y estado 3
+C 0xb100 Contador a cero
+C 0xb105 Ocho pasos
+C 0xb10a Estado 3
+
+L 0xB238 borra_cuatro_casillas_2  Con el estado por debajo de 4, borra el bloque de dos por dos
+C 0xb238 El estado
+C 0xb23b De 4 para arriba no vale
+C 0xb23e La posicion
+C 0xb241 Mira si el jugador la pisa
+C 0xb247 0x1F: hasta la fila de abajo
+C 0xb24a Cuatro casillas
+
+L 0xB2A6 pasa_al_estado_cinco  Estado 5, cuenta larga y el sprite 0x90
+C 0xb2a6 Estado 5
+C 0xb2ab Ciento veintiocho pasos
+C 0xb2b0 El sprite y el banco
+C 0xb2b6 Lo pinta
+
+L 0xB2BF coloca_el_par_c2c2_2  El gemelo de 0xAE1B
+C 0xb2bf Numero de sprite
+C 0xb2c2 El par de dibujos
+C 0xb2c9 Borra el primer byte del guion
+
+L 0xB367 pinta_una_columna_2  B sprites, cada uno dieciseis pixeles mas abajo
+C 0xb367 Uno
+C 0xb36b Dieciseis pixeles de separacion
+C 0xb370 El siguiente
+
+L 0xB4A0 lee_el_lado  Devuelve -1, 0 o 1 segun lo que se este pidiendo
+C 0xb4a0 Lo que se pide
+C 0xb4a4 Nada: cero
+C 0xb4a6 Un lado...
+C 0xb4ab ...y el otro
+
+L 0xB5C2 recupera_los_diez  Se trae diez bytes de la pila a 0xF420
+C 0xb5c6 El area de trabajo de 0xF420
+C 0xb5c9 Diez bytes
+C 0xb5cc Se copian
+
+L 0xB5F6 recorre_de_dieciseis_en_dieciseis  B vueltas, avanzando 0x10 cada vez
+C 0xb5f8 Una vuelta
+C 0xb5fd Dieciseis bytes por elemento
+C 0xb601 El siguiente
+
+L 0xB6A8 copia_ocho_y_ocho  Copia dos grupos de ocho bytes
+C 0xb6a8 El primer grupo
+C 0xb6ae Ocho bytes mas alla
+C 0xb6b2 Ocho bytes
+C 0xb6b5 El segundo grupo
+
+L 0xB6EB avanza_ocho  Suma ocho al puntero y devuelve
+C 0xb6ed Ocho bytes
+C 0xb6f0 Avanza
+
+L 0xB774 opcode_siete_del_guion  Copia el guion, prueba las alturas y arranca si esta parado
+C 0xb774 El guion
+C 0xb777 La prueba
+C 0xb77a El estado
+C 0xb77e Ya esta en marcha
+C 0xb780 El par de partida
+
+L 0xB7A5 dibujo_segun_el_tramo  Un dibujo para cada lado
+C 0xb7a5 En que tramo esta
+C 0xb7a8 Se guarda
+C 0xb7ac Un dibujo...
+C 0xb7b0 ...o el otro
+
+L 0xB808 mira_la_bandera_de_8050  A cero, sigue; si no, cuenta larga
+C 0xb808 La bandera
+C 0xb80c A cero: por el otro lado
+C 0xb813 Ciento veintiocho pasos
+
+L 0xB828 mira_el_dibujo_minimo  Por debajo de 0x36 no se hace nada
+C 0xb828 El dibujo en curso
+C 0xb82b El minimo
+C 0xb830 El tramo
+C 0xb834 Un dibujo...
+C 0xb838 ...o el otro
+
+L 0xB852 pasa_al_estado_dos_2  Estado 2 y el dibujo del tramo
+C 0xb854 Estado 2
+C 0xb859 En que tramo esta
+C 0xb860 Un dibujo...
+C 0xb864 ...o el otro
+
+L 0xB873 compara_el_tramo  Si el tramo no coincide con lo pedido, se sale por dos niveles
+C 0xb873 En que tramo esta
+C 0xb877 Lo que se pide
+C 0xb87d Si no coinciden...
+C 0xb880 ...se quita la vuelta de la pila
+
+L 0xB898 opcode_diez_del_guion  Copia el guion y, si esta parado, lo arranca
+C 0xb898 El guion
+C 0xb89b La prueba
+C 0xb89e El estado
+C 0xb8a3 Ya esta en marcha
+C 0xb8a5 Estado 1
+
+L 0xB8A7 pinta_dos_y_prueba  Sube dos sprites y comprueba dos casillas
+C 0xb8a7 El dibujo en curso
+C 0xb8ab Banco 1
+C 0xb8ad Numero de sprite
+C 0xb8b5 La casilla que se prueba
+C 0xb8bc Dos veces
+
+L 0xB94A avanza_y_elige  Suma el paso y elige el dibujo segun donde quede
+C 0xb94a La posicion
+C 0xb94d El paso
+C 0xb951 Avanza
+C 0xb952 Por debajo de ocho...
+C 0xb958 ...el dibujo 0x6C
+
+L 0xB96E sortea_si_cambia  Solo cambia cinco de cada ocho veces
+C 0xb96e El dado
+C 0xb970 Por debajo de 0x60, nada
+C 0xb975 Y solo si la fase esta a cero
+
+L 0xB98A reparte_por_la_fase  Las fases 1 y 2 tienen camino propio
+C 0xb98a La fase
+C 0xb98e Fase 1: nada
+C 0xb992 Fase 2
+C 0xb994 La bandera de sentido
+
+L 0xB9A8 mira_si_ha_cambiado_de_tramo  Si el tramo es el mismo, no hace nada
+C 0xb9a8 En que tramo esta
+C 0xb9ac El tramo guardado
+C 0xb9b0 El mismo: nada que hacer
+C 0xb9b3 Y si no, el nuevo
+
+L 0xBB50 coloca_el_par_c2c2_3  El tercer gemelo de 0xAE1B
+C 0xbb50 Numero de sprite
+C 0xbb52 El par de dibujos
+C 0xbb59 Borra el primer byte del guion
+
+L 0xBB91 pinta_al_de_la_ficha  Sube el sprite del bicho de la ficha
+C 0xbb91 Su posicion
+C 0xbb94 Numero de sprite
+C 0xbb9b El par de dibujos
+
+L 0xBBDF baja_cuatro_si_toca  Con 0x80C4 a 0x12, baja cuatro pixeles la posicion
+C 0xbbdf La posicion del jugador
+C 0xbbe2 La bandera
+C 0xbbe5 Solo el valor 0x12
+C 0xbbe8 Cuatro pixeles mas abajo
+
+L 0xBC30 opcode_cinco_del_guion  Copia el guion y, si esta parado, lo pone en el estado 2
+C 0xbc30 El guion
+C 0xbc33 La prueba
+C 0xbc36 El estado
+C 0xbc3b Ya esta en marcha
+C 0xbc3d Estado 2
+
+L 0xBC5D pinta_una_columna_3  B sprites, cada uno dieciseis pixeles mas abajo
+C 0xbc5d Uno
+C 0xbc61 Dieciseis pixeles de separacion
+C 0xbc66 El siguiente
+
+L 0xBC89 avanza_y_tope  Guarda el dibujo, avanza y no deja pasar de 0xEA
+C 0xbc89 El dibujo
+C 0xbc8f Una posicion mas
+C 0xbc90 La X del jugador
+C 0xbc93 El tope
+C 0xbc98 Se queda en 0xE8
+
+L 0xBCA0 mira_si_esta_delante  Ocho pixeles de margen sobre la X del jugador
+C 0xbca0 La posicion
+C 0xbca3 La X del jugador
+C 0xbca6 Ocho de margen
+C 0xbcab El dibujo que le toca
+
+L 0xBDE3 pinta_en_dos_bucles  Bucle doble: B por C llamadas
+C 0xbde4 Una vuelta
+C 0xbde8 Las B
+C 0xbdeb Y las C
+
+L 0xBEA8 compara_con_el_limite  Si no coincide con 0x8061, se va
+C 0xbea9 El limite guardado
+C 0xbeac RST 20h = DCOMPR
+C 0xbead No coincide
+C 0xbeb1 Lo que toque hacer
+C 0xbeb4 Y la musica
+
+L 0xBEC0 pasa_al_estado_tres_2  Con la bandera a 1, pone dos estados a 3
+C 0xbec0 La bandera
+C 0xbec4 Solo el valor 1
+C 0xbec9 Estado 3
+C 0xbece Y el otro tambien
+
+L 0xBF40 llama_si_suena  Solo llama si la musica esta encendida
+C 0xbf41 Mira si la musica suena
+C 0xbf45 No suena: se sale
+
+L 0xBF72 sale_si_esta_ocupado  Con la bandera puesta, se quita la vuelta de la pila
+C 0xbf72 La casilla
+C 0xbf75 La bandera de ocupado
+C 0xbf79 Libre: devuelve normal
+C 0xbf7a Ocupado: se sale por dos niveles
+
+L 0xBFA2 mira_tres_banderas  Solo sigue si las tres estan a cero
+C 0xbfa2 La primera
+C 0xbfa8 La segunda
+C 0xbfae Y la tercera
+
+L 0xBFC1 reparte_por_lo_pedido  El valor 1 tiene rutina propia
+C 0xbfc2 Lo que se pide
+C 0xbfc4 No es el 1
+C 0xbfc9 La bandera de parpadeo
+C 0xbfcf Puesta: se sale
+
+L 0xBFE1 solo_el_ocho  Solo el valor 8 sigue
+C 0xbfe1 El valor 8
+C 0xbfe4 Este RET NZ no puede ejecutarse: el de arriba ya ha vuelto
+C 0xbfe5 Y este tampoco
+
+L 0xBFEC es_uno_de_los_cuatro  Devuelve Z si A es 3, 7, 2 u 8
+C 0xbfec El 3
+C 0xbfef El 7
+C 0xbff2 El 2
+C 0xbff5 Y el 8
+
+L 0xC010 sale_si_la_musica_acabo  De 0x69 en adelante, se sale por dos niveles
+C 0xc010 El contador de la musica
+C 0xc013 El limite
+C 0xc016 Dos POP: no se vuelve a quien llamo
+
+L 0xC041 suena_la_musica  Devuelve cero si el juego esta congelado o la musica acabo
+C 0xc041 La bandera que congela el juego
+C 0xc045 Puesta: se devuelve tal cual
+C 0xc046 El contador de la musica
+C 0xc049 El limite
+
+L 0xC04E sale_si_la_musica_acabo_2  El gemelo de 0xC010
+C 0xc04e El contador de la musica
+C 0xc051 El limite
+C 0xc054 Dos POP: no se vuelve a quien llamo
+
+L 0xC292 monitor_busca_la_orden  Recorre las quince entradas de tres bytes de 0xD5C6
+C 0xc292 La clave de esta entrada
+C 0xc293 Contra la inicial tecleada
+C 0xc294 Encontrada
+C 0xc296 Tres bytes por entrada
+C 0xc299 La siguiente
+C 0xc29b Ninguna: "Commande illegale"
+
+L 0xC29E monitor_escribe_el_error  Saca el mensaje por la linea de aviso
+C 0xc29e La linea de aviso
+C 0xc2a5 Sin eco
+C 0xc2a9 Lo imprime
+
+L 0xC2BB monitor_salta_al_manejador  Lee el puntero de la entrada y salta
+C 0xc2bb Los dos bytes de despues de la clave
+C 0xc2c0 Y salta. Con la tabla a ceros, esto no llega a pasar nunca
+
+L 0xC2C1 monitor_prepara_el_teclado  Deja HL en el tampon de la linea y C a cero
+C 0xc2c1 El tampon de la linea
+C 0xc2c4 0x3F caracteres de sitio
+C 0xc2c6 Ninguno escrito todavia
+C 0xc2c8 La bandera de estado
+
+L 0xC2EC monitor_cierra_la_linea  Guarda el retorno de carro y deja el cursor listo
+C 0xc2ec El caracter en el tampon
+C 0xc2ed Un espacio para borrar el cursor
+C 0xc2ef La posicion de la ventana
+C 0xc2f9 Y devuelve el tampon de la linea
+
+L 0xC2FD monitor_borra_un_caracter  Retrocede uno y lo borra de la pantalla
+C 0xc2fe Si no hay nada escrito, nada que borrar
+C 0xc301 Una posicion atras
+C 0xc304 El caracter que habia
+C 0xc305 Se borra
+
+L 0xC30D monitor_copia_hasta_el_final  Copia la linea hasta el retorno de carro
+C 0xc30d Un caracter
+C 0xc310 Retorno de carro: se acabo
+C 0xc314 Los de control no se copian
+
+L 0xC31D monitor_byte_en_hexadecimal_2  Los dos digitos de un byte
+C 0xc31e Se guarda el byte
+C 0xc31f Cuatro rotaciones: el digito de arriba
+C 0xc323 Lo escribe
+C 0xc326 Y se recupera el byte
+
+L 0xC349 monitor_cuenta_los_digitos  Avanza mientras haya digitos
+C 0xc349 El caracter
+C 0xc34a Por debajo del '0' ya no
+C 0xc34f Uno mas
+
+L 0xC37C monitor_acumula_el_digito  Convierte y comprueba que cabe en la base
+C 0xc37c De ASCII a numero
+C 0xc37e Tiene que ser menor que la base
+C 0xc381 El acumulador
+C 0xc385 Una vuelta menos
+
+L 0xC39B monitor_desbordamiento  Apunta el mensaje "Debordement" y devuelve 0xFFFF
+C 0xc39d El mensaje de desbordamiento
+C 0xc3a0 Se apunta para que lo saque el que llamo
+C 0xc3a3 Y el resultado invalido
+
+L 0xC3C5 monitor_lee_el_termino  Cuenta los digitos y convierte el numero
+C 0xc3c6 Cuantos digitos hay
+C 0xc3c9 Ninguno
+C 0xc3cb El valor
+C 0xc3d0 Se guarda
+
+L 0xC3E1 monitor_aplica_el_operador  Con el operador guardado, opera los dos terminos
+C 0xc3e1 Contra la cuenta de digitos
+C 0xc3e4 El operador
+C 0xc3e7 Se aplica
+C 0xc3eb Con acarreo, desbordamiento
+
+L 0xC3EF monitor_siguiente_termino  Coge el operador siguiente y vuelve a leer
+C 0xc3ef El acumulador
+C 0xc3f4 El operador
+
+L 0xC3F8 monitor_desbordamiento_2  El otro camino al mensaje "Debordement"
+C 0xc3f8 El mensaje de desbordamiento
+C 0xc3fb Se apunta
+C 0xc3fe Estos tres bytes y los dos NOP no llegan a ejecutarse con sentido
+C 0xc404 Dos NOP
+
+L 0xC406 monitor_expresion_mal  Repone la pila y apunta "Expression illegale"
+C 0xc406 La pila del monitor
+C 0xc40b El mensaje
+C 0xc40e Si ya habia otro error, se respeta
+
+L 0xC434 monitor_resta  El operador '-'
+C 0xc434 Un '-'
+C 0xc439 Resta
+
+L 0xC43D monitor_multiplica  El operador '*', por sumas y desplazamientos
+C 0xc43d Un '*'
+C 0xc441 Si el primero cabe en un byte...
+C 0xc445 ...y el segundo tambien
+C 0xc449 Se ponen en el orden que conviene
+
+L 0xC450 monitor_bucle_de_multiplicar  Desplaza y suma
+C 0xc450 Por dos
+C 0xc451 Desbordamiento
+C 0xc453 El bit siguiente
+C 0xc457 Si esta puesto, suma
+
+L 0xC46C monitor_divide  Desplaza el dividendo y resta si cabe
+C 0xc46c Por dos
+C 0xc46e Con el acarreo de arriba
+C 0xc474 Compara con el divisor
+C 0xc479 No cabe
+
+L 0xC47B monitor_resta_el_divisor  Cabe: resta y sube el cociente
+C 0xc47d Resta
+C 0xc481 Un bit mas de cociente
+
+L 0xC489 monitor_lee_el_operador  Busca el caracter en la tabla de cinco operadores
+C 0xc489 El caracter
+C 0xc48a Por debajo del espacio no hay operador
+C 0xc48f La tabla de operadores
+C 0xc492 Cinco
+
+L 0xC494 monitor_compara_el_operador  Si coincide, devuelve su codigo
+C 0xc494 Contra la tabla
+C 0xc498 Su codigo
+
+L 0xC49B monitor_siguiente_operador  Dos bytes por entrada
+C 0xc49b Dos bytes por entrada
+C 0xc49d El siguiente
+C 0xc4a0 Ninguno vale
+C 0xc4a3 Y se avisa con el acarreo
+
+L 0xC505 monitor_limpia_y_arranca  Pone a cero el area y deja la pila en 0xE1AC
+C 0xc505 Un byte a cero
+C 0xc508 Todos
+C 0xc50a La pila del programa
+C 0xc510 Y un byte que se copia sobre otro
+
+L 0xC53D monitor_desensambla_una_linea  Desensambla y comprueba si ha llegado al limite
+C 0xc53e Una linea
+C 0xc541 Mira si se ha pulsado algo
+C 0xc544 El limite
+C 0xc548 Se compara
+
+L 0xC572 monitor_escribe_la_direccion  Pinta la direccion y prepara los bytes
+C 0xc572 Prepara la pantalla
+C 0xc575 Desensambla la instruccion
+C 0xc578 La direccion
+C 0xc57b En hexadecimal
+C 0xc57e Cuantos bytes ocupa
+
+L 0xC5A6 monitor_escribe_la_cadena  Saca B caracteres y un retorno de carro
+C 0xc5a6 Un caracter
+C 0xc5ab Los que queden
+C 0xc5ad Retorno de carro
+
+L 0xC66C monitor_compara_el_nombre  Compara el nombre tecleado con la entrada de la tabla
+C 0xc66e El primer caracter de la tabla
+C 0xc66f Un espacio quiere decir "nombre de una letra"
+C 0xc673 El tecleado
+C 0xc675 No coincide
+
+L 0xC678 monitor_compara_dos_mas  Los dos caracteres siguientes
+C 0xc679 El segundo
+C 0xc67b No coincide
+C 0xc67f El tercero
+C 0xc681 Coinciden los tres
+
+L 0xC683 monitor_siguiente_nombre  Cuatro bytes por entrada
+C 0xc685 Cuatro bytes por entrada
+C 0xc689 La siguiente
+
+L 0xC6C8 monitor_lee_hasta_diez  Lee hasta diez valores separados por comas
+C 0xc6c8 El primero
+C 0xc6cc El area donde se guardan
+C 0xc6d0 Diez como mucho
+C 0xc6d3 Retorno de carro: solo habia uno
+
+L 0xC706 monitor_cambia_de_signo  BC = -DE, para recorrer hacia atras
+C 0xc707 Cero
+C 0xc70b Menos DE
+C 0xc70d En BC
+
+L 0xC723 monitor_compara_el_patron  Compara byte a byte lo que queda del patron
+C 0xc723 Un byte del patron
+C 0xc725 No coincide
+C 0xc729 Los que queden
+
+L 0xC72D monitor_apunta_lo_encontrado  Guarda la direccion y enciende el bit 2
+C 0xc72d La direccion
+C 0xc731 La bandera de estado
+C 0xc734 Bit 2: encontrado
+
+L 0xC79A monitor_pinta_el_cursor  Si la casilla vale 0xC8, escribe el caracter guardado
+C 0xc79c Lee la casilla
+C 0xc79f El codigo del cursor
+C 0xc7a3 El caracter que habia debajo
+
+L 0xC7B7 monitor_espera_con_parpadeo  Cuenta mientras espera una tecla
+C 0xc7b7 Mira el teclado
+C 0xc7ba Hay tecla
+C 0xc7bc Uno menos
+C 0xc7bf Sigue esperando
+
+L 0xC7FB monitor_sube_una_linea  Con la flecha arriba, ocho bytes atras
+C 0xc7fb 0x1E es la flecha arriba
+C 0xc800 Si ya esta arriba, nada
+C 0xc805 Ocho bytes
+
+L 0xC80E monitor_baja_una_linea  Con la flecha abajo, ocho bytes adelante
+C 0xc80e 0x1F es la flecha abajo
+C 0xc813 Si ya esta abajo, nada
+C 0xc818 Ocho bytes
+C 0xc81b Avanza
+
+L 0xC820 monitor_es_un_digito_hex  Solo pasan los digitos y las letras de la A a la F
+C 0xc820 Por debajo del '0' no
+C 0xc825 Hasta el '9'
+C 0xc829 Por debajo de la 'A' tampoco
+C 0xc82e Y de la 'G' para arriba, no
+
+L 0xC857 monitor_guarda_el_byte  Escribe el byte y pasa a la otra mitad
+C 0xc858 El byte editado
+C 0xc85b Que mitad se editaba
+C 0xc861 Una columna atras
+
+L 0xC887 monitor_teclas_de_pagina  El retorno sale, y el '+' y el '-' cambian de pagina
+C 0xc887 Retorno de carro: se acabo
+C 0xc88c Un '+'
+C 0xc893 0x80 = 128 bytes adelante
+
+L 0xC89D monitor_pagina_atras  Y el '-' retrocede 128
+C 0xc89d Un '-'
+C 0xc89f Otra tecla: no hace nada
+C 0xc8a5 0xFF80 = -128
+
+L 0xC8D4 monitor_rellena_con_espacios  Escribe espacios hasta el final de la fila
+C 0xc8d4 Un espacio
+C 0xc8d9 La posicion de la ventana
+C 0xc8dc Al llegar a la primera columna, se acabo
+C 0xc8e0 Uno menos
+
+L 0xC98F monitor_escribe_los_indicadores  Pinta "Indicateur= " y las ocho banderas
+C 0xc98f La linea de resultados
+C 0xc995 El texto "Indicateur= "
+C 0xc99b El registro F guardado
+C 0xc99e Ocho banderas
+C 0xc9a0 La cadena "SZ1H1PNC"
+
+L 0xCA19 monitor_separa_con_espacios  La direccion y dos espacios de separacion
+C 0xca19 La direccion, en hexadecimal
+C 0xca1c Un espacio
+C 0xca21 Y otro
+C 0xca26 Ocho bytes por linea
+
+L 0xCA64 monitor_volcado_de_registros  Prepara la ventana y recorre los doce registros
+C 0xca64 La ventana de registros
+C 0xca6a La bandera de eco
+C 0xca6e Bit 3 abajo: sale por la ventana propia
+C 0xca73 Doce registros
+
+L 0xCA75 monitor_apunta_al_nombre  Cada nombre ocupa cuatro caracteres en 0xD901
+C 0xca75 El numero de registro
+C 0xca76 Por cuatro
+C 0xca7b La tabla de nombres
+C 0xca7f Cuatro caracteres
+
+L 0xCAC2 monitor_lee_o_falla  Lee un numero y, si no vale, saca el mensaje de error
+C 0xcac3 El numero
+C 0xcac7 Sin acarreo: bien leido
+C 0xcac8 El mensaje que se apunto
+C 0xcacb Y se saca
+
+L 0xCACE monitor_limpia_la_pantalla  Con el eco por la ventana, borra los 0x2A8 caracteres
+C 0xcace La bandera de eco
+C 0xcad3 Con el bit 3, no hay ventana que limpiar
+C 0xcad4 Desde el principio de la VRAM
+C 0xcad7 Sin interrupciones
+C 0xcadb 0x2A8 = 680 casillas
+
+L 0xCAFB monitor_escribe_hasta_el_retorno  Saca caracteres hasta el 0x0D, incluido
+C 0xcafb Un caracter
+C 0xcafe Lo imprime
+C 0xcb02 Retorno de carro: se acabo
+
+L 0xCB07 monitor_escribe_hasta_el_cero  Saca caracteres hasta el 0x00
+C 0xcb07 Un caracter
+C 0xcb09 El cero termina
+C 0xcb0a Lo imprime
+
+L 0xCB60 monitor_a_mayusculas  Pasa una minuscula a mayuscula
+C 0xcb60 Por debajo de la 'a', nada
+C 0xcb63 De la '{' para arriba, tampoco
+C 0xcb66 El bit 5 es el que las separa
+
+L 0xCB6B monitor_orden_de_busqueda  Con el bit 2 puesto, escribe donde se encontro
+C 0xcb6b La bandera de estado
+C 0xcb6e Bit 2: se encontro algo
+C 0xcb70 No hay nada que ensenar
+C 0xcb74 El caracter guardado
+
+L 0xCB85 monitor_tabulador  Con el bit 2 puesto, pasa a mayusculas
+C 0xcb86 La bandera de estado
+C 0xcb89 Bit 2
+C 0xcb8d Y se convierte
+
+L 0xCB99 monitor_paso_a_paso  Con el bit 1 puesto, ejecuta una instruccion
+C 0xcb99 El subtipo
+C 0xcb9c La bandera de estado
+C 0xcb9f Bit 1: se puede
+C 0xcba3 Un paso
+
+L 0xCBA9 monitor_ejecuta_hasta  Con el bit 1 puesto, corre hasta el punto de parada
+C 0xcba9 La bandera de estado
+C 0xcbac Bit 1: se puede
+C 0xcbb3 Y se lanza
+
+L 0xCC1E monitor_prepara_el_call  Con el tipo 4, mete la vuelta a 0xCC74 en la pila
+C 0xcc1e Tipo 4
+C 0xcc22 La pila del programa
+C 0xcc28 La direccion de vuelta al monitor
+C 0xcc2c Y se guarda la pila
+
+L 0xCC32 monitor_elige_el_registro_indice  Segun el prefijo, IX, IY o HL
+C 0xcc32 IY guardado
+C 0xcc35 El primer byte de la instruccion
+C 0xcc38 Prefijo DD: es IX
+C 0xcc3c IX guardado
+C 0xcc3f Prefijo FD: es IY
+C 0xcc43 Y si no, HL
+
+L 0xCC63 monitor_vuelve_del_tampon  Lo que se ejecuta justo despues del tampon de cuatro bytes
+C 0xcc63 La pila del programa
+C 0xcc67 Y la del monitor
+C 0xcc6c La bandera del paso a paso
+
+L 0xCD16 monitor_imprime_o_borra  Segun el bit 3, imprime en la ventana o borra
+C 0xcd17 Guarda el caracter
+C 0xcd18 La bandera de eco
+C 0xcd1b Bit 3
+
+L 0xCDAB monitor_divide_y_escribe  Resta DE hasta que no cabe y escribe el digito
+C 0xcdab Resta
+C 0xcdad Un digito mas
+C 0xcdae Hasta que no cabe
+C 0xcdb0 Se devuelve lo restado de mas
+C 0xcdb2 De numero a ASCII
+
+L 0xCDC2 monitor_llena_de_espacios  Escribe espacios por el puerto del VDP
+C 0xcdc2 El espacio
+C 0xcdc4 Puerto de datos del VDP
+C 0xcdc6 Uno menos
+C 0xcdcb Y vuelven las interrupciones
+
+L 0xCDE8 monitor_compara_hl_y_de  Devuelve Z si son iguales, sin tocar los registros
+C 0xcde8 Los bytes altos
+C 0xcdea Distintos: se acabo
+C 0xcdeb Y los bajos
+
+L 0xCE01 monitor_escribe_en_vram  Pone la direccion y saca el byte
+C 0xce02 La direccion
+C 0xce05 Dos EX (SP),HL seguidos: no hacen nada, son la pausa que pide el VDP
+C 0xce08 Puerto de datos del VDP
+
+L 0xCE16 monitor_direccion_de_vram  Pone HL en el VDP en modo escritura
+C 0xce16 Byte bajo
+C 0xce17 Puerto de control del VDP
+C 0xce1a El bit 6 pide escritura
+
+L 0xCE71 monitor_instruccion_desconocida  Deja "??" de nemonico y un byte de tamano
+C 0xce71 Los dos interrogantes
+C 0xce7a Un byte
+
+L 0xCE92 monitor_prefijo_dd_o_fd  Guarda el nemonico y mira si detras viene un CB
+C 0xce92 El nemonico; se escribe en 0xD64E, que aqui son datos del juego
+C 0xce95 El byte siguiente
+C 0xce9a Otro prefijo CB
+C 0xce9e La tabla de opcodes con indice
+C 0xcea1 Dieciseis entradas
+
+L 0xCED0 monitor_mira_el_operando  De 0xBF en adelante no hay tabla; el 6 es (HL)
+C 0xced0 El limite de la tabla
+C 0xced4 Los tres bits de abajo
+C 0xced6 El 6 es (HL)
+
+L 0xCEDC monitor_prefijo_dd_cb  Las de DD CB llevan tres bytes y desplazamiento
+C 0xcedc El tercer byte
+C 0xcedf Los tres bits de abajo
+C 0xcee1 Tiene que ser un 6
+C 0xcee5 Tres bytes
+C 0xceec Y se apunta que hay desplazamiento
+
+L 0xCEF1 monitor_prefijo_ed  Busca en las dos tablas de las instrucciones ED
+C 0xcef1 El byte de despues del prefijo
+C 0xcef3 Primera tabla, con mascara
+C 0xcef9 Segunda tabla, exacta
+C 0xceff Y si no esta en ninguna, desconocida
+
+L 0xCF02 monitor_busca_exacto  Recorre la tabla de tres en tres buscando el opcode
+C 0xcf02 La entrada
+C 0xcf03 0xFF termina la tabla
+C 0xcf06 Contra el opcode
+C 0xcf0b Tres bytes por entrada
+
+L 0xCF10 monitor_busca_con_mascara  Aplica la mascara y compara con el valor
+C 0xcf10 La mascara
+C 0xcf12 El cero termina la tabla
+C 0xcf13 Se aplica
+C 0xcf17 Y se compara
+
+L 0xCF75 monitor_signo_del_desplazamiento  Elige el '+' o el '-' del (IX+d)
+C 0xcf75 El desplazamiento
+C 0xcf76 Positivo: signo '+'
+C 0xcf79 Negativo: se cambia de signo
+C 0xcf7c Y el '-'
+
+L 0xDC19 monta_la_pantalla_final  Rellena a mano un guion de doce bytes en 0xE002 y lo ejecuta
+C 0xdc19 CLRSPR: borra todos los sprites
+C 0xdc1c Vector de sonido
+C 0xdc1f El area de trabajo
+C 0xdc2a Un NOP en medio del relleno
+C 0xdc30 El guion, en la RAM alta
+C 0xdc50 Y se interpreta
+C 0xdc53 El interprete de guiones
+C 0xdc56 Numero de sprite
+C 0xdc6a Dos sprites mas, con sus dos planos
+C 0xdc7b El sprite del jugador
+C 0xdc86 Y su posicion
+C 0xdc8f Vector de sonido
+
+L 0xDD59 sale_si_esta_congelado  Con 0x9C8F puesto, se vuelve sin hacer nada
+C 0xdd5a La bandera que congela el juego
+C 0xdd5e A cero: se sigue
+C 0xdd60 Puesta: se vuelve
+
+L 0xDDF0 monta_al_que_baja  Copia doce bytes de ficha y sortea donde aparece
+C 0xddf0 La posicion
+C 0xddf3 El area de trabajo de 0xF430
+C 0xddf6 Doce bytes
+C 0xddfe El primer campo
+C 0xde00 Si ya esta en marcha, nada
+C 0xde03 Estado 1
+C 0xde09 El dado
+C 0xde0c Ocho de base
+C 0xde14 El dibujo
+C 0xde1e Vector de sonido
+C 0xde21 La fila de partida
+C 0xde27 Otro dado
+C 0xde2c Tres NOP: aqui habia una comprobacion
+C 0xde2f El registro de refresco, de dado
+C 0xde31 De 0 a 28
+C 0xde39 Vector de sonido
+
+L 0xDEA3 borra_las_cuatro  Borra las cuatro casillas de la posicion de 0xF433
+C 0xdea3 La posicion
+C 0xdea6 0x1F: hasta la fila de abajo
+C 0xdea9 La primera
+C 0xdead La de al lado
+C 0xdeb1 Y las dos de abajo
+
+L 0xDF62 sale_si_esta_congelado_2  El gemelo de 0xDD59, que ademas devuelve 0x8064
+C 0xdf62 La bandera que congela el juego
+C 0xdf66 El tampon que se devuelve
+C 0xdf69 A cero: se devuelve normal
+C 0xdf6a Puesta: se sale por dos niveles
+
+L 0xDF8F prueba_las_cuatro  Mira las cuatro casillas del bloque de dos por dos
+C 0xdf8f La primera
+C 0xdf93 La de al lado
+C 0xdf96 La fila de abajo
+C 0xdf99 Y devuelve el area de trabajo
+
+# >>> HUECOS ETIQUETADOS POR tools/rellena_huecos.py - NO EDITAR A MANO
+D 0x8277 0x8278 ret_suelto  un unico 0xC9 (RET) al que no llega ningun salto
+D 0x8287 0x8288 relleno_cero  todo el hueco es 0x00
+D 0x8337 0x8338 relleno_cero  todo el hueco es 0x00
+D 0x83ee 0x83f0 relleno_cero  todo el hueco es 0x00
+D 0x8471 0x8473 bucle_muerto  0x18 0xFE, o sea jr $: un cuelgue que nadie alcanza
+D 0x8487 0x8488 relleno_cero  todo el hueco es 0x00
+D 0x84ff 0x8500 relleno_cero  todo el hueco es 0x00
+D 0x859f 0x85a0 relleno_cero  todo el hueco es 0x00
+D 0x85b7 0x85b8 relleno_cero  todo el hueco es 0x00
+D 0x8665 0x8668 relleno_cero  todo el hueco es 0x00
+D 0x8694 0x8696 bucle_muerto  0x18 0xFE, o sea jr $: un cuelgue que nadie alcanza
+D 0x86aa 0x86ab relleno_cero  todo el hueco es 0x00
+D 0x892f 0x8930 ret_suelto  un unico 0xC9 (RET) al que no llega ningun salto
+D 0x8977 0x8978 ret_suelto  un unico 0xC9 (RET) al que no llega ningun salto
+D 0x898f 0x8990 ret_suelto  un unico 0xC9 (RET) al que no llega ningun salto
+D 0x8a37 0x8a38 relleno_cero  todo el hueco es 0x00
+D 0x8b2d 0x8b2e ret_suelto  un unico 0xC9 (RET) al que no llega ningun salto
+D 0x8b63 0x8b64 ret_suelto  un unico 0xC9 (RET) al que no llega ningun salto
+D 0x8b9d 0x8ba0 ret_y_relleno  un 0xC9 (RET) y ceros detras
+D 0x8bf7 0x8bf8 relleno_cero  todo el hueco es 0x00
+D 0x8c9e 0x8ca0 relleno_ff  todo el hueco es 0xFF
+D 0x8cf7 0x8cf8 ret_suelto  un unico 0xC9 (RET) al que no llega ningun salto
+D 0x8e9f 0x8ea0 ret_suelto  un unico 0xC9 (RET) al que no llega ningun salto
+D 0x8f4d 0x8f50 relleno_cero  todo el hueco es 0x00
+D 0x8f87 0x8f88 ret_suelto  un unico 0xC9 (RET) al que no llega ningun salto
+D 0x8fce 0x8fd0 relleno_cero  todo el hueco es 0x00
+D 0x902d 0x9030 relleno_cero  todo el hueco es 0x00
+D 0x90cd 0x90d0 relleno_cero  todo el hueco es 0x00
+D 0x90f7 0x90f8 relleno_cero  todo el hueco es 0x00
+D 0x9117 0x9118 ret_suelto  un unico 0xC9 (RET) al que no llega ningun salto
+D 0x9124 0x9128 relleno_cero  todo el hueco es 0x00
+D 0x9174 0x9178 relleno_ff  todo el hueco es 0xFF
+D 0x92ef 0x92f0 relleno_cero  todo el hueco es 0x00
+D 0x9307 0x9308 ret_suelto  un unico 0xC9 (RET) al que no llega ningun salto
+D 0x9357 0x9358 ret_suelto  un unico 0xC9 (RET) al que no llega ningun salto
+D 0x938f 0x9390 relleno_cero  todo el hueco es 0x00
+D 0x939f 0x93a0 relleno_cero  todo el hueco es 0x00
+D 0x93c6 0x93c8 relleno_cero  todo el hueco es 0x00
+D 0x949f 0x94a0 relleno_cero  todo el hueco es 0x00
+D 0x94c7 0x94c8 ret_suelto  un unico 0xC9 (RET) al que no llega ningun salto
+D 0x94dd 0x94e0 relleno_cero  todo el hueco es 0x00
+D 0x94f7 0x94f8 relleno_cero  todo el hueco es 0x00
+D 0x950f 0x9510 relleno_cero  todo el hueco es 0x00
+D 0x96bc 0x96c0 relleno_cero  todo el hueco es 0x00
+D 0x96d7 0x96d8 relleno_cero  todo el hueco es 0x00
+D 0x96e7 0x96e8 relleno_cero  todo el hueco es 0x00
+D 0x96ef 0x96f0 relleno_cero  todo el hueco es 0x00
+D 0x972f 0x9730 relleno_cero  todo el hueco es 0x00
+D 0x9746 0x9747 relleno_cero  todo el hueco es 0x00
+D 0x9763 0x9767 relleno_cero  todo el hueco es 0x00
+D 0x977e 0x9780 relleno_cero  todo el hueco es 0x00
+D 0x978e 0x9790 relleno_cero  todo el hueco es 0x00
+D 0x97b7 0x97b8 ret_suelto  un unico 0xC9 (RET) al que no llega ningun salto
+D 0x98ff 0x9900 relleno_cero  todo el hueco es 0x00
+D 0x9925 0x9928 relleno_cero  todo el hueco es 0x00
+D 0x9a3f 0x9a40 relleno_cero  todo el hueco es 0x00
+D 0x9a56 0x9a58 relleno_cero  todo el hueco es 0x00
+D 0x9add 0x9ae0 relleno_cero  todo el hueco es 0x00
+D 0x9b26 0x9b28 relleno_cero  todo el hueco es 0x00
+D 0x9b3f 0x9b40 relleno_cero  todo el hueco es 0x00
+D 0x9c07 0x9c08 relleno_cero  todo el hueco es 0x00
+D 0x9cdf 0x9ce0 relleno_cero  todo el hueco es 0x00
+D 0x9d2e 0x9d30 relleno_cero  todo el hueco es 0x00
+D 0x9d7f 0x9d80 relleno_cero  todo el hueco es 0x00
+D 0x9dbf 0x9dc0 relleno_cero  todo el hueco es 0x00
+D 0x9dc7 0x9dc8 ret_suelto  un unico 0xC9 (RET) al que no llega ningun salto
+D 0x9de7 0x9de8 ret_suelto  un unico 0xC9 (RET) al que no llega ningun salto
+D 0x9e2f 0x9e30 ret_suelto  un unico 0xC9 (RET) al que no llega ningun salto
+D 0x9eb5 0x9eb8 relleno_cero  todo el hueco es 0x00
+D 0x9ebf 0x9ec0 ret_suelto  un unico 0xC9 (RET) al que no llega ningun salto
+D 0x9ec7 0x9ec8 ret_suelto  un unico 0xC9 (RET) al que no llega ningun salto
+D 0x9ed7 0x9ed8 relleno_cero  todo el hueco es 0x00
+D 0x9f6f 0x9f70 ret_suelto  un unico 0xC9 (RET) al que no llega ningun salto
+D 0x9faf 0x9fb0 ret_suelto  un unico 0xC9 (RET) al que no llega ningun salto
+D 0x9fdb 0x9fe0 relleno_cero  todo el hueco es 0x00
+D 0x9fe7 0x9fe8 relleno_cero  todo el hueco es 0x00
+D 0xa03f 0xa040 ret_suelto  un unico 0xC9 (RET) al que no llega ningun salto
+D 0xa0a6 0xa0a8 relleno_cero  todo el hueco es 0x00
+D 0xa0d6 0xa0d8 relleno_cero  todo el hueco es 0x00
+D 0xa107 0xa108 relleno_ff  todo el hueco es 0xFF
+D 0xa10f 0xa110 relleno_cero  todo el hueco es 0x00
+D 0xa137 0xa138 relleno_cero  todo el hueco es 0x00
+D 0xa19e 0xa1a0 relleno_cero  todo el hueco es 0x00
+D 0xa36e 0xa370 relleno_cero  todo el hueco es 0x00
+D 0xa462 0xa468 relleno_cero  todo el hueco es 0x00
+D 0xa47e 0xa480 relleno_cero  todo el hueco es 0x00
+D 0xa497 0xa498 relleno_cero  todo el hueco es 0x00
+D 0xa4c6 0xa4c8 relleno_cero  todo el hueco es 0x00
+D 0xa4ff 0xa500 relleno_cero  todo el hueco es 0x00
+D 0xa50c 0xa510 relleno_cero  todo el hueco es 0x00
+D 0xa58f 0xa590 relleno_cero  todo el hueco es 0x00
+D 0xa5cd 0xa5d0 relleno_cero  todo el hueco es 0x00
+D 0xa7ce 0xa7d0 relleno_cero  todo el hueco es 0x00
+D 0xa8f6 0xa8f8 relleno_cero  todo el hueco es 0x00
+D 0xa937 0xa938 relleno_cero  todo el hueco es 0x00
+D 0xaa47 0xaa48 relleno_cero  todo el hueco es 0x00
+D 0xaa87 0xaa88 relleno_cero  todo el hueco es 0x00
+D 0xaaa1 0xaaa2 relleno_cero  todo el hueco es 0x00
+D 0xab47 0xab48 relleno_cero  todo el hueco es 0x00
+D 0xab67 0xab68 relleno_cero  todo el hueco es 0x00
+D 0xac15 0xac18 ret_y_relleno  un 0xC9 (RET) y ceros detras
+D 0xac37 0xac38 relleno_cero  todo el hueco es 0x00
+D 0xac47 0xac48 relleno_cero  todo el hueco es 0x00
+D 0xac57 0xac58 relleno_cero  todo el hueco es 0x00
+D 0xac7f 0xac80 relleno_cero  todo el hueco es 0x00
+D 0xada7 0xada8 ret_suelto  un unico 0xC9 (RET) al que no llega ningun salto
+D 0xaf0f 0xaf10 relleno_cero  todo el hueco es 0x00
+D 0xaf80 0xaf81 ret_suelto  un unico 0xC9 (RET) al que no llega ningun salto
+D 0xaf88 0xaf89 relleno_cero  todo el hueco es 0x00
+D 0xaf93 0xaf94 ret_suelto  un unico 0xC9 (RET) al que no llega ningun salto
+D 0xafb7 0xafb8 relleno_cero  todo el hueco es 0x00
+D 0xb0e0 0xb0e1 relleno_cero  todo el hueco es 0x00
+D 0xb0ff 0xb100 relleno_cero  todo el hueco es 0x00
+D 0xb13d 0xb140 relleno_cero  todo el hueco es 0x00
+D 0xb237 0xb238 relleno_cero  todo el hueco es 0x00
+D 0xb26f 0xb270 relleno_cero  todo el hueco es 0x00
+D 0xb2cf 0xb2d0 relleno_cero  todo el hueco es 0x00
+D 0xb487 0xb488 relleno_cero  todo el hueco es 0x00
+D 0xb49d 0xb4a0 relleno_cero  todo el hueco es 0x00
+D 0xb556 0xb558 ret_y_relleno  un 0xC9 (RET) y ceros detras
+D 0xb5cf 0xb5d0 ret_suelto  un unico 0xC9 (RET) al que no llega ningun salto
+D 0xb6a6 0xb6a8 relleno_cero  todo el hueco es 0x00
+D 0xb6bb 0xb6bc ret_suelto  un unico 0xC9 (RET) al que no llega ningun salto
+D 0xb6c6 0xb6c8 relleno_cero  todo el hueco es 0x00
+D 0xb726 0xb728 relleno_cero  todo el hueco es 0x00
+D 0xb73e 0xb740 relleno_cero  todo el hueco es 0x00
+D 0xb827 0xb828 relleno_cero  todo el hueco es 0x00
+D 0xb896 0xb898 relleno_cero  todo el hueco es 0x00
+D 0xb9a7 0xb9a8 relleno_cero  todo el hueco es 0x00
+D 0xb9b7 0xb9b8 relleno_cero  todo el hueco es 0x00
+D 0xba36 0xba38 relleno_cero  todo el hueco es 0x00
+D 0xba8f 0xba90 relleno_cero  todo el hueco es 0x00
+D 0xbb5f 0xbb60 relleno_cero  todo el hueco es 0x00
+D 0xbbce 0xbbd0 relleno_cero  todo el hueco es 0x00
+D 0xbbd6 0xbbd8 relleno_cero  todo el hueco es 0x00
+D 0xbbde 0xbbdf relleno_cero  todo el hueco es 0x00
+D 0xbbf7 0xbbf8 relleno_cero  todo el hueco es 0x00
+D 0xbc0f 0xbc10 relleno_cero  todo el hueco es 0x00
+D 0xbcff 0xbd00 relleno_cero  todo el hueco es 0x00
+D 0xbdff 0xbe00 relleno_cero  todo el hueco es 0x00
+D 0xbeef 0xbef0 relleno_cero  todo el hueco es 0x00
+D 0xbf1e 0xbf20 relleno_cero  todo el hueco es 0x00
+D 0xbf3f 0xbf40 relleno_cero  todo el hueco es 0x00
+D 0xbf87 0xbf88 relleno_cero  todo el hueco es 0x00
+D 0xbfff 0xc000 relleno_cero  todo el hueco es 0x00
+D 0xdace 0xdad0 relleno_ff  todo el hueco es 0xFF
+D 0xdbc5 0xdbc6 ret_suelto  un unico 0xC9 (RET) al que no llega ningun salto
+D 0xdbdf 0xdbe0 ret_suelto  un unico 0xC9 (RET) al que no llega ningun salto
+D 0xdbea 0xdbf0 relleno_cero  todo el hueco es 0x00
+D 0xdd2e 0xdd30 relleno_cero  todo el hueco es 0x00
+D 0xdd37 0xdd38 relleno_cero  todo el hueco es 0x00
+D 0xdd66 0xdd68 relleno_cero  todo el hueco es 0x00
+D 0xddc6 0xddc8 relleno_ff  todo el hueco es 0xFF
+D 0xddee 0xddf0 relleno_ff  todo el hueco es 0xFF
+D 0xdf26 0xdf28 relleno_cero  todo el hueco es 0x00
+D 0xdf2f 0xdf30 relleno_cero  todo el hueco es 0x00
+D 0xdf46 0xdf48 relleno_cero  todo el hueco es 0x00
+# <<< fin de los huecos automaticos

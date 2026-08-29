@@ -1,0 +1,77 @@
+B 0x4000 ====================================================================
+B 0x4000  LOS 26 MAPAS DE PANTALLA, COMPRIMIDOS
+B 0x4000 ====================================================================
+B 0x4000 La otra mitad de la pagina 1 escondida. Son los mapas de nombres de
+B 0x4000 las pantallas del juego, comprimidos con una carrera de longitud muy
+B 0x4000 simple que descomprime la rutina de 0x819D:
+B 0x4000
+B 0x4000     0xFF <baldosa> <cuantas>   repite esa baldosa esas veces
+B 0x4000     cualquier otro byte        esa baldosa, una vez
+B 0x4000
+B 0x4000 Cada mapa da 0x280 = 640 baldosas, o sea 32 columnas por 20 filas: la
+B 0x4000 pantalla menos las cuatro filas de abajo, que son el marcador. El
+B 0x4000 destino es 0x5480, un tampon en la propia RAM escondida.
+B 0x4000
+B 0x4000 Las fronteras de aqui abajo no estan puestas a ojo: se descomprimieron
+B 0x4000 los 26 mapas uno detras de otro y CADA UNO da exactamente 640
+B 0x4000 baldosas y termina justo donde empieza el siguiente. El ultimo acaba
+B 0x4000 en 0x5467, que es el ultimo byte del bloque.
+B 0x4000
+B 0x4000 Los 23 mapas que van de 0x43DE en adelante son las pantallas del
+B 0x4000 juego, y su orden lo da la tabla de punteros de 0xD000. Hay 24
+B 0x4000 entradas y solo 23 mapas distintos porque las pantallas 13 y 14
+B 0x4000 apuntan las dos a 0x4D44.
+B 0x4000 Los tres primeros no estan en esa tabla: son la portada.
+
+D 0x4000 0x418a portada_fondo  El primer mapa de la portada. No lo apunta la tabla de 0xD000 (394 bytes comprimidos -> 640 baldosas)
+F 0x4000 16
+D 0x418a 0x4281 portada_vacia  Mapa de la portada con la pantalla casi entera a la baldosa 0. No lo apunta la tabla de 0xD000 (247 bytes comprimidos -> 640 baldosas)
+F 0x418a 16
+D 0x4281 0x43de portada_titulo  La portada con el titulo. Descomprimido se lee, en codigos de baldosa que son ASCII: 'L' + baldosa 0xD6 + 'INTRUSION' en la fila 17, y '(C) 1986 PAR SABLATOU CLAUDE' en la 19 (349 bytes comprimidos -> 640 baldosas)
+F 0x4281 16
+D 0x43de 0x44aa mapa_pantalla_00  Mapa de la pantalla 0, lo apunta 0xD000+0 (204 bytes comprimidos -> 640 baldosas)
+F 0x43de 16
+D 0x44aa 0x451d mapa_pantalla_01  Mapa de la pantalla 1, lo apunta 0xD000+2 (115 bytes comprimidos -> 640 baldosas)
+F 0x44aa 16
+D 0x451d 0x456e mapa_pantalla_02  Mapa de la pantalla 2, lo apunta 0xD000+4 (81 bytes comprimidos -> 640 baldosas)
+F 0x451d 16
+D 0x456e 0x4604 mapa_pantalla_03  Mapa de la pantalla 3, lo apunta 0xD000+6 (150 bytes comprimidos -> 640 baldosas)
+F 0x456e 16
+D 0x4604 0x46af mapa_pantalla_04  Mapa de la pantalla 4, lo apunta 0xD000+8 (171 bytes comprimidos -> 640 baldosas)
+F 0x4604 16
+D 0x46af 0x475c mapa_pantalla_05  Mapa de la pantalla 5, lo apunta 0xD000+10 (173 bytes comprimidos -> 640 baldosas)
+F 0x46af 16
+D 0x475c 0x4846 mapa_pantalla_06  Mapa de la pantalla 6, lo apunta 0xD000+12 (234 bytes comprimidos -> 640 baldosas)
+F 0x475c 16
+D 0x4846 0x48fa mapa_pantalla_07  Mapa de la pantalla 7, lo apunta 0xD000+14 (180 bytes comprimidos -> 640 baldosas)
+F 0x4846 16
+D 0x48fa 0x4a48 mapa_pantalla_08  Mapa de la pantalla 8, lo apunta 0xD000+16 (334 bytes comprimidos -> 640 baldosas)
+F 0x48fa 16
+D 0x4a48 0x4b2c mapa_pantalla_09  Mapa de la pantalla 9, lo apunta 0xD000+18 (228 bytes comprimidos -> 640 baldosas)
+F 0x4a48 16
+D 0x4b2c 0x4bf1 mapa_pantalla_10  Mapa de la pantalla 10, lo apunta 0xD000+20 (197 bytes comprimidos -> 640 baldosas)
+F 0x4b2c 16
+D 0x4bf1 0x4c74 mapa_pantalla_11  Mapa de la pantalla 11, lo apunta 0xD000+22 (131 bytes comprimidos -> 640 baldosas)
+F 0x4bf1 16
+D 0x4c74 0x4d44 mapa_pantalla_12  Mapa de la pantalla 12, lo apunta 0xD000+24 (208 bytes comprimidos -> 640 baldosas)
+F 0x4c74 16
+D 0x4d44 0x4e54 mapa_pantalla_13  Mapa de la pantalla 13/14, lo apunta 0xD000+26/28. Dos entradas de la tabla apuntan al mismo mapa (272 bytes comprimidos -> 640 baldosas)
+F 0x4d44 16
+D 0x4e54 0x4faf mapa_pantalla_15  Mapa de la pantalla 15, lo apunta 0xD000+30 (347 bytes comprimidos -> 640 baldosas)
+F 0x4e54 16
+D 0x4faf 0x500e mapa_pantalla_19  Mapa de la pantalla 19, lo apunta 0xD000+38 (95 bytes comprimidos -> 640 baldosas)
+F 0x4faf 16
+D 0x500e 0x5076 mapa_pantalla_20  Mapa de la pantalla 20, lo apunta 0xD000+40 (104 bytes comprimidos -> 640 baldosas)
+F 0x500e 16
+D 0x5076 0x5183 mapa_pantalla_21  Mapa de la pantalla 21, lo apunta 0xD000+42 (269 bytes comprimidos -> 640 baldosas)
+F 0x5076 16
+D 0x5183 0x520b mapa_pantalla_22  Mapa de la pantalla 22, lo apunta 0xD000+44 (136 bytes comprimidos -> 640 baldosas)
+F 0x5183 16
+D 0x520b 0x5298 mapa_pantalla_23  Mapa de la pantalla 23, lo apunta 0xD000+46 (141 bytes comprimidos -> 640 baldosas)
+F 0x520b 16
+D 0x5298 0x5346 mapa_pantalla_16  Mapa de la pantalla 16, lo apunta 0xD000+32 (174 bytes comprimidos -> 640 baldosas)
+F 0x5298 16
+D 0x5346 0x53c7 mapa_pantalla_17  Mapa de la pantalla 17, lo apunta 0xD000+34 (129 bytes comprimidos -> 640 baldosas)
+F 0x5346 16
+D 0x53c7 0x5468 mapa_pantalla_18  Mapa de la pantalla 18, lo apunta 0xD000+36 (161 bytes comprimidos -> 640 baldosas)
+F 0x53c7 16

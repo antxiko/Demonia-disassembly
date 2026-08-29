@@ -1,0 +1,104 @@
+# Puntos de entrada del juego ya cargado, sobre la imagen de 64K.
+# Uno por linea, cada uno con la razon por la que esta aqui. Los que no se
+# deducen del flujo son saltos indirectos: tablas de punteros, vectores en RAM
+# o direcciones metidas en la pila con PUSH/RET.
+
+0x8100   # direccion de ejecucion que declara la cabecera BIN de la cinta
+
+# ---------------------------------------------------------------- el vector de sonido
+# El juego se reserva los cinco bytes del gancho H.KEYI (0xFD9A) como VECTOR
+# CONMUTABLE: 0x83D6 escribe alli un "jp 0x838D" (0xC3 + la direccion) y 0x8492
+# escribe un "ret" (0xC9) para apagarlo. Por eso hay mas de cuarenta
+# "call 0xFD9A" repartidos por el codigo: son llamadas a esta rutina.
+0x838D   # rutina de sonido; 0x83D6 la instala como jp en 0xFD9A
+
+# ---------------------------------------------------------------- el interprete de guiones
+# 0xAA0D es un interprete: lee un byte de (HL), lo multiplica por dos y salta
+# por la tabla de 0xAA20 con un PUSH DE / RET. Los guiones no estan en la cinta;
+# se construyen en RAM por encima de 0xE000, asi que las unicas direcciones que
+# se pueden dar son las de la tabla.
+0xAA00   # pareja de guiones (0xE002 y 0xE017); 0xA22E la mete en la pila con push hl
+0xAA38   # ayudante justo detras de la tabla: lee (0x80C0), el puntero del guion
+
+# los doce destinos de la tabla de 0xAA20 (opcodes 0 a 11 del guion).
+# Los opcodes 0, 1, 2 y 11 apuntan a 0xFD9A, o sea al vector de sonido.
+0xAFB8   # tabla 0xAA20, opcode 3
+0xAC18   # tabla 0xAA20, opcode 4
+0xBC30   # tabla 0xAA20, opcode 5
+0x9928   # tabla 0xAA20, opcode 6
+0xB774   # tabla 0xAA20, opcode 7
+0xAE60   # tabla 0xAA20, opcode 8
+0xAA48   # tabla 0xAA20, opcode 9
+0xB898   # tabla 0xAA20, opcode 10
+
+# ---------------------------------------------------------------- el vector de 0x804E
+# 0x85CD guarda HL en 0x804E y 0x85D8 hace "ld hl,(0x804E) / jp (hl)". Solo hay
+# tres sitios que carguen ese HL, y estan pegados: 0x85C0, 0x85C5 y 0x85CA.
+0x85E3   # lo carga 0x85C0 en el vector de 0x804E
+0x8638   # lo carga 0x85C5 en el vector de 0x804E
+# (0x85CA carga 0x0000, que con el guardia de 0x804D significa "ninguna")
+
+# ------------------------------------------------- la tabla de conducta de 0xD030
+# Dos tablas hermanas, las dos de 24 entradas, una por pantalla del juego:
+#   0xD000 + 2*n   un puntero a los datos de la pantalla, en la RAM escondida
+#                  bajo la ROM (todos caen entre 0x43DE y 0x5346)
+#   0xD030 + 8*n   CUATRO punteros a rutina. El relleno de los huecos es 0xFD9A,
+#                  o sea el vector de sonido: "aqui no hay nada que hacer".
+# Estos son los destinos distintos que aparecen en esas 96 posiciones.
+0x94F8   # tabla de conducta de 0xD030
+0x9518   # tabla de conducta de 0xD030
+0x9DE8   # tabla de conducta de 0xD030
+0x9E18   # tabla de conducta de 0xD030
+0x9E30   # tabla de conducta de 0xD030
+0x9EB8   # tabla de conducta de 0xD030
+0x9EC0   # tabla de conducta de 0xD030
+0xB4B4   # tabla de conducta de 0xD030
+0xB758   # tabla de conducta de 0xD030
+0xB75F   # tabla de conducta de 0xD030
+0xDBF0   # tabla de conducta de 0xD030
+0xDDBA   # tabla de conducta de 0xD030
+0xDDC0   # tabla de conducta de 0xD030
+0xDDC8   # tabla de conducta de 0xD030
+0xDF18   # tabla de conducta de 0xD030
+0xDF28   # tabla de conducta de 0xD030
+0xDF30   # tabla de conducta de 0xD030
+0xDF38   # tabla de conducta de 0xD030
+
+# ================================================================= HUERFANOS
+# Lo que sigue NO se alcanza desde 0x8100 siguiendo el flujo, y aun asi es
+# codigo Z80 valido. Son las ordenes del MONITOR DE CODIGO MAQUINA de Loriciels
+# (1984, Claude Sablatou) que viaja dentro del bloque del juego: sus textos
+# estan en 0xD905-0xDAA2 y su punto de entrada, 0xC924, si se alcanza.
+#
+# Por que no se alcanzan: el monitor reconoce ordenes buscando la inicial en una
+# tabla de 15 entradas de tres bytes que empieza en 0xD5C6 (el bucle esta en
+# 0xC28D-0xC299). En esta cinta esa tabla esta A CEROS y encima de ella hay
+# datos del juego, asi que ninguna orden se reconoce y ningun manejador corre.
+#
+# Se declaran aqui para que el listado los muestre como el codigo que son. Que
+# son huerfanos esta contado y medido en docs/LO-QUE-SOBRA.md.
+0xC33F   # [HUERFANO] monitor: ¿el caracter es un digito?
+0xC5B6   # [HUERFANO] monitor: imprime "Resultat= " (0xDA39)
+0xC661   # [HUERFANO] monitor: orden sin identificar
+0xC97A   # [HUERFANO] monitor: orden sin identificar
+0xCAB0   # [HUERFANO] monitor: reconoce el sufijo 'p'/'P' de un parametro
+0xCC63   # [HUERFANO] monitor: vuelta al monitor tras ejecutar la instruccion del paso a paso
+0xCD84   # [HUERFANO] monitor: imprime un numero en decimal (10000/1000/100/10)
+0xC4A9   # [HUERFANO] monitor: orden huerfana (tramo de codigo valido que nadie alcanza)
+0xC5D3   # [HUERFANO] monitor: orden huerfana (tramo de codigo valido que nadie alcanza)
+0xC667   # [HUERFANO] monitor: orden huerfana (tramo de codigo valido que nadie alcanza)
+0xC98F   # [HUERFANO] monitor: orden huerfana (tramo de codigo valido que nadie alcanza)
+0xCACE   # [HUERFANO] monitor: orden huerfana (tramo de codigo valido que nadie alcanza)
+0xC517   # [HUERFANO] monitor: orden huerfana (tramo de codigo valido que nadie alcanza)
+0xC6BD   # [HUERFANO] monitor: orden huerfana (tramo de codigo valido que nadie alcanza)
+0xC9B6   # [HUERFANO] monitor: orden huerfana (tramo de codigo valido que nadie alcanza)
+0xC535   # [HUERFANO] monitor: orden huerfana (tramo de codigo valido que nadie alcanza)
+0xC8B3   # [HUERFANO] monitor: orden huerfana (tramo de codigo valido que nadie alcanza)
+0xC8F1   # [HUERFANO] monitor: orden huerfana (tramo de codigo valido que nadie alcanza)
+0xCF51   # [HUERFANO] monitor: el desensamblador (imprime '+', '-', ')' y ',' y usa las tablas de 0xD64A-0xD67C)
+0xCFC0   # [HUERFANO] monitor: extrae campos del opcode y copia dos letras de las tablas de 0xD64A/0xD652
+
+# ---------------------------------------------------------------- el reinicio
+0xDAD0   # reinicia el juego (pone a cero 0x9C8F y salta a 0x8100); llegan seis saltos condicionales: 0x8578, 0x88DC, 0x94D2, 0xB321, 0xB325 y 0xB7C1
+0xDAC8   # [HUERFANO] tres bytes delante de 0xDAD0: llama a INIGRP y cae en el reinicio. Nadie lo llama, pero es codigo y hay que leerlo
+0xBDC3   # [HUERFANO] HUERFANO: 60 bytes de codigo valido entre dos rutinas vivas a los que no llega ninguna instruccion

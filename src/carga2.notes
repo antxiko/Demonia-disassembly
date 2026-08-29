@@ -1,0 +1,56 @@
+B 0xAD00 ====================================================================
+B 0xAD00  TROZO 2 DE LA CARGA: LA PANTALLA EN SCREEN 2
+B 0xAD00 ====================================================================
+B 0xAD00 La segunda pantalla de carga, esta ya en SCREEN 2. El bloque trae las
+B 0xAD00 tres tablas que hacen falta, pegadas y en el orden en que se suben:
+B 0xAD00 los nombres, los patrones y los colores.
+B 0xAD00
+B 0xAD00 El detalle que la explica: los 2048 bytes de patrones se copian a los
+B 0xAD00 TRES tercios de la pantalla, y lo mismo los de color. O sea que los
+B 0xAD00 tres tercios comparten los mismos 256 dibujos y lo unico que cambia
+B 0xAD00 de arriba abajo es la tabla de nombres. Es una pantalla hecha con
+B 0xAD00 baldosas, no un dibujo libre.
+
+D 0xAD00 0xB000 tabla_de_nombres  768 bytes: que baldosa va en cada una de las 24x32 casillas. Se sube a la VRAM en 0x1800 desde 0xC040
+F 0xAD00 32
+
+D 0xB000 0xB800 tabla_de_patrones  256 dibujos de 8x8, ocho bytes cada uno. Se sube TRES veces, a 0x0000, 0x0800 y 0x1000, o sea a los tres tercios
+F 0xB000 8
+
+D 0xB800 0xC000 tabla_de_colores  El color de cada linea de cada dibujo, tinta<<4|fondo. Se sube tambien tres veces, a 0x2000, 0x2800 y 0x3000
+F 0xB800 8
+
+D 0xC06E 0xC080 relleno  Cola del bloque hasta 0xC07F, donde acaba el fichero
+F 0xC06E 16
+
+L 0xC050 arranca_trozo2  Direccion de ejecucion que pide la entrada 2 de la tabla de 0x8180
+C 0xC050 HL = 0, para poner a cero dos variables de sistema de un golpe
+C 0xC053 BAKCLR y BDRCLR: fondo y borde negros
+C 0xC056 CLIKSW = 0 (sin clic de tecla) y CSRY = 0
+C 0xC059 RG1SAV: el valor que el VDP tendra en su registro 1
+C 0xC05B 0xF2 = pantalla encendida, interrupcion activa y sprites de 16x16
+C 0xC05E SCREEN 2, ya con ese registro 1
+C 0xC061 Sube patrones y colores
+C 0xC064 Y los nombres
+C 0xC067 Dos pitidos: este trozo esta
+C 0xC06D Vuelve al cargador
+
+L 0xC000 sube_patrones_y_colores  Los 2048 de patrones a los tres tercios, y luego los 2048 de color
+C 0xC000 Origen: la tabla de patrones
+C 0xC003 Destino: primer tercio de la tabla de patrones de la VRAM
+C 0xC006 2048 bytes, un tercio
+C 0xC010 Segundo tercio, con el MISMO origen
+C 0xC01a Tercer tercio, igual
+C 0xC020 Origen: la tabla de colores
+C 0xC023 Primer tercio de la tabla de color de la VRAM
+C 0xC030 Segundo tercio de color
+C 0xC03a Tercer tercio de color; sale por aqui, con un jp en lugar de call y ret
+
+L 0xC040 sube_nombres  Vuelca las 24x32 casillas
+C 0xC040 Origen: la tabla de nombres del propio bloque
+C 0xC043 Destino: la tabla de nombres de la VRAM
+C 0xC046 768 bytes, la pantalla entera
+
+# >>> HUECOS ETIQUETADOS POR tools/rellena_huecos.py - NO EDITAR A MANO
+D 0xc04c 0xc050 relleno_cero  todo el hueco es 0x00
+# <<< fin de los huecos automaticos

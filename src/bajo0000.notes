@@ -1,0 +1,31 @@
+B 0x0000 ====================================================================
+B 0x0000  LOS SPRITES, ESCONDIDOS DEBAJO DE LA ROM DEL BASIC
+B 0x0000 ====================================================================
+B 0x0000 Quince kilobytes que viven en la pagina 0, o sea justo debajo de la
+B 0x0000 ROM del BASIC. Solo se pueden leer con las dos paginas conmutadas a
+B 0x0000 RAM, y eso lo hace la rutina de 0x8139 del bloque del juego. Mientras
+B 0x0000 estan conmutadas no hay BIOS, asi que la lectura es siempre un LDIR
+B 0x0000 corto a un tampon de 0x8000 y vuelta a conmutar.
+B 0x0000
+B 0x0000 La geometria NO se ha adivinado: sale de la rutina que los lee, que es
+B 0x0000 0x8292. Ahi se ve todo:
+B 0x0000   - el indice se multiplica por 0x21, o sea 33 bytes por registro;
+B 0x0000   - se leen 0x42 bytes de golpe, o sea DOS registros seguidos;
+B 0x0000   - de cada registro, los 32 primeros bytes van a la tabla de patrones
+B 0x0000     de sprites (CALPAT) y el byte 33 es el COLOR, que va a la tabla de
+B 0x0000     atributos (CALATR);
+B 0x0000   - y si el selector vale 1 se lee desde 0x0000, y si no, desde 0x1F32.
+B 0x0000
+B 0x0000 La cuenta cuadra exacta y por eso se puede afirmar: el primer banco
+B 0x0000 mide 0x1F32 = 7986 bytes = 242 registros de 33 justos, y el segundo
+B 0x0000 0x1B96 = 7062 = 214 registros de 33 justos. Ni un byte de sobra.
+B 0x0000 Son sprites de 16x16 (registro 1 del VDP a 0xF2) y van de dos en dos
+B 0x0000 porque el MSX1 solo da un color por sprite: se superponen dos, uno de
+B 0x0000 color 6 y otro de color 9, que son los dos valores que llevan todos
+B 0x0000 los bytes 33 del bloque.
+
+D 0x0000 0x1F32 sprites_banco_1  242 registros de 33 bytes: 32 de patron de sprite 16x16 y 1 de color. Los lee 0x8292 cuando el selector vale 1
+F 0x0000 33
+
+D 0x1F32 0x3AC8 sprites_banco_2  214 registros de 33 bytes, mismo formato. Los lee 0x8292 cuando el selector NO vale 1 (0x82A2)
+F 0x1F32 33

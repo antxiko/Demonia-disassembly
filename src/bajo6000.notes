@@ -1,0 +1,21 @@
+B 0x6000 ====================================================================
+B 0x6000  LOS DECORADOS: PATRONES Y COLORES DE SCREEN 2
+B 0x6000 ====================================================================
+B 0x6000 Cuatro kilobytes en la pagina 1 escondida. La rutina que los sube es
+B 0x6000 0x8150, y ahi se lee el reparto sin dudas: 0x6000 va a la VRAM 0x0000
+B 0x6000 y 0x6800 a la VRAM 0x2000, y cada uno se sube TRES veces seguidas,
+B 0x6000 2048 bytes cada vez (el bucle de 0x8164 hace tres vueltas y suma
+B 0x6000 0x800 al destino).
+B 0x6000
+B 0x6000 O sea que los tres tercios de la pantalla comparten los mismos 256
+B 0x6000 dibujos y los mismos colores: el juego dibuja con baldosas y lo unico
+B 0x6000 que cambia de una pantalla a otra es el mapa de nombres, que vive en
+B 0x6000 la otra mitad de la pagina 1 (0x4000) y va comprimido.
+B 0x6000 Esta es tambien la razon por la que el juego puede permitirse 26
+B 0x6000 pantallas en 5 KB: los dibujos se pagan una sola vez.
+
+D 0x6000 0x6800 patrones_screen2  256 dibujos de 8x8, ocho bytes por dibujo. Se suben a los tres tercios de la tabla de patrones (0x8150)
+F 0x6000 8
+
+D 0x6800 0x7000 colores_screen2  El color de cada una de las 8 lineas de cada dibujo, tinta<<4|fondo. Se suben a los tres tercios de la tabla de color (0x8159)
+F 0x6800 8

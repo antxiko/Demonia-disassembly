@@ -1,0 +1,114 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>El código — Demonia (1986)</title>
+<style>
+:root{--tinta:#cfd0d4;--suave:#83868f;--fondo:#000;--panel:#0c0e13;--linea:#23262e;
+  --rojo:#ff897d;--cyan:#65dbef;--verde:#3eb849;--oro:#ded087}
+@media (prefers-color-scheme:light){:root{--tinta:#191a1e;--suave:#5a5d66;--fondo:#e9e7e1;
+  --panel:#f7f6f2;--linea:#d0cdc5;--rojo:#b23f34;--cyan:#1c6b7c;--verde:#2b7734;--oro:#8a7420}}
+:root[data-theme="dark"]{--tinta:#cfd0d4;--suave:#83868f;--fondo:#000;--panel:#0c0e13;
+  --linea:#23262e;--rojo:#ff897d;--cyan:#65dbef;--verde:#3eb849;--oro:#ded087}
+:root[data-theme="light"]{--tinta:#191a1e;--suave:#5a5d66;--fondo:#e9e7e1;--panel:#f7f6f2;
+  --linea:#d0cdc5;--rojo:#b23f34;--cyan:#1c6b7c;--verde:#2b7734;--oro:#8a7420}
+*{box-sizing:border-box}
+body{margin:0;background:var(--fondo);color:var(--tinta);padding:0 1.25rem 6rem;
+  font:15px/1.7 ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+.w{max-width:1120px;margin:0 auto}
+.n{max-width:68ch}
+h1,h2,h3,h4{font-weight:400;text-wrap:balance}
+a{color:var(--cyan)}
+img{image-rendering:pixelated;max-width:100%;height:auto;display:block}
+header.top{display:flex;flex-direction:column;align-items:center;gap:1.5rem;
+  padding:4rem 0 2rem;text-align:center}
+header.top img{width:min(100%,642px)}
+.claim{max-width:60ch;color:var(--suave);font-size:1.05rem}
+.claim b{color:var(--tinta);font-weight:400}
+.ficha{display:flex;flex-wrap:wrap;justify-content:center;gap:0 1.5rem;width:100%;
+  font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--suave);
+  border-top:1px solid var(--linea);border-bottom:1px solid var(--linea);padding:.85rem 0}
+.ficha b{color:var(--rojo);font-weight:400}
+nav{display:flex;flex-wrap:wrap;gap:1.25rem;justify-content:center;padding:1.25rem 0;
+  font-size:12px;letter-spacing:.08em;text-transform:uppercase}
+nav a{color:var(--suave);text-decoration:none;border-bottom:1px solid transparent}
+nav a:hover,nav a:focus{color:var(--tinta);border-bottom-color:var(--rojo)}
+nav.docs{border-top:1px solid var(--linea);border-bottom:1px solid var(--linea);
+  margin-bottom:1rem}
+section{margin-top:4.5rem;scroll-margin-top:1rem}
+section>h2{font-size:1rem;letter-spacing:.1em;text-transform:uppercase;
+  border-left:3px solid var(--rojo);padding-left:.9rem;margin:0 0 1.5rem}
+.cifras{display:grid;gap:1px;background:var(--linea);border:1px solid var(--linea);
+  grid-template-columns:repeat(auto-fit,minmax(160px,1fr))}
+.cifra{background:var(--panel);padding:1.1rem}
+.cifra b{display:block;font-size:1.7rem;color:var(--oro);font-weight:400;
+  font-variant-numeric:tabular-nums;line-height:1.2}
+.cifra span{font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--suave)}
+.hall{border-top:1px solid var(--linea);padding-top:1.75rem;margin-top:2.5rem}
+.hall:first-of-type{border-top:0;padding-top:0;margin-top:0}
+.hall h3{margin:0 0 .75rem;font-size:1.15rem;color:var(--rojo)}
+.hall h4{color:var(--oro);margin:1.5rem 0 .5rem;font-size:.95rem}
+.hall p{margin:0 0 1rem}
+pre.asm{background:var(--panel);border-left:2px solid var(--verde);margin:1.25rem 0;
+  padding:1rem 1.1rem;overflow-x:auto;font-size:13px;line-height:1.6;color:var(--tinta)}
+.par{display:grid;gap:1.25rem;grid-template-columns:1fr}
+@media(min-width:820px){.par{grid-template-columns:1fr 1fr}}
+.par figure{margin:0}
+table{border-collapse:collapse;width:100%;margin:1.25rem 0;font-size:13px;display:block;
+  overflow-x:auto}
+th,td{text-align:left;padding:.5rem .75rem;border-bottom:1px solid var(--linea)}
+th{color:var(--suave);font-weight:400;font-size:11px;letter-spacing:.07em;text-transform:uppercase}
+td.num{font-variant-numeric:tabular-nums;color:var(--oro)}
+.nivel{margin-top:2rem}
+.nivel h3{margin:0 0 .9rem;font-size:.95rem;letter-spacing:.06em;text-transform:uppercase}
+.nivel em{color:var(--cyan);font-style:normal}
+.sep{color:var(--suave);margin:0 .6rem}
+.rejilla{display:grid;gap:.9rem;grid-template-columns:repeat(auto-fill,minmax(250px,1fr))}
+.rejilla figure{margin:0;background:var(--panel);box-shadow:0 0 0 1px var(--linea)}
+.rejilla figcaption{display:flex;justify-content:space-between;padding:.45rem .65rem;
+  font-size:11px;color:var(--suave);border-top:1px solid var(--linea)}
+.dir{font-variant-numeric:tabular-nums;color:var(--verde)}
+footer{margin-top:5rem;padding-top:1.5rem;border-top:1px solid var(--linea);
+  color:var(--suave);font-size:12px}
+
+/* Aviso de trabajo en curso: tiene que verse antes que las cifras, porque un
+   100% mal leido hace mas dano que no ponerlo. */
+.aviso{background:#3a2a10;border-left:3px solid var(--oro);margin:1.5rem auto;
+  padding:1rem 1.2rem;max-width:900px;border-radius:4px}
+.aviso p{margin:0;color:var(--tinta);font-size:15px;line-height:1.65}
+.galeria{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+  gap:1.5rem;margin:1.5rem 0}
+.galeria figure{margin:0}
+.galeria img{width:100%;height:auto;image-rendering:pixelated;
+  border:1px solid var(--linea);border-radius:3px}
+.galeria figcaption{color:var(--suave);font-size:13px;margin-top:.5rem}
+audio{display:block;width:100%;max-width:640px;margin:.75rem 0 1.5rem}
+</style>
+<div class="w"><nav class="top"><a href="index.html">Portada</a><a href="EMPEZAR.html">Empezar</a><a href="EL-JUEGO.html">El juego</a><a href="LA-CINTA.html">La cinta</a><a href="EL-CODIGO.html" style=color:var(--tinta)>El código</a><a href="HALLAZGOS.html">Hallazgos</a><a href="PREGUNTAS-ABIERTAS.html">Preguntas abiertas</a><a href="../THE-CODE.html" style="margin-left:auto;color:var(--oro)">English</a></nav>
+<h1 id="el-codigo">El código</h1>
+<p><a href="EMPEZAR.html">Empezar</a> · <a href="EL-JUEGO.html">El juego</a> · <a href="LA-CINTA.html">La cinta</a> · <a href="HALLAZGOS.html">Hallazgos</a> · <a href="PREGUNTAS-ABIERTAS.html">Preguntas abiertas</a></p>
+<h2 id="el-mapa-de-memoria-una-vez-cargado">El mapa de memoria, una vez cargado</h2>
+<p>Cuando los siete trozos han terminado de moverse, la memoria del MSX queda así. Son <b>50.712 bytes ocupados de los 65.536</b>, el 77,4 % del mapa:</p>
+<table><tr><th>dirección</th><th>bytes</th><th>qué hay</th><th>de qué trozo</th></tr><tr><td><code>0x0000-0x1F31</code></td><td>7.986</td><td>primer banco de sprites: 242 registros de 33 bytes</td><td>carga 4</td></tr><tr><td><code>0x1F32-0x3AC7</code></td><td>7.062</td><td>segundo banco: 214 registros</td><td>carga 5</td></tr><tr><td><code>0x4000-0x5467</code></td><td>5.224</td><td>los 26 mapas de pantalla comprimidos</td><td>carga 3</td></tr><tr><td><code>0x6000-0x6FFF</code></td><td>4.096</td><td>los decorados: 2.048 de patrón y 2.048 de color</td><td>carga 6</td></tr><tr><td><code>0x7900-0x7FE7</code></td><td>1.768</td><td>la música</td><td>carga 7</td></tr><tr><td><code>0x8000-0xDFFF</code></td><td>24.576</td><td>el juego entero</td><td>el BIN grande</td></tr></table>
+<p>Las cuatro primeras filas y la quinta están <b>debajo de la ROM del BASIC</b>: son las páginas 0 y 1, que en un MSX arrancado normalmente no son RAM. Sólo el bloque de <code>0x8000</code> vive donde se le ve.</p>
+<p>Y <code>0x5480</code>, justo detrás de los mapas comprimidos, es donde el descompresor deja el mapa de la pantalla en curso: 640 baldosas sin comprimir.</p>
+<h2 id="las-tres-tablas-que-gobiernan-el-juego">Las tres tablas que gobiernan el juego</h2>
+<p>Están las tres seguidas, al final del bloque del juego:</p>
+<table><tr><th>dirección</th><th>tamaño</th><th>qué es</th></tr><tr><td><code>0xD000</code></td><td>24 × 2</td><td>puntero al mapa comprimido de cada pantalla</td></tr><tr><td><code>0xD030</code></td><td>24 × 4 punteros</td><td>la conducta de cada pantalla</td></tr><tr><td><code>0xD0C0</code></td><td>24 × 88 bytes</td><td>la ficha de cada pantalla</td></tr></table>
+<p>La <b>tabla de conducta</b> es lo más parecido a un guion que tiene este juego: cada pantalla declara hasta cuatro rutinas, y las que no usa no se dejan a cero sino apuntando a <code>0xFD9A</code>, el vector del sonido. Es una forma barata de decir «aquí no hay nada que hacer» sin tener que comprobar nada.</p>
+<p>Las <b>fichas</b> se acotaron por una marca que llevan todas en el byte 84: <code>FF &lt;número de pantalla en ASCII&gt; FF</code>. La primera cae en <code>0xD114</code> y la última en <code>0xD8FC</code>, siempre a 88 bytes de distancia; con eso se pudo separar una a una sin suponer nada.</p>
+<h2 id="codigo-que-se-escribe-encima">Código que se escribe encima</h2>
+<p>Este juego se automodifica en varios sitios, y conviene saberlo antes de leer el listado:</p>
+<ul><li><code>0xABB3</code> escribe en <code>0xAB1A</code>, que es <b>el operando de un <code>ld c,n</code></b>, para cambiar de banco de sprites.</li><li><code>0x864E</code> y <code>0x8653</code> parchean dos operandos, los de <code>0x8603</code> y <code>0x8623</code>.</li><li>Y dentro del monitor de Loriciels, <code>0xC645</code> escribe la dirección de vuelta encima del operando del <code>jp</code> de <code>0xC65E</code>.</li></ul>
+<p>Los mismos operandos hacen de variables: el cargador de cinta guarda en <code>0x81F8</code> el puntero a la entrada que está leyendo y en <code>0x81FA</code> la dirección de ejecución del trozo, y los escribe los dos antes de leerlos, así que los valores que trae la cinta dan igual.</p>
+<h2 id="como-se-hizo-el-listado">Cómo se hizo el listado</h2>
+<p>No es un desensamblado lineal. Se traza el flujo de verdad desde los puntos de entrada y sólo se marca como código lo que se alcanza; el resto queda como datos y hay que explicarlo.</p>
+<ul><li><b>55 puntos de entrada</b>, y cada uno lleva escrito en el fichero <code>src/imagen.entries</code> <b>por qué</b> es un punto de entrada: un retorno empujado a la pila, una tabla de saltos, un operando automodificado. Hay un test que falla si alguno se queda sin justificación.</li><li><b>277 directivas <code>D</code></b> acotan los rangos de datos, cada uno con su nombre y la anchura de su estructura.</li><li><code>make sanity</code> cruza las dos cosas: ninguna zona declarada como datos puede salir como código, y ningún punto de entrada puede caer dentro de una zona de datos.</li></ul>
+<p>El trazado se validó además con el emulador: se muestreó el contador de programa durante 200 segundos de juego real en un Philips VG-8020 y salieron 1.357 direcciones distintas. <b>Las 1.357 caen dentro de lo que el trazador marca como código, ni una fuera.</b></p>
+<p>(Al revés no vale: ese muestreo coge el PC cada 0,5 ms y ve una fracción mínima de lo que corre, así que no dice nada sobre qué código está muerto. Para eso está <a href="HALLAZGOS.html">Hallazgos</a>, que lo mide de otra manera.)</p>
+<h2 id="los-comentarios-medidos">Los comentarios, medidos</h2>
+<p>De poco sirve un listado completo si está mudo. La vara de la serie es doble:</p>
+<pre><code>make densidad
+
+TOTAL             9790    3230     33,0%     1308       0</code></pre>
+<p>Nueve mil setecientas noventa instrucciones, tres mil doscientas treinta con comentario de línea: <b>33,0 % de densidad</b>. Y la segunda cifra, que es la que cuesta: <b>cero rutinas por debajo del 10 %</b>, de 1.308.</p>
+<p>El listón de la serie es 22 % de densidad y ninguna rutina floja. Este es, de los desensamblados publicados, uno de los más densos.</p>
+<footer><p><em>Demonia</em> es un juego de MSX de 1986; su portada pone DEMONIA y lo firma <em>(C) 1986 PAR SABLATOU CLAUDE</em>, y la cinta son 58.334 bytes. Que lo publicara Microids sale del catalogo, no del binario. Todos los derechos sobre el juego siguen siendo de sus titulares. Este trabajo es de preservacion, estudio y documentacion.</p></footer></div>

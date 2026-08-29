@@ -1,0 +1,184 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Findings: what Demonia carries and never uses — Demonia (1986)</title>
+<style>
+:root{--tinta:#cfd0d4;--suave:#83868f;--fondo:#000;--panel:#0c0e13;--linea:#23262e;
+  --rojo:#ff897d;--cyan:#65dbef;--verde:#3eb849;--oro:#ded087}
+@media (prefers-color-scheme:light){:root{--tinta:#191a1e;--suave:#5a5d66;--fondo:#e9e7e1;
+  --panel:#f7f6f2;--linea:#d0cdc5;--rojo:#b23f34;--cyan:#1c6b7c;--verde:#2b7734;--oro:#8a7420}}
+:root[data-theme="dark"]{--tinta:#cfd0d4;--suave:#83868f;--fondo:#000;--panel:#0c0e13;
+  --linea:#23262e;--rojo:#ff897d;--cyan:#65dbef;--verde:#3eb849;--oro:#ded087}
+:root[data-theme="light"]{--tinta:#191a1e;--suave:#5a5d66;--fondo:#e9e7e1;--panel:#f7f6f2;
+  --linea:#d0cdc5;--rojo:#b23f34;--cyan:#1c6b7c;--verde:#2b7734;--oro:#8a7420}
+*{box-sizing:border-box}
+body{margin:0;background:var(--fondo);color:var(--tinta);padding:0 1.25rem 6rem;
+  font:15px/1.7 ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+.w{max-width:1120px;margin:0 auto}
+.n{max-width:68ch}
+h1,h2,h3,h4{font-weight:400;text-wrap:balance}
+a{color:var(--cyan)}
+img{image-rendering:pixelated;max-width:100%;height:auto;display:block}
+header.top{display:flex;flex-direction:column;align-items:center;gap:1.5rem;
+  padding:4rem 0 2rem;text-align:center}
+header.top img{width:min(100%,642px)}
+.claim{max-width:60ch;color:var(--suave);font-size:1.05rem}
+.claim b{color:var(--tinta);font-weight:400}
+.ficha{display:flex;flex-wrap:wrap;justify-content:center;gap:0 1.5rem;width:100%;
+  font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--suave);
+  border-top:1px solid var(--linea);border-bottom:1px solid var(--linea);padding:.85rem 0}
+.ficha b{color:var(--rojo);font-weight:400}
+nav{display:flex;flex-wrap:wrap;gap:1.25rem;justify-content:center;padding:1.25rem 0;
+  font-size:12px;letter-spacing:.08em;text-transform:uppercase}
+nav a{color:var(--suave);text-decoration:none;border-bottom:1px solid transparent}
+nav a:hover,nav a:focus{color:var(--tinta);border-bottom-color:var(--rojo)}
+nav.docs{border-top:1px solid var(--linea);border-bottom:1px solid var(--linea);
+  margin-bottom:1rem}
+section{margin-top:4.5rem;scroll-margin-top:1rem}
+section>h2{font-size:1rem;letter-spacing:.1em;text-transform:uppercase;
+  border-left:3px solid var(--rojo);padding-left:.9rem;margin:0 0 1.5rem}
+.cifras{display:grid;gap:1px;background:var(--linea);border:1px solid var(--linea);
+  grid-template-columns:repeat(auto-fit,minmax(160px,1fr))}
+.cifra{background:var(--panel);padding:1.1rem}
+.cifra b{display:block;font-size:1.7rem;color:var(--oro);font-weight:400;
+  font-variant-numeric:tabular-nums;line-height:1.2}
+.cifra span{font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--suave)}
+.hall{border-top:1px solid var(--linea);padding-top:1.75rem;margin-top:2.5rem}
+.hall:first-of-type{border-top:0;padding-top:0;margin-top:0}
+.hall h3{margin:0 0 .75rem;font-size:1.15rem;color:var(--rojo)}
+.hall h4{color:var(--oro);margin:1.5rem 0 .5rem;font-size:.95rem}
+.hall p{margin:0 0 1rem}
+pre.asm{background:var(--panel);border-left:2px solid var(--verde);margin:1.25rem 0;
+  padding:1rem 1.1rem;overflow-x:auto;font-size:13px;line-height:1.6;color:var(--tinta)}
+.par{display:grid;gap:1.25rem;grid-template-columns:1fr}
+@media(min-width:820px){.par{grid-template-columns:1fr 1fr}}
+.par figure{margin:0}
+table{border-collapse:collapse;width:100%;margin:1.25rem 0;font-size:13px;display:block;
+  overflow-x:auto}
+th,td{text-align:left;padding:.5rem .75rem;border-bottom:1px solid var(--linea)}
+th{color:var(--suave);font-weight:400;font-size:11px;letter-spacing:.07em;text-transform:uppercase}
+td.num{font-variant-numeric:tabular-nums;color:var(--oro)}
+.nivel{margin-top:2rem}
+.nivel h3{margin:0 0 .9rem;font-size:.95rem;letter-spacing:.06em;text-transform:uppercase}
+.nivel em{color:var(--cyan);font-style:normal}
+.sep{color:var(--suave);margin:0 .6rem}
+.rejilla{display:grid;gap:.9rem;grid-template-columns:repeat(auto-fill,minmax(250px,1fr))}
+.rejilla figure{margin:0;background:var(--panel);box-shadow:0 0 0 1px var(--linea)}
+.rejilla figcaption{display:flex;justify-content:space-between;padding:.45rem .65rem;
+  font-size:11px;color:var(--suave);border-top:1px solid var(--linea)}
+.dir{font-variant-numeric:tabular-nums;color:var(--verde)}
+footer{margin-top:5rem;padding-top:1.5rem;border-top:1px solid var(--linea);
+  color:var(--suave);font-size:12px}
+
+/* Aviso de trabajo en curso: tiene que verse antes que las cifras, porque un
+   100% mal leido hace mas dano que no ponerlo. */
+.aviso{background:#3a2a10;border-left:3px solid var(--oro);margin:1.5rem auto;
+  padding:1rem 1.2rem;max-width:900px;border-radius:4px}
+.aviso p{margin:0;color:var(--tinta);font-size:15px;line-height:1.65}
+.galeria{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+  gap:1.5rem;margin:1.5rem 0}
+.galeria figure{margin:0}
+.galeria img{width:100%;height:auto;image-rendering:pixelated;
+  border:1px solid var(--linea);border-radius:3px}
+.galeria figcaption{color:var(--suave);font-size:13px;margin-top:.5rem}
+audio{display:block;width:100%;max-width:640px;margin:.75rem 0 1.5rem}
+</style>
+<div class="w"><nav class="top"><a href="index.html">Home</a><a href="GETTING-STARTED.html">Start</a><a href="THE-GAME.html">The game</a><a href="THE-TAPE.html">The tape</a><a href="THE-CODE.html">The code</a><a href="FINDINGS.html" style=color:var(--tinta)>Findings</a><a href="OPEN-QUESTIONS.html">Open questions</a><a href="es/HALLAZGOS.html" style="margin-left:auto;color:var(--oro)">Castellano</a></nav>
+<h1 id="findings-what-demonia-carries-and-never-uses">Findings: what Demonia carries and never uses</h1>
+<p><a href="GETTING-STARTED.html">Getting started</a> · <a href="THE-GAME.html">The game</a> · <a href="THE-TAPE.html">The tape</a> · <a href="THE-CODE.html">The code</a> · <a href="OPEN-QUESTIONS.html">Open questions</a></p>
+<p>A complete disassembly does not only say what a game does: it also lays bare what it carries and never uses. There is a fair amount of that on this tape, and one thing that is not an ordinary leftover.</p>
+<p>The figures come from <code>make sobra</code> (<code>tools/lo_que_sobra.py</code>), and each one says which measurement it comes from. What is MEASURED and what is ASSUMED are kept apart and labelled.</p>
+<h2 id="the-accounting-top-to-bottom">The accounting, top to bottom</h2>
+<table><tr><th>what</th><th>bytes</th><th>% of tape</th></tr><tr><td><b>the Loriciels monitor</b>, entire</td><td><b>4,377</b></td><td><b>7.5%</b></td></tr><tr><td>...of which, code nothing reaches</td><td>2,094</td><td>3.6%</td></tr><tr><td>padding and scraps of a byte or three</td><td>455</td><td>0.8%</td></tr><tr><td>NOPs, repeated instructions and RETs that never run</td><td>61</td><td>0.1%</td></tr><tr><td>declared data nothing points at</td><td>314</td><td>0.5%</td></tr><tr><td>tape alignment padding</td><td>18</td><td>0.03%</td></tr></table>
+<p>Whole tape: 58,334 bytes.</p>
+<hr>
+<h2 id="1-the-stowaway-a-1984-machine-code-monitor">1. The stowaway: a 1984 machine code monitor</h2>
+<p>Inside the game block, from <code>0xC000</code> onwards, travels <b>a complete machine code monitor</b>. Not a leftover routine or two: a program with its command interpreter, its disassembler, its single-step, its register dump and its error messages in French.</p>
+<p>He signs it, in the texts at <code>0xD948</code>-<code>0xD988</code>:</p>
+<pre><code>D948  Auteur:Claude SABLATOU
+D95F  MONITEUR MSX
+D96C  Copyright (C) 1984 LORICIELS</code></pre>
+<p>And the game&#x27;s title screen, which lives in the compressed map at <code>0x4281</code> and is read by decompressing it, says:</p>
+<pre><code>row 17            L&#x27;INTRUSION
+row 19   (C) 1986 PAR SABLATOU CLAUDE</code></pre>
+<p>So <b>the game&#x27;s author left his own working tool inside it</b>. A 1984 Loriciels monitor riding along in a 1986 Microids game, because the same man wrote both.</p>
+<p>(Careful with those two rows: they are the only ones that read back if the map is dumped as text, because the title itself is made of graphic tiles, not ASCII. Drawn with its patterns, the screen spells <b>DEMONIA</b> in huge letters across the first eight rows, with <code>L&#x27;INTRUSION</code> small underneath as a subtitle.)</p>
+<h3 id="what-is-left-of-it-measured">What is left of it, measured</h3>
+<table><tr><th>range</th><th>bytes</th><th>what it is</th></tr><tr><td><code>0xC076-0xC24C</code></td><td>471</td><td>its variables and its stack (ends at <code>0xC0FF</code>)</td></tr><tr><td><code>0xC24D-0xCFD3</code></td><td>3,406</td><td>its code: command interpreter, disassembler, single-step</td></tr><tr><td><code>0xCFD4-0xCFFF</code></td><td>44</td><td>what survives of the disassembler&#x27;s tables</td></tr><tr><td><code>0xD900-0xDAC7</code></td><td>456</td><td>its texts</td></tr></table>
+<p>Two texts the game never uses have survived inside its variables: <code>Press any key for retry</code> at <code>0xC085</code> and <code>MSXDOS  SYS</code> at <code>0xC0A0</code>.</p>
+<h3 id="and-it-is-still-wired-up">And it is still wired up</h3>
+<p>The monitor&#x27;s entry point, <b><code>0xC924</code></b>, really is called from the game&#x27;s own code. At <code>0x9C6D</code>:</p>
+<pre><code>9C6D  3A 9B FC    ld a,(0xFC9B)     ; INTFLG
+9C70  FE 03       cp 3
+9C72  CC 24 C9    call z,0xC924     ; and into the monitor</code></pre>
+<p><code>0xFC9B</code> is INTFLG, the variable where the BIOS records that STOP has been pressed; the value 3 is CTRL+STOP according to the MSX documentation. <b>It is the programmer&#x27;s back door</b>: stop the game and drop into the monitor.</p>
+<p><em>(MEASURED: the bytes and the meaning of <code>0xFC9B</code>. ASSUMED: that this was the intent rather than something else; the binary says what the code does, not why.)</em></p>
+<h3 id="but-its-commands-no-longer-answer">But its commands no longer answer</h3>
+<p>And here is the good part. The monitor recognises its commands by looking the typed initial up in a table of 15 three-byte entries. The loop is at <code>0xC28D</code>-<code>0xC299</code> and leaves no room for doubt:</p>
+<pre><code>C288  4E          ld c,(hl)        ; the typed character
+C289  CB A9       res 5,c          ; to upper case
+C28D  21 C6 D5    ld hl,0xD5C6     ; the command table
+C290  06 0F       ld b,15          ; fifteen commands
+C292  7E          ld a,(hl)        ; this command&#x27;s initial
+C293  B9          cp c
+C294  28 25       jr z,0xC2BB      ; found: jump to its handler
+C296  23 23 23    inc hl x3        ; three bytes per entry
+C299  10 F7       djnz 0xC292</code></pre>
+<p><b>There is no table at <code>0xD5C6</code>.</b> The game&#x27;s 24 screen records run from <code>0xD0C0</code> to <code>0xD8FF</code>, 88 bytes each, and <code>0xD5C6</code> lands on byte 54 of record number 14 (<code>0xD590</code>-<code>0xD5E7</code>). The 45 bytes the loop walks, <code>0xD5C6</code> to <code>0xD5F2</code>, are the end of that record and the start of the next: seventeen zeros and then screen data. The game&#x27;s data was written straight over the monitor&#x27;s command table.</p>
+<p>And not only over that one: the monitor&#x27;s disassembler reads its mnemonics from <code>0xD64A</code>, <code>0xD652</code> and <code>0xD662</code> (instructions at <code>0xCFC0</code>-<code>0xCFE0</code>), and those three places are also zeroed, covered by screen records 16 and 17.</p>
+<p><b>Measured consequence:</b> with all fifteen keys at zero, the <code>cp c</code> at <code>0xC293</code> can only match if the typed character, with bit 5 cleared, is 0 — and then it jumps to a handler whose pointer is <code>0x0000</code>. Any other key walks the fifteen entries in vain, prints <code>Commande illegale</code> (<code>0xD98D</code>) and asks again. <b>The monitor boots, paints the registers and obeys nothing.</b></p>
+<p>Hence the <b>2,094 bytes of code nothing reaches</b>, which are almost all of its command handlers:</p>
+<pre><code>0xBDC3..0xBDFE    60      0xCAB0..0xCAEE    63      0xCDE8..0xCDED     6
+0xC33F..0xC567   553      0xCAF5..0xCB06    18      0xCE0B..0xCE15    11
+0xC5B6..0xC63E   137      0xCB10..0xCB15     6      0xCF51..0xCF8D    61
+0xC661..0xC747   231      0xCC63..0xCC73    17      0xCF93..0xCF9A     8
+0xC756..0xC923   462      0xCC78..0xCCEF   120      0xCFA3..0xCFD3    49
+0xC97A..0xCA63   234      0xCD84..0xCDB7    52      0xDAC8..0xDACD     6</code></pre>
+<p>They are whole, well-formed routines. <code>0xC33F</code> asks whether a character is a digit; <code>0xCD84</code> prints a number in decimal by subtracting 10000, 1000, 100 and 10; <code>0xC5B6</code> writes <code>Resultat= </code>. None has run since the tape was recorded.</p>
+<h3 id="the-fossil">The fossil</h3>
+<p>The monitor single-steps by copying the stopped program&#x27;s instruction into a four-byte buffer at <code>0xCC5F</code> and running it there. <code>0xCBB9</code> zeroes those four bytes before every step, so what is recorded on the tape is <b>the last instruction that monitor ever single-stepped before someone did the BSAVE</b>:</p>
+<pre><code>CC5F  2A 78 80 00      ld hl,(0x8078)</code></pre>
+<p>And <code>0x8078</code> is inside this very game&#x27;s variable page.</p>
+<p><em>(MEASURED: the four bytes, that <code>0xCBB9</code> clears them and <code>0xCBDB</code> fills them, and that <code>0x8078</code> falls in <code>0x8000</code>-<code>0x80FF</code>. ASSUMED: that the session was a debugging session on this game. It fits, but the binary does not say so.)</em></p>
+<hr>
+<h2 id="2-branches-that-cannot-execute-none">2. Branches that cannot execute: none</h2>
+<p>The classic pattern was searched for — a comparison deciding another comparison, the <code>cp 9</code> case from Konami&#x27;s Mahjong — with <code>tools/ramas_imposibles.py</code>, in both its forms:</p>
+<ol><li><code>cp N1</code> + <code>jr nz</code>, and later <code>cp N2</code> with N2 different, with A unchanged and nobody branching in between;</li><li>A loaded with a constant (<code>ld a,N</code> or <code>xor a</code>) and compared against another.</li></ol>
+<p><b>Result: neither turns up anywhere on the tape.</b> That is a negative result and it is reported as one. The only thing of that family here is of another kind and it is above: not a badly written comparison, but an erased comparison table.</p>
+<hr>
+<h2 id="3-scraps-of-a-byte-and-of-three-455-bytes">3. Scraps of a byte and of three: 455 bytes</h2>
+<p>Labelled by their CONTENT, not by eye (<code>tools/rellena_huecos.py</code> looks at the bytes and the label says which measurement it comes from):</p>
+<table><tr><th>class</th><th>ranges</th><th>bytes</th></tr><tr><td>padding at 0x00 or 0xFF</td><td>137</td><td>367</td></tr><tr><td>loose RETs, alone or with zeros behind</td><td>41</td><td>60</td></tr><tr><td>orphaned jumps</td><td>3</td><td>11</td></tr><tr><td>a gutted slot switcher</td><td>1</td><td>8</td></tr><tr><td><code>jr $</code>, that is a hang, that nobody reaches</td><td>2</td><td>4</td></tr><tr><td>a call to the monitor nobody reaches</td><td>1</td><td>3</td></tr><tr><td>an orphaned <code>or a / ret z</code></td><td>1</td><td>2</td></tr></table>
+<p>The good ones:</p>
+<ul><li><b><code>0x8148</code>, eight bytes.</b> Read as code they are <code>di / jp 0xA0F0</code> and, glued behind, <code>ld (0xFFFF),a / ret</code>, which are the last two instructions of a slot restore exactly like the one at <code>0x8139</code> and the one at <code>0x8126</code>. It is the corpse of a third switcher that somebody put a jump through the middle of. Nobody calls it.</li></ul>
+<ul><li><b><code>0xAA95</code>, three bytes: <code>call 0xC924</code>.</b> Another call to the monitor, this one with no branch reaching it at all. Somebody had more than one back door.</li></ul>
+<ul><li><b><code>0x8F0B: jp 0x8A85</code></b> and <b><code>0xA634: jp 0xDAD0</code></b>, two loose jumps between routines. The second points at the game&#x27;s restart routine, which is alive and reached by six conditional jumps from elsewhere.</li></ul>
+<ul><li><b><code>0x85CA: ld hl,0x0000</code>.</b> It is the third variant of the vector load at <code>0x804E</code>: the other two, <code>0x85C0</code> and <code>0x85C5</code>, load <code>0x85E3</code> and <code>0x8638</code>. This one would load &quot;no routine at all&quot;. Nobody uses it.</li></ul>
+<ul><li><b>Forty-one loose RETs.</b> Routines reduced to nothing that still take up their byte.</li></ul>
+<hr>
+<h2 id="3b-what-turned-up-while-commenting-the-listing">3b. What turned up while commenting the listing</h2>
+<p>These come from no tool: they came out of reading the code instruction by instruction in order to write the comments. Each carries its address, which is what lets anyone check it.</p>
+<ul><li><b><code>0x9134</code>: the same instruction written twice.</b></li></ul>
+<p>``<code> 9134  21 58 80    ld hl,0x8058 9137  21 58 80    ld hl,0x8058 913A  35          dec (hl) </code>``</p>
+<p>Three bytes that do nothing. The second load overwrites the first with the same value.</p>
+<ul><li><b>Five <code>RET NC</code> and <code>RET NZ</code> that cannot execute.</b> When two returns with the same condition follow each other, the first has already gone and the second never gets to run:</li></ul>
+<p>``<code> 823A  D0 D0 D0    ret nc / ret nc / ret nc   (in the tape loader) 8C3E  C0 C0       ret nz / ret nz BFE3  C0 C0 C0    ret nz / ret nz / ret nz </code>``</p>
+<p>Eight bytes in all that have sat there since 1986 without executing once.</p>
+<ul><li><b>Fifty bytes of NOP inside live code</b>, in eleven runs of three to six:</li></ul>
+<p>``<code> A401 (4)  A640 (5)  A65D (6)  A67B (6)  A701 (5)  A746 (3) A947 (3)  B14E (3)  DC01 (6)  DC12 (6)  DE2C (3) </code>``</p>
+<p>The two runs of six at <code>0xDC01</code> and <code>0xDC12</code> sit immediately before and immediately after an LDIR that copies the screen tables into the hidden RAM, that is, exactly where a slot switch would go: somebody removed it and left the hole. And the one at <code>0xA640</code> follows a <code>cp 0</code> that runs after an <code>or a</code> which has already decided the same thing.</p>
+<ul><li><b><code>0xC3FE</code>, inside the monitor</b>: on the &quot;Debordement&quot; path there are two consecutive HL loads, <code>ld hl,(0xD3DA)</code> and <code>ld hl,(0x1103)</code>, and two NOPs. The first is useless because the second overwrites it, and <code>0x1103</code> falls inside the BASIC ROM.</li></ul>
+<ul><li><b>Code that writes over itself</b>, which is not waste but is worth seeing: <code>0xABB3</code> writes into <code>0xAB1A</code>, the operand of a <code>ld c,n</code>, to switch sprite bank; <code>0x864E</code> and <code>0x8653</code> patch two operands, of <code>0x8603</code> and <code>0x8623</code>; and <code>0xC645</code>, inside the monitor, writes the return address over the operand of the <code>jp</code> at <code>0xC65E</code>.</li></ul>
+<hr>
+<h2 id="4-data-nothing-points-at-314-bytes">4. Data nothing points at: 314 bytes</h2>
+<p>CANDIDATES, not dead code: the cross-check only sees addresses that appear as an immediate in a traced instruction or inside a declared pointer table. An HL that gets there by adding is invisible from here.</p>
+<table><tr><th>range</th><th>bytes</th><th>what it looks like</th></tr><tr><td><code>0xD030-0xD0BF</code></td><td>144</td><td>the behaviour table for the 24 screens. <code>0xDC07</code> reads it starting from <code>0xD000</code> and adding, which is why it never appears as a target</td></tr><tr><td><code>0xCFD4-0xCFFF</code></td><td>44</td><td>what survives of the monitor disassembler&#x27;s tables</td></tr><tr><td><code>0x944A</code>, <code>0x9D95</code>, <code>0xA0EF</code>, <code>0xA37F</code>, <code>0xBDB1</code>, <code>0xDFC1</code></td><td>126</td><td>six short ranges between routines</td></tr></table>
+<hr>
+<h2 id="5-what-the-tape-spends-on-being-a-tape-18-bytes">5. What the tape spends on being a tape: 18 bytes</h2>
+<p>Surprisingly little. A <code>.cas</code> block has to start on a multiple of eight, so up to seven padding bytes can follow each one. On this tape only five of the thirteen blocks need any, and they add up to 18 bytes. (The 104 sentinel bytes, the 48 of file header and the 12 of BIN header are not padding: they are the format.)</p>
+<p>The 256 bytes of BASIC loader, on the other hand, go nearly empty: the two lines take 93 bytes and the other 163 are the <code>0x1A</code> padding the MSX writes to fill the 256-byte chunk. <b>64% of the tape&#x27;s first file is padding.</b></p>
+<hr>
+<h2 id="6-what-did-not-run-and-why-it-does-not-count">6. What did not run, and why it does not count</h2>
+<p>The program counter was sampled over 200 seconds of play on a Philips VG-8020, with the tape really loaded: 398,593 samples, 1,357 distinct addresses inside the game. Of the 17,676 bytes of reachable code, 1,357 were seen executing.</p>
+<p><b>That 7.7% does not measure dead code and is not used as such here.</b> The sampling takes the PC every 0.5 ms and sees a tiny fraction of what runs; and the window was the presentation screen, not a whole game.</p>
+<p>What is worth something is the other way round: <b>of the 1,357 addresses seen executing, all 1,357 fall inside what the tracer marks as code.</b> Not one outside. That validates the trace, which is what the measurement was for.</p>
+<footer><p><em>Demonia</em> is a 1986 MSX game; its title screen reads DEMONIA and it is signed <em>(C) 1986 PAR SABLATOU CLAUDE</em>, and the tape is 58,334 bytes. That Microids published it comes from the catalogue, not from the binary. All rights in the game remain with their holders. This is preservation, study and documentation work.</p></footer></div>

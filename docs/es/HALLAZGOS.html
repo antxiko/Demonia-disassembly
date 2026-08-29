@@ -1,0 +1,185 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Hallazgos: lo que sobra en Demonia — Demonia (1986)</title>
+<style>
+:root{--tinta:#cfd0d4;--suave:#83868f;--fondo:#000;--panel:#0c0e13;--linea:#23262e;
+  --rojo:#ff897d;--cyan:#65dbef;--verde:#3eb849;--oro:#ded087}
+@media (prefers-color-scheme:light){:root{--tinta:#191a1e;--suave:#5a5d66;--fondo:#e9e7e1;
+  --panel:#f7f6f2;--linea:#d0cdc5;--rojo:#b23f34;--cyan:#1c6b7c;--verde:#2b7734;--oro:#8a7420}}
+:root[data-theme="dark"]{--tinta:#cfd0d4;--suave:#83868f;--fondo:#000;--panel:#0c0e13;
+  --linea:#23262e;--rojo:#ff897d;--cyan:#65dbef;--verde:#3eb849;--oro:#ded087}
+:root[data-theme="light"]{--tinta:#191a1e;--suave:#5a5d66;--fondo:#e9e7e1;--panel:#f7f6f2;
+  --linea:#d0cdc5;--rojo:#b23f34;--cyan:#1c6b7c;--verde:#2b7734;--oro:#8a7420}
+*{box-sizing:border-box}
+body{margin:0;background:var(--fondo);color:var(--tinta);padding:0 1.25rem 6rem;
+  font:15px/1.7 ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+.w{max-width:1120px;margin:0 auto}
+.n{max-width:68ch}
+h1,h2,h3,h4{font-weight:400;text-wrap:balance}
+a{color:var(--cyan)}
+img{image-rendering:pixelated;max-width:100%;height:auto;display:block}
+header.top{display:flex;flex-direction:column;align-items:center;gap:1.5rem;
+  padding:4rem 0 2rem;text-align:center}
+header.top img{width:min(100%,642px)}
+.claim{max-width:60ch;color:var(--suave);font-size:1.05rem}
+.claim b{color:var(--tinta);font-weight:400}
+.ficha{display:flex;flex-wrap:wrap;justify-content:center;gap:0 1.5rem;width:100%;
+  font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--suave);
+  border-top:1px solid var(--linea);border-bottom:1px solid var(--linea);padding:.85rem 0}
+.ficha b{color:var(--rojo);font-weight:400}
+nav{display:flex;flex-wrap:wrap;gap:1.25rem;justify-content:center;padding:1.25rem 0;
+  font-size:12px;letter-spacing:.08em;text-transform:uppercase}
+nav a{color:var(--suave);text-decoration:none;border-bottom:1px solid transparent}
+nav a:hover,nav a:focus{color:var(--tinta);border-bottom-color:var(--rojo)}
+nav.docs{border-top:1px solid var(--linea);border-bottom:1px solid var(--linea);
+  margin-bottom:1rem}
+section{margin-top:4.5rem;scroll-margin-top:1rem}
+section>h2{font-size:1rem;letter-spacing:.1em;text-transform:uppercase;
+  border-left:3px solid var(--rojo);padding-left:.9rem;margin:0 0 1.5rem}
+.cifras{display:grid;gap:1px;background:var(--linea);border:1px solid var(--linea);
+  grid-template-columns:repeat(auto-fit,minmax(160px,1fr))}
+.cifra{background:var(--panel);padding:1.1rem}
+.cifra b{display:block;font-size:1.7rem;color:var(--oro);font-weight:400;
+  font-variant-numeric:tabular-nums;line-height:1.2}
+.cifra span{font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--suave)}
+.hall{border-top:1px solid var(--linea);padding-top:1.75rem;margin-top:2.5rem}
+.hall:first-of-type{border-top:0;padding-top:0;margin-top:0}
+.hall h3{margin:0 0 .75rem;font-size:1.15rem;color:var(--rojo)}
+.hall h4{color:var(--oro);margin:1.5rem 0 .5rem;font-size:.95rem}
+.hall p{margin:0 0 1rem}
+pre.asm{background:var(--panel);border-left:2px solid var(--verde);margin:1.25rem 0;
+  padding:1rem 1.1rem;overflow-x:auto;font-size:13px;line-height:1.6;color:var(--tinta)}
+.par{display:grid;gap:1.25rem;grid-template-columns:1fr}
+@media(min-width:820px){.par{grid-template-columns:1fr 1fr}}
+.par figure{margin:0}
+table{border-collapse:collapse;width:100%;margin:1.25rem 0;font-size:13px;display:block;
+  overflow-x:auto}
+th,td{text-align:left;padding:.5rem .75rem;border-bottom:1px solid var(--linea)}
+th{color:var(--suave);font-weight:400;font-size:11px;letter-spacing:.07em;text-transform:uppercase}
+td.num{font-variant-numeric:tabular-nums;color:var(--oro)}
+.nivel{margin-top:2rem}
+.nivel h3{margin:0 0 .9rem;font-size:.95rem;letter-spacing:.06em;text-transform:uppercase}
+.nivel em{color:var(--cyan);font-style:normal}
+.sep{color:var(--suave);margin:0 .6rem}
+.rejilla{display:grid;gap:.9rem;grid-template-columns:repeat(auto-fill,minmax(250px,1fr))}
+.rejilla figure{margin:0;background:var(--panel);box-shadow:0 0 0 1px var(--linea)}
+.rejilla figcaption{display:flex;justify-content:space-between;padding:.45rem .65rem;
+  font-size:11px;color:var(--suave);border-top:1px solid var(--linea)}
+.dir{font-variant-numeric:tabular-nums;color:var(--verde)}
+footer{margin-top:5rem;padding-top:1.5rem;border-top:1px solid var(--linea);
+  color:var(--suave);font-size:12px}
+
+/* Aviso de trabajo en curso: tiene que verse antes que las cifras, porque un
+   100% mal leido hace mas dano que no ponerlo. */
+.aviso{background:#3a2a10;border-left:3px solid var(--oro);margin:1.5rem auto;
+  padding:1rem 1.2rem;max-width:900px;border-radius:4px}
+.aviso p{margin:0;color:var(--tinta);font-size:15px;line-height:1.65}
+.galeria{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+  gap:1.5rem;margin:1.5rem 0}
+.galeria figure{margin:0}
+.galeria img{width:100%;height:auto;image-rendering:pixelated;
+  border:1px solid var(--linea);border-radius:3px}
+.galeria figcaption{color:var(--suave);font-size:13px;margin-top:.5rem}
+audio{display:block;width:100%;max-width:640px;margin:.75rem 0 1.5rem}
+</style>
+<div class="w"><nav class="top"><a href="index.html">Portada</a><a href="EMPEZAR.html">Empezar</a><a href="EL-JUEGO.html">El juego</a><a href="LA-CINTA.html">La cinta</a><a href="EL-CODIGO.html">El código</a><a href="HALLAZGOS.html" style=color:var(--tinta)>Hallazgos</a><a href="PREGUNTAS-ABIERTAS.html">Preguntas abiertas</a><a href="../FINDINGS.html" style="margin-left:auto;color:var(--oro)">English</a></nav>
+<h1 id="hallazgos-lo-que-sobra-en-demonia">Hallazgos: lo que sobra en Demonia</h1>
+<p>Un desensamblado completo no solo dice lo que un juego hace: tambien deja a la vista lo que lleva dentro y no usa. En esta cinta hay bastante, y una cosa que no es un resto cualquiera.</p>
+<p>Las otras paginas: <a href="EMPEZAR.html">Empezar</a> · <a href="EL-JUEGO.html">El juego</a> · <a href="LA-CINTA.html">La cinta</a> · <a href="EL-CODIGO.html">El codigo</a> · <a href="PREGUNTAS-ABIERTAS.html">Preguntas abiertas</a></p>
+<p>Las cifras salen de <code>make sobra</code> (<code>tools/lo_que_sobra.py</code>), y cada una dice de que medida viene. Lo MEDIDO y lo SUPUESTO van separados y etiquetados.</p>
+<h2 id="la-cuenta-de-arriba-abajo">La cuenta, de arriba abajo</h2>
+<table><tr><th>que</th><th>bytes</th><th>% de la cinta</th></tr><tr><td><b>el monitor de Loriciels</b>, entero</td><td><b>4.377</b></td><td><b>7,5 %</b></td></tr><tr><td>...de los cuales, codigo al que no se llega</td><td>2.094</td><td>3,6 %</td></tr><tr><td>relleno y restos de un byte o tres</td><td>455</td><td>0,8 %</td></tr><tr><td>NOP, instrucciones repetidas y RET que no corren</td><td>61</td><td>0,1 %</td></tr><tr><td>datos declarados a los que nadie apunta</td><td>314</td><td>0,5 %</td></tr><tr><td>relleno de alineacion de la cinta</td><td>18</td><td>0,03 %</td></tr></table>
+<p>Cinta entera: 58.334 bytes.</p>
+<hr>
+<h2 id="1-el-polizon-un-monitor-de-codigo-maquina-de-1984">1. El polizon: un monitor de codigo maquina de 1984</h2>
+<p>Dentro del bloque del juego, de 0xC000 en adelante, viaja <b>un monitor de codigo maquina completo</b>. No es un resto de dos rutinas: es un programa con su interprete de ordenes, su desensamblador, su paso a paso, su volcado de registros y sus mensajes de error en frances.</p>
+<p>Lo firma el, en los textos de 0xD948-0xD988:</p>
+<pre><code>D948  Auteur:Claude SABLATOU
+D95F  MONITEUR MSX
+D96C  Copyright (C) 1984 LORICIELS</code></pre>
+<p>Y la portada del juego, que esta en el mapa comprimido de 0x4281 y se lee descomprimiendola, dice:</p>
+<pre><code>fila 17            L&#x27;INTRUSION
+fila 19   (C) 1986 PAR SABLATOU CLAUDE</code></pre>
+<p>O sea que <b>el autor del juego metio dentro su propia herramienta de trabajo</b>. Un monitor de Loriciels de 1984 viajando dentro de un juego de Microids de 1986, porque el mismo hombre escribio los dos.</p>
+<p>Ojo con esas dos filas: son lo unico que se lee si el mapa se vuelca como texto, porque el titulo de la portada esta hecho de baldosas graficas y no de ASCII. Dibujada con sus patrones, la pantalla pone <b>DEMONIA</b> en letras enormes en las ocho primeras filas y <code>L&#x27;INTRUSION</code> debajo, pequeno, de subtitulo.</p>
+<h3 id="que-queda-de-el-medido">Que queda de el, medido</h3>
+<table><tr><th>tramo</th><th>bytes</th><th>que es</th></tr><tr><td>0xC076-0xC24C</td><td>471</td><td>sus variables y su pila (acaba en 0xC0FF)</td></tr><tr><td>0xC24D-0xCFD3</td><td>3.406</td><td>su codigo: interprete de ordenes, desensamblador, paso a paso</td></tr><tr><td>0xCFD4-0xCFFF</td><td>44</td><td>lo que queda de las tablas del desensamblador</td></tr><tr><td>0xD900-0xDAC7</td><td>456</td><td>sus textos</td></tr></table>
+<p>Dentro de sus variables han quedado dos textos que el juego no usa para nada: <code>Press any key for retry</code> en 0xC085 y <code>MSXDOS  SYS</code> en 0xC0A0.</p>
+<h3 id="y-sigue-enchufado">Y sigue enchufado</h3>
+<p>El punto de entrada del monitor, <b>0xC924</b>, se llama de verdad desde el codigo del juego. En 0x9C6D:</p>
+<pre><code>9C6D  3A 9B FC    ld a,(0xFC9B)     ; INTFLG
+9C70  FE 03       cp 3
+9C72  CC 24 C9    call z,0xC924     ; y al monitor</code></pre>
+<p>0xFC9B es INTFLG, la variable donde la BIOS deja constancia de que se ha pulsado STOP; el valor 3 es el de CTRL+STOP segun la documentacion del MSX. <b>Es la puerta trasera del programador</b>: parar el juego y caer en el monitor.</p>
+<p><em>(MEDIDO: los bytes y el significado de 0xFC9B. SUPOSICION: que la intencion fuera esa y no otra; el binario dice que hace el codigo, no por que.)</em></p>
+<h3 id="pero-sus-ordenes-ya-no-responden">Pero sus ordenes ya no responden</h3>
+<p>Y aqui esta lo bueno. El monitor reconoce sus ordenes buscando la inicial tecleada en una tabla de 15 entradas de tres bytes. El bucle esta en 0xC28D-0xC299 y no deja lugar a dudas:</p>
+<pre><code>C288  4E          ld c,(hl)        ; el caracter tecleado
+C289  CB A9       res 5,c          ; a mayusculas
+C28D  21 C6 D5    ld hl,0xD5C6     ; la tabla de ordenes
+C290  06 0F       ld b,15          ; quince ordenes
+C292  7E          ld a,(hl)        ; la inicial de esta orden
+C293  B9          cp c
+C294  28 25       jr z,0xC2BB      ; encontrada: salta a su manejador
+C296  23 23 23    inc hl x3        ; tres bytes por entrada
+C299  10 F7       djnz 0xC292</code></pre>
+<p><b>En 0xD5C6 no hay ninguna tabla.</b> Las 24 fichas de pantalla del juego ocupan de 0xD0C0 a 0xD8FF, 88 bytes cada una, y 0xD5C6 cae en el byte 54 de la ficha numero 14 (0xD590-0xD5E7). Los 45 bytes que el bucle recorre, de 0xD5C6 a 0xD5F2, son el final de esa ficha y el principio de la siguiente: diecisiete ceros y luego datos de pantalla. Los datos del juego se han escrito encima de la tabla de ordenes del monitor.</p>
+<p>Y no solo de esa: el desensamblador del monitor lee sus nemonicos de 0xD64A, 0xD652 y 0xD662 (instrucciones de 0xCFC0-0xCFE0), y esos tres sitios estan tambien a cero, tapados por las fichas de pantalla 16 y 17.</p>
+<p><b>Consecuencia medida:</b> con las quince claves a cero, el <code>cp c</code> de 0xC293 solo puede casar si el caracter tecleado, con el bit 5 borrado, vale 0 — y entonces salta a un manejador cuyo puntero es 0x0000. Cualquier otra tecla recorre las quince entradas sin exito, imprime <code>Commande illegale</code> (0xD98D) y vuelve a pedir. <b>El monitor arranca, pinta los registros y no obedece a nada.</b></p>
+<p>De ahi los <b>2.094 bytes de codigo al que no llega nadie</b>, que son casi todos sus manejadores de orden. Estos son los tramos, tal como los da <code>make sobra</code> restando el trazado sin las entradas marcadas <code>[HUERFANO]</code>:</p>
+<pre><code>0xBDC3..0xBDFE    60      0xCAB0..0xCAEE    63      0xCDE8..0xCDED     6
+0xC33F..0xC567   553      0xCAF5..0xCB06    18      0xCE0B..0xCE15    11
+0xC5B6..0xC63E   137      0xCB10..0xCB15     6      0xCF51..0xCF8D    61
+0xC661..0xC747   231      0xCC63..0xCC73    17      0xCF93..0xCF9A     8
+0xC756..0xC923   462      0xCC78..0xCCEF   120      0xCFA3..0xCFD3    49
+0xC97A..0xCA63   234      0xCD84..0xCDB7    52      0xDAC8..0xDACD     6</code></pre>
+<p>Son rutinas enteras y bien formadas. 0xC33F pregunta si un caracter es un digito; 0xCD84 imprime un numero en decimal restando 10000, 1000, 100 y 10; 0xC5B6 escribe <code>Resultat= </code>. Ninguna ha corrido desde que se grabo la cinta.</p>
+<h3 id="el-fosil">El fosil</h3>
+<p>El monitor ejecuta el paso a paso copiando la instruccion del programa detenido a un tampon de cuatro bytes en 0xCC5F y ejecutandola alli. 0xCBB9 pone esos cuatro bytes a cero antes de cada paso, asi que lo que hay grabado en la cinta es <b>la ultima instruccion que ese monitor ejecuto paso a paso antes de que alguien hiciera el BSAVE</b>:</p>
+<pre><code>CC5F  2A 78 80 00      ld hl,(0x8078)</code></pre>
+<p>Y 0x8078 esta dentro de la pagina de variables de este mismo juego.</p>
+<p><em>(MEDIDO: los cuatro bytes, que 0xCBB9 los borra y 0xCBDB los rellena, y que 0x8078 cae en 0x8000-0x80FF. SUPOSICION: que la sesion fuera de depuracion de este juego. Encaja, pero el binario no lo dice.)</em></p>
+<hr>
+<h2 id="2-ramas-que-no-pueden-ejecutarse-no-hay">2. Ramas que no pueden ejecutarse: no hay</h2>
+<p>Se busco el patron clasico -una comparacion que decide otra comparacion, el caso del <code>cp 9</code> de Konami&#x27;s Mahjong- con <code>tools/ramas_imposibles.py</code>, en sus dos formas:</p>
+<ol><li><code>cp N1</code> + <code>jr nz</code>, y despues <code>cp N2</code> con N2 distinto, sin que A cambie ni nadie salte en medio;</li><li>A cargada con una constante (<code>ld a,N</code> o <code>xor a</code>) y comparada con otra.</li></ol>
+<p><b>Resultado: ninguna de las dos aparece en toda la cinta.</b> Es un resultado negativo y se cuenta como tal. Lo unico de esa familia que hay aqui es de otro tipo y esta arriba: no una comparacion mal escrita, sino una tabla de comparacion borrada.</p>
+<hr>
+<h2 id="3-restos-de-un-byte-y-de-tres-455-bytes">3. Restos de un byte y de tres: 455 bytes</h2>
+<p>Etiquetados por su CONTENIDO, no a ojo (<code>tools/rellena_huecos.py</code> mira los bytes y la etiqueta dice de que medida sale):</p>
+<table><tr><th>clase</th><th>tramos</th><th>bytes</th></tr><tr><td>relleno a 0x00 o a 0xFF</td><td>137</td><td>367</td></tr><tr><td>RET sueltos, solos o con ceros detras</td><td>41</td><td>60</td></tr><tr><td>saltos huerfanos</td><td>3</td><td>11</td></tr><tr><td>conmutadora de slot destripada</td><td>1</td><td>8</td></tr><tr><td><code>jr $</code>, o sea un cuelgue, que nadie alcanza</td><td>2</td><td>4</td></tr><tr><td>llamada al monitor a la que no llega nadie</td><td>1</td><td>3</td></tr><tr><td><code>or a / ret z</code> huerfano</td><td>1</td><td>2</td></tr></table>
+<p>Los que tienen gracia:</p>
+<ul><li><b>0x8148, ocho bytes.</b> Leidos como codigo son <code>di / jp 0xA0F0</code> y, pegado detras, <code>ld (0xFFFF),a / ret</code>, que son las dos ultimas instrucciones de una restauracion de slot exactamente igual que la de 0x8139 y la de 0x8126. Es el cadaver de una tercera conmutadora a la que alguien le metio un salto por medio. No la llama nadie.</li></ul>
+<ul><li><b>0xAA95, tres bytes: <code>call 0xC924</code>.</b> Otra llamada al monitor, esta sin ningun salto que llegue. Alguien tenia mas de una puerta trasera.</li></ul>
+<ul><li><b>0x8F0B: <code>jp 0x8A85</code></b> y <b>0xA634: <code>jp 0xDAD0</code></b>, dos saltos sueltos entre rutinas. El segundo apunta a la rutina de reinicio del juego, que si esta viva y a la que llegan seis saltos condicionales de otros sitios.</li></ul>
+<ul><li><b>0x85CA: <code>ld hl,0x0000</code>.</b> Es la tercera variante de la carga del vector de 0x804E: las otras dos, 0x85C0 y 0x85C5, cargan 0x85E3 y 0x8638. Esta cargaria &quot;ninguna rutina&quot;. Nadie la usa.</li></ul>
+<ul><li><b>Cuarenta y un RET sueltos.</b> Rutinas reducidas a nada que siguen ocupando su byte.</li></ul>
+<hr>
+<h2 id="3-bis-lo-que-aparecio-al-comentar-el-listado">3 bis. Lo que aparecio al comentar el listado</h2>
+<p>Estas no salen de ninguna herramienta: salieron de leer el codigo instruccion a instruccion para escribir los comentarios. Van con su direccion, que es lo que permite comprobarlas.</p>
+<ul><li><b>0x9134: la misma instruccion escrita dos veces.</b></li></ul>
+<p>``<code> 9134  21 58 80    ld hl,0x8058 9137  21 58 80    ld hl,0x8058 913A  35          dec (hl) </code>``</p>
+<p>Tres bytes que no hacen nada. La segunda carga machaca la primera con el mismo valor.</p>
+<ul><li><b>Cinco <code>RET NC</code> y <code>RET NZ</code> que no pueden ejecutarse.</b> Cuando dos vuelven seguidos con la misma condicion, el primero ya se ha ido y el segundo no llega a correr nunca:</li></ul>
+<p>``<code> 823A  D0 D0 D0    ret nc / ret nc / ret nc   (en el cargador de cinta) 8C3E  C0 C0       ret nz / ret nz BFE3  C0 C0 C0    ret nz / ret nz / ret nz </code>``</p>
+<p>Ocho bytes en total que llevan ahi desde 1986 sin ejecutarse una sola vez.</p>
+<ul><li><b>Cincuenta bytes de NOP dentro de codigo vivo</b>, en once rachas de tres a seis:</li></ul>
+<p>``<code> A401 (4)  A640 (5)  A65D (6)  A67B (6)  A701 (5)  A746 (3) A947 (3)  B14E (3)  DC01 (6)  DC12 (6)  DE2C (3) </code>``</p>
+<p>Las dos de seis de 0xDC01 y 0xDC12 estan justo delante y justo detras de un LDIR que copia las tablas de pantalla a la RAM escondida, o sea exactamente donde iria una conmutacion de slot: alguien la quito y dejo el hueco. Y la de 0xA640 va detras de un <code>cp 0</code> que se ejecuta despues de un <code>or a</code> que ya ha decidido lo mismo.</p>
+<ul><li><b>0xC3FE, dentro del monitor</b>: en el camino de &quot;Debordement&quot; quedan dos cargas seguidas de HL, <code>ld hl,(0xD3DA)</code> y <code>ld hl,(0x1103)</code>, y dos NOP. La primera es inutil porque la segunda la pisa, y 0x1103 cae dentro de la ROM del BASIC.</li></ul>
+<ul><li><b>Codigo que se escribe a si mismo</b>, que no sobra pero merece la pena verlo: 0xABB3 escribe en 0xAB1A, que es el operando de un <code>ld c,n</code>, para cambiar de banco de sprites; 0x864E y 0x8653 parchean dos operandos de 0x8603 y 0x8623; y 0xC645, dentro del monitor, escribe la direccion de vuelta encima del operando del <code>jp</code> de 0xC65E.</li></ul>
+<hr>
+<h2 id="4-datos-que-nadie-apunta-314-bytes">4. Datos que nadie apunta: 314 bytes</h2>
+<p>CANDIDATOS, no muertos: el cruce solo ve las direcciones que aparecen como inmediato en una instruccion trazada o dentro de una tabla de punteros declarada. Un HL que llegue ahi sumando no se ve desde aqui.</p>
+<table><tr><th>tramo</th><th>bytes</th><th>que parece</th></tr><tr><td>0xD030-0xD0BF</td><td>144</td><td>la tabla de conducta de las 24 pantallas. La lee 0xDC07 partiendo de 0xD000, sumando: por eso no aparece apuntada</td></tr><tr><td>0xCFD4-0xCFFF</td><td>44</td><td>lo que sobrevive de las tablas del desensamblador del monitor</td></tr><tr><td>0x944A, 0x9D95, 0xA0EF, 0xA37F, 0xBDB1, 0xDFC1</td><td>126</td><td>seis tramos cortos entre rutinas</td></tr></table>
+<hr>
+<h2 id="5-lo-que-la-cinta-gasta-en-ser-cinta-18-bytes">5. Lo que la cinta gasta en ser cinta: 18 bytes</h2>
+<p>Sorprendentemente poco. Un bloque de <code>.cas</code> tiene que empezar en multiplo de ocho, asi que detras de cada bloque puede haber hasta siete bytes de relleno. En esta cinta solo cinco de los trece bloques lo necesitan y suman 18 bytes. (Los 104 de centinela, los 48 de cabecera de fichero y los 12 de cabecera BIN no son relleno: son el formato.)</p>
+<p>Los 256 bytes del cargador BASIC, en cambio, van casi vacios: las dos lineas ocupan 93 bytes y los otros 163 son el 0x1A de relleno que el MSX pone hasta completar el trozo de 256. Un 64 % del primer fichero de la cinta es relleno.</p>
+<hr>
+<h2 id="6-lo-que-no-se-ejecuto-y-por-que-no-cuenta">6. Lo que no se ejecuto, y por que no cuenta</h2>
+<p>Se muestreo el contador de programa durante 200 segundos de juego en un Philips VG-8020, con la cinta cargada de verdad: 398.593 muestras, 1.357 direcciones distintas dentro del juego. De los 17.676 bytes de codigo alcanzable, se vieron ejecutandose 1.357.</p>
+<p><b>Ese 7,7 % no mide codigo muerto y no se usa aqui como tal.</b> El muestreo coge el PC cada 0,5 ms y ve una fraccion minima de lo que corre; y la ventana era la pantalla de presentacion, no una partida entera.</p>
+<p>Lo que si vale es al reves: <b>de las 1.357 direcciones que se vieron ejecutar, las 1.357 caen dentro de lo que el trazador marca como codigo.</b> Ni una fuera. Eso valida el trazado, que es para lo que se hizo la medida.</p>
+<p>La partida buena, el replay <code>Demonia.omr</code>, no se pudo reproducir: pide la ROM del Sony HB-20P con el que se grabo y esa ROM no esta en esta maquina. Lo que si se saco de el, abriendolo sin emulador, esta en <a href="PREGUNTAS-ABIERTAS.html">Preguntas abiertas</a>.</p>
+<footer><p><em>Demonia</em> es un juego de MSX de 1986; su portada pone DEMONIA y lo firma <em>(C) 1986 PAR SABLATOU CLAUDE</em>, y la cinta son 58.334 bytes. Que lo publicara Microids sale del catalogo, no del binario. Todos los derechos sobre el juego siguen siendo de sus titulares. Este trabajo es de preservacion, estudio y documentacion.</p></footer></div>

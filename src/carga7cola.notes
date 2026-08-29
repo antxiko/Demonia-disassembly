@@ -1,0 +1,25 @@
+B 0x96E8 ====================================================================
+B 0x96E8  TROZO 7, LA COLA: LA MUSICA A 0x7900
+B 0x96E8 ====================================================================
+B 0x96E8 El ultimo trozo de la carga, y el mas pequeno: 1768 bytes que se
+B 0x96E8 esconden en 0x7900. Son la partitura y el reproductor, y se
+B 0x96E8 desensamblan en src/demonia_bajo7900.asm.
+B 0x96E8 Fijarse en lo que NO copia: el bloque de cinta llega hasta 0x971F
+B 0x96E8 pero el LDIR solo mueve hasta 0x96E7. Los 56 bytes de arriba son
+B 0x96E8 esta rutina y los dieciseis que la preceden, que se quedan atras.
+
+D 0x96E8 0x96F8 restos_no_copiados  Dieciseis bytes entre el final del cuerpo que se copia (0x96E7) y el arranque de la rutina. Ni se copian a la RAM escondida ni se ejecutan aqui
+F 0x96E8 16
+
+L 0x96F8 copia_la_musica  Direccion de ejecucion que pide la entrada 7 de la tabla de 0x8180
+C 0x96f8 Sin interrupciones
+C 0x96f9 El slot de RAM que apunto el trozo 3
+C 0x96fe Y el de secundarios
+C 0x9704 Origen: el principio de este mismo bloque
+C 0x9707 Destino: 0x7900, en la pagina 1 escondida
+C 0x970a 0x6E8 = 1768 bytes; el bloque de cinta trae 1824
+C 0x970f Devuelve los slots
+C 0x971a Dos pitidos, y con el jp del final se vuelve al cargador
+
+# >>> HUECOS ETIQUETADOS POR tools/rellena_huecos.py - NO EDITAR A MANO
+# <<< fin de los huecos automaticos

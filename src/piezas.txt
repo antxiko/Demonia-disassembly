@@ -1,0 +1,37 @@
+# Como se reparte la cinta en listados, y como se vuelve a montar.
+#
+#   listado   org      modulo   desplazamiento   longitud
+#
+# Cada renglon dice: este trozo del modulo de cinta se desensambla en ESTE org.
+# De aqui salen las dos cuentas que tienen que cuadrar:
+#   - el binario de un listado es la union de sus renglones ordenados por org;
+#   - el bloque de cinta de un modulo es la union de sus renglones ordenados por
+#     desplazamiento, y tiene que salir completo y sin huecos.
+#
+# Por que no basta con un listado por bloque de cinta: los siete trozos que
+# siguen al cargador NO se ejecutan donde se cargan. Cada uno lleva pegada una
+# rutina que los copia a la RAM que hay debajo de la ROM del BASIC, asi que el
+# cuerpo y la rutina que lo copia viven en direcciones distintas y necesitan
+# listados distintos. Y al reves: el cuerpo de carga4 y el de carga5 se pegan
+# en memoria (0x0000-0x1F31 y 0x1F32-0x3AC7) y forman UN solo listado, que
+# luego se parte en dos para rehacer los dos bloques de la cinta.
+
+arranque    0x8180  arranque 0x0000 0x00F9   # el cargador de siete trozos
+carga1      0xA000  carga1   0x0000 0x0619   # pantalla SCREEN 3 + su volcado
+carga2      0xAD00  carga2   0x0000 0x1380   # pantalla SCREEN 2 + su volcado
+
+bajo0000    0x0000  carga4   0x0000 0x1F32   # graficos, primera mitad
+carga4cola  0xBF32  carga4   0x1F32 0x0026   # la rutina que los copia a 0x0000
+bajo0000    0x1F32  carga5   0x0000 0x1B96   # graficos, segunda mitad
+carga5cola  0xBB96  carga5   0x1B96 0x0026   # la rutina que los copia a 0x1F32
+
+bajo4000    0x4000  carga3   0x0000 0x1468   # datos de pagina 1
+carga3cola  0xB468  carga3   0x1468 0x00CA   # busqueda del slot de 64K + copia
+
+carga6cab   0xAFD0  carga6   0x0000 0x0030   # la rutina que copia a 0x6000
+bajo6000    0x6000  carga6   0x0030 0x1000   # graficos y colores de pagina 1
+
+bajo7900    0x7900  carga7   0x0000 0x06E8   # musica: partitura y reproductor
+carga7cola  0x96E8  carga7   0x06E8 0x0038   # la rutina que la copia a 0x7900
+
+juego       0x8000  juego    0x0000 0x6000   # el juego

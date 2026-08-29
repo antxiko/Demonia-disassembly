@@ -1,0 +1,14 @@
+# La cinta NO se distribuye: solo el trabajo de documentacion.
+demonia.cas
+*.cas
+*.omr
+*.rom
+
+# Todo lo que se regenera con `make`
+work/
+extracted/
+__pycache__/
+*.pyc
+
+# Notas de sesion
+.forja/

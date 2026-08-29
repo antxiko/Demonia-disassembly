@@ -1,0 +1,21 @@
+B 0xbb96 ====================================================================
+B 0xbb96  LA RUTINILLA QUE ESCONDE LOS GRAFICOS EN 0x1f32
+B 0xbb96 ====================================================================
+B 0xbb96 Treinta y ocho bytes, iguales en los dos trozos salvo el destino y la
+B 0xbb96 longitud: conmuta las paginas 0 y 1 al slot de RAM que encontro el
+B 0xbb96 trozo 3, hace un LDIR y deja los slots como estaban.
+B 0xbb96 El cuerpo que copia -la segunda mitad de los sprites- se desensambla
+B 0xbb96 aparte, en src/demonia_bajo0000.asm, porque se lee en 0x1f32 y no aqui.
+
+L 0xbb96 copia_a_1f32  Direccion de ejecucion que pide su entrada en la tabla de 0x8180
+C 0xbb96 Con las paginas conmutadas no hay BIOS: nada de interrupciones
+C 0xbb97 El registro de primarios con la RAM, que apunto el trozo 3
+C 0xbb9c Y el de secundarios
+C 0xbba2 Origen: el cuerpo de este bloque, donde la cinta lo dejo
+C 0xbba5 Destino: la RAM que hay debajo de la ROM
+C 0xbba8 Cuantos bytes se mueven
+C 0xbbad Y de vuelta al mapa de siempre, con la ROM en su sitio
+C 0xbbb8 Un pitido: trozo colocado
+
+# >>> HUECOS ETIQUETADOS POR tools/rellena_huecos.py - NO EDITAR A MANO
+# <<< fin de los huecos automaticos
