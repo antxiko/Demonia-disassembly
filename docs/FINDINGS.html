@@ -82,7 +82,7 @@ footer{margin-top:5rem;padding-top:1.5rem;border-top:1px solid var(--linea);
 .galeria figcaption{color:var(--suave);font-size:13px;margin-top:.5rem}
 audio{display:block;width:100%;max-width:640px;margin:.75rem 0 1.5rem}
 </style>
-<div class="w"><nav class="top"><a href="index.html">Home</a><a href="GETTING-STARTED.html">Start</a><a href="THE-GAME.html">The game</a><a href="THE-TAPE.html">The tape</a><a href="THE-CODE.html">The code</a><a href="FINDINGS.html" style=color:var(--tinta)>Findings</a><a href="OPEN-QUESTIONS.html">Open questions</a><a href="es/HALLAZGOS.html" style="margin-left:auto;color:var(--oro)">Castellano</a></nav>
+<div class="w"><nav class="top"><a href="index.html">Home</a><a href="GETTING-STARTED.html">Start</a><a href="THE-GAME.html">The game</a><a href="THE-TAPE.html">The tape</a><a href="THE-CODE.html">The code</a><a href="FINDINGS.html" style=color:var(--tinta)>Findings</a><a href="THE-DEBUGGER.html">The debugger</a><a href="OPEN-QUESTIONS.html">Open questions</a><a href="es/HALLAZGOS.html" style="margin-left:auto;color:var(--oro)">Castellano</a></nav>
 <h1 id="findings-what-demonia-carries-and-never-uses">Findings: what Demonia carries and never uses</h1>
 <p><a href="GETTING-STARTED.html">Getting started</a> · <a href="THE-GAME.html">The game</a> · <a href="THE-TAPE.html">The tape</a> · <a href="THE-CODE.html">The code</a> · <a href="OPEN-QUESTIONS.html">Open questions</a></p>
 <p>A complete disassembly does not only say what a game does: it also lays bare what it carries and never uses. There is a fair amount of that on this tape, and one thing that is not an ordinary leftover.</p>
@@ -139,6 +139,16 @@ C299  10 F7       djnz 0xC292</code></pre>
 <pre><code>CC5F  2A 78 80 00      ld hl,(0x8078)</code></pre>
 <p>And <code>0x8078</code> is inside this very game&#x27;s variable page.</p>
 <p><em>(MEASURED: the four bytes, that <code>0xCBB9</code> clears them and <code>0xCBDB</code> fills them, and that <code>0x8078</code> falls in <code>0x8000</code>-<code>0x80FF</code>. ASSUMED: that the session was a debugging session on this game. It fits, but the binary does not say so.)</em></p>
+<h3 id="a-second-fossil-the-keystrokes">A second fossil: the keystrokes</h3>
+<p>The single-step buffer is not the only thing the tape froze from that session. The monitor keeps two more things in its variables: the program counter of the stopped program, which it will paint in the register dump, at <code>0xC1F4</code>; and the last line the user typed, in the input buffer at <code>0xC144</code>. Both survived the <code>BSAVE</code> intact, and both point at the same place:</p>
+<pre><code>0xC1F4   E0 7F              PC of the stopped program = 0x7FE0
+0xC144   &quot;G7FE0H\r...&quot;      the typed line begins with the Go command to 0x7FE0</code></pre>
+<p>And <code>0x7FE0</code> is a sound routine — three BIOS calls and a return:</p>
+<pre><code>7FE0  CD 93 00    call 0x0093     ; WRTPSG, write a PSG register
+7FE3  CD 9A FD    call 0xFD9A     ; the game&#x27;s sound hook
+7FE6  C9          ret</code></pre>
+<p>So the two fossils agree: the last thing this debugger did was jump to the sound routine at <code>0x7FE0</code> and run it. The <code>G7FE0</code> in the input buffer is the keystrokes that took it there; the <code>0x7FE0</code> in the register area is where it stopped.</p>
+<p><em>(MEASURED: <code>0xC1F4</code> holds <code>0x7FE0</code>, the input buffer at <code>0xC144</code> begins with the bytes <code>47 37 46 45 30 48 0D</code> = <code>&quot;G7FE0H&quot;</code> + carriage return, and <code>0x7FE0</code> is <code>call WRTPSG / call 0xFD9A / ret</code>. ASSUMED: that <code>G</code> is the monitor&#x27;s Go command — its command table is zeroed, so this cannot be read back from the binary, but <code>G&lt;hex address&gt;</code> is the universal monitor convention and the saved PC corroborates it.)</em></p>
 <hr>
 <h2 id="2-branches-that-cannot-execute-none">2. Branches that cannot execute: none</h2>
 <p>The classic pattern was searched for — a comparison deciding another comparison, the <code>cp 9</code> case from Konami&#x27;s Mahjong — with <code>tools/ramas_imposibles.py</code>, in both its forms:</p>

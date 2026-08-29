@@ -12,3 +12,6 @@ __pycache__/
 
 # Notas de sesion
 .forja/
+
+# Binarios generados de la reconstruccion del debugger
+debugger/*.bin

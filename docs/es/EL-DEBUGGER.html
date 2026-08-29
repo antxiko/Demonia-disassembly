@@ -1,0 +1,109 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>El debugger, devuelto a la vida — Demonia (1986)</title>
+<style>
+:root{--tinta:#cfd0d4;--suave:#83868f;--fondo:#000;--panel:#0c0e13;--linea:#23262e;
+  --rojo:#ff897d;--cyan:#65dbef;--verde:#3eb849;--oro:#ded087}
+@media (prefers-color-scheme:light){:root{--tinta:#191a1e;--suave:#5a5d66;--fondo:#e9e7e1;
+  --panel:#f7f6f2;--linea:#d0cdc5;--rojo:#b23f34;--cyan:#1c6b7c;--verde:#2b7734;--oro:#8a7420}}
+:root[data-theme="dark"]{--tinta:#cfd0d4;--suave:#83868f;--fondo:#000;--panel:#0c0e13;
+  --linea:#23262e;--rojo:#ff897d;--cyan:#65dbef;--verde:#3eb849;--oro:#ded087}
+:root[data-theme="light"]{--tinta:#191a1e;--suave:#5a5d66;--fondo:#e9e7e1;--panel:#f7f6f2;
+  --linea:#d0cdc5;--rojo:#b23f34;--cyan:#1c6b7c;--verde:#2b7734;--oro:#8a7420}
+*{box-sizing:border-box}
+body{margin:0;background:var(--fondo);color:var(--tinta);padding:0 1.25rem 6rem;
+  font:15px/1.7 ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+.w{max-width:1120px;margin:0 auto}
+.n{max-width:68ch}
+h1,h2,h3,h4{font-weight:400;text-wrap:balance}
+a{color:var(--cyan)}
+img{image-rendering:pixelated;max-width:100%;height:auto;display:block}
+header.top{display:flex;flex-direction:column;align-items:center;gap:1.5rem;
+  padding:4rem 0 2rem;text-align:center}
+header.top img{width:min(100%,642px)}
+.claim{max-width:60ch;color:var(--suave);font-size:1.05rem}
+.claim b{color:var(--tinta);font-weight:400}
+.ficha{display:flex;flex-wrap:wrap;justify-content:center;gap:0 1.5rem;width:100%;
+  font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--suave);
+  border-top:1px solid var(--linea);border-bottom:1px solid var(--linea);padding:.85rem 0}
+.ficha b{color:var(--rojo);font-weight:400}
+nav{display:flex;flex-wrap:wrap;gap:1.25rem;justify-content:center;padding:1.25rem 0;
+  font-size:12px;letter-spacing:.08em;text-transform:uppercase}
+nav a{color:var(--suave);text-decoration:none;border-bottom:1px solid transparent}
+nav a:hover,nav a:focus{color:var(--tinta);border-bottom-color:var(--rojo)}
+nav.docs{border-top:1px solid var(--linea);border-bottom:1px solid var(--linea);
+  margin-bottom:1rem}
+section{margin-top:4.5rem;scroll-margin-top:1rem}
+section>h2{font-size:1rem;letter-spacing:.1em;text-transform:uppercase;
+  border-left:3px solid var(--rojo);padding-left:.9rem;margin:0 0 1.5rem}
+.cifras{display:grid;gap:1px;background:var(--linea);border:1px solid var(--linea);
+  grid-template-columns:repeat(auto-fit,minmax(160px,1fr))}
+.cifra{background:var(--panel);padding:1.1rem}
+.cifra b{display:block;font-size:1.7rem;color:var(--oro);font-weight:400;
+  font-variant-numeric:tabular-nums;line-height:1.2}
+.cifra span{font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--suave)}
+.hall{border-top:1px solid var(--linea);padding-top:1.75rem;margin-top:2.5rem}
+.hall:first-of-type{border-top:0;padding-top:0;margin-top:0}
+.hall h3{margin:0 0 .75rem;font-size:1.15rem;color:var(--rojo)}
+.hall h4{color:var(--oro);margin:1.5rem 0 .5rem;font-size:.95rem}
+.hall p{margin:0 0 1rem}
+pre.asm{background:var(--panel);border-left:2px solid var(--verde);margin:1.25rem 0;
+  padding:1rem 1.1rem;overflow-x:auto;font-size:13px;line-height:1.6;color:var(--tinta)}
+.par{display:grid;gap:1.25rem;grid-template-columns:1fr}
+@media(min-width:820px){.par{grid-template-columns:1fr 1fr}}
+.par figure{margin:0}
+table{border-collapse:collapse;width:100%;margin:1.25rem 0;font-size:13px;display:block;
+  overflow-x:auto}
+th,td{text-align:left;padding:.5rem .75rem;border-bottom:1px solid var(--linea)}
+th{color:var(--suave);font-weight:400;font-size:11px;letter-spacing:.07em;text-transform:uppercase}
+td.num{font-variant-numeric:tabular-nums;color:var(--oro)}
+.nivel{margin-top:2rem}
+.nivel h3{margin:0 0 .9rem;font-size:.95rem;letter-spacing:.06em;text-transform:uppercase}
+.nivel em{color:var(--cyan);font-style:normal}
+.sep{color:var(--suave);margin:0 .6rem}
+.rejilla{display:grid;gap:.9rem;grid-template-columns:repeat(auto-fill,minmax(250px,1fr))}
+.rejilla figure{margin:0;background:var(--panel);box-shadow:0 0 0 1px var(--linea)}
+.rejilla figcaption{display:flex;justify-content:space-between;padding:.45rem .65rem;
+  font-size:11px;color:var(--suave);border-top:1px solid var(--linea)}
+.dir{font-variant-numeric:tabular-nums;color:var(--verde)}
+footer{margin-top:5rem;padding-top:1.5rem;border-top:1px solid var(--linea);
+  color:var(--suave);font-size:12px}
+
+/* Aviso de trabajo en curso: tiene que verse antes que las cifras, porque un
+   100% mal leido hace mas dano que no ponerlo. */
+.aviso{background:#3a2a10;border-left:3px solid var(--oro);margin:1.5rem auto;
+  padding:1rem 1.2rem;max-width:900px;border-radius:4px}
+.aviso p{margin:0;color:var(--tinta);font-size:15px;line-height:1.65}
+.galeria{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+  gap:1.5rem;margin:1.5rem 0}
+.galeria figure{margin:0}
+.galeria img{width:100%;height:auto;image-rendering:pixelated;
+  border:1px solid var(--linea);border-radius:3px}
+.galeria figcaption{color:var(--suave);font-size:13px;margin-top:.5rem}
+audio{display:block;width:100%;max-width:640px;margin:.75rem 0 1.5rem}
+</style>
+<div class="w"><nav class="top"><a href="index.html">Portada</a><a href="EMPEZAR.html">Empezar</a><a href="EL-JUEGO.html">El juego</a><a href="LA-CINTA.html">La cinta</a><a href="EL-CODIGO.html">El código</a><a href="HALLAZGOS.html">Hallazgos</a><a href="EL-DEBUGGER.html" style=color:var(--tinta)>El debugger</a><a href="PREGUNTAS-ABIERTAS.html">Preguntas abiertas</a><a href="../THE-DEBUGGER.html" style="margin-left:auto;color:var(--oro)">English</a></nav>
+<h1 id="el-debugger-devuelto-a-la-vida">El debugger, devuelto a la vida</h1>
+<p>Demonia lleva dentro un monitor de código máquina entero — un <b>debugger</b>, que Claude Sablatou escribió para Loriciels en 1984 y que viaja en el juego de 1986 porque el mismo hombre firmó los dos. La página de <a href="HALLAZGOS.html">Hallazgos</a> cuenta cómo se encontró y por qué, en esta cinta, <b>ya no responde</b>: el juego grabó sus 24 fichas de pantalla justo encima de su sección de datos (<code>0xD000</code>-<code>0xD8FF</code>), borrándole la tabla de órdenes, las tablas del desensamblador y una docena de subrutinas de pantalla y teclado.</p>
+<p>Esta página va de ponerlo otra vez en pie — y funciona.</p>
+<blockquote><b>Que quede claro desde el principio: esto no es el debugger original recuperado entero. No tenemos el 100% del código de Sablatou.</b> Cerca del 40% del monitor — los datos y rutinas que el juego borró — ya no existe en ninguna parte y hubo que rehacerlo. Lo que corre es más o menos un 60% de su código original superviviente y un 40% reconstruido para encajar: un equivalente que funciona, no el original perdido.</blockquote>
+<p><img src="imagenes/monitor-registros.png" alt="El monitor resucitado, arrancado suelto, pintando los doce registros del programa detenido"></p>
+<h2 id="que-sobrevivio-y-que-no">Qué sobrevivió y qué no</h2>
+<p>El sesenta por ciento del monitor está intacto: su intérprete de órdenes, su paso a paso, su volcado de registros, el <b>código</b> del desensamblador y todos sus textos siguen vivos de <code>0xC24D</code> a <code>0xCFFF</code> y de <code>0xD900</code> a <code>0xDAC7</code>. Lo que el juego destrozó fueron sus <b>datos</b>, en <code>0xD000</code>-<code>0xD8FF</code>:</p>
+<table><tr><th>pieza perdida</th><th>qué era</th></tr><tr><td>tabla de órdenes (<code>0xD5C6</code>)</td><td>15 entradas de <em>inicial + puntero al manejador</em></td></tr><tr><td>tablas del desensamblador (<code>0xD64A</code>, <code>0xD67C</code>, <code>0xD826</code>, <code>0xD88B</code>, <code>0xD5F3</code>…)</td><td>~2 KB: nemónicos, mapas de opcode, punteros de formato</td></tr><tr><td>subrutinas de pantalla/teclado (<code>0xD200</code>-<code>0xD2E8</code>)</td><td>limpiar, salto de línea, esperar tecla…</td></tr></table>
+<p><b>Esto es una reconstrucción, no una recuperación.</b> Los bytes originales de Sablatou para esas tablas y rutinas se perdieron para siempre. Lo que sigue es un <em>equivalente funcional</em>: código y datos nuevos que cumplen los mismos contratos que espera el código superviviente, para que su código vuelva a correr y el monitor se comporte como lo hacía.</p>
+<h2 id="devolver-el-monitor-interactivo">Devolver el monitor interactivo</h2>
+<p>La maquinaria de bajo nivel que sobrevive — escribir un carácter en pantalla, leer el teclado, el despachador de órdenes, los manejadores — solo necesitó que se rehicieran un puñado de sus helpers borradas, deducidas de cómo las llaman los supervivientes: <code>0x0072</code>/INITXT para su pantalla de texto de 40 columnas (demostrado por su propia geometría de casilla, <code>fila*40 + columna + 2</code>), CHGET para la espera de tecla, y las primitivas de borrado. Con eso puesto, el monitor <b>arranca, monta su pantalla y pinta los doce registros del programa detenido</b> — la imagen de arriba, donde <code>HL=1234</code>, <code>DE=5678</code>, <code>IX=AAAA</code> son los valores que un pequeño lanzador puso ahí a propósito.</p>
+<p>La tabla de órdenes se rehízo letra a letra desde los manejadores supervivientes. Dos están cableadas y probadas de momento:</p>
+<p><b><code>G</code> — Go.</b> El manejador de <code>0xC5D3</code> lee una dirección en hexadecimal, la guarda y salta ahí. El <a href="HALLAZGOS.html">fósil</a> dejó lo último que el autor tecleó, <code>G7FE0</code>, congelado en el tampón de entrada. Teclear esa misma orden en el monitor resucitado salta a la rutina de sonido de <code>0x7FE0</code> — su sesión de depuración de 1986, repetida a mano:</p>
+<p><img src="imagenes/monitor-orden-g.png" alt="Tecleando G7FE0H — la orden fosilizada del autor — de vuelta en el monitor"></p>
+<h2 id="el-desensamblador">El desensamblador</h2>
+<p>El desensamblador fue lo difícil. Sus tablas fueron lo más a fondo borrado, y las rutinas que formateaban sus operandos vivían también en la zona muerta. Así que el desensamblador es el <em>equivalente</em> más completo: un desensamblador Z80 compacto que cumple el contrato del monitor — dada una dirección en <code>IX</code>, escribe el texto del nemónico y la longitud de la instrucción exactamente donde el código de pantalla superviviente (<code>0xC568</code>) los espera. Solo hubo que repuntar esa única llamada.</p>
+<p>Cubre <b>todo el juego de instrucciones del Z80</b> — sin prefijo, <code>CB</code>, <code>ED</code>, <code>DD</code>/<code>FD</code> (IX/IY) y <code>DDCB</code>/<code>FDCB</code> — y se comprobó instrucción a instrucción en el emulador: <b>38 de 38 correctas</b>, incluidos los saltos relativos, los desplazamientos <code>(IX+d)</code> y <code>(IY-d)</code> y todas las longitudes. El volcado de registros ya lo demuestra en pantalla — la línea bajo los registros desensambla la instrucción del contador de programa:</p>
+<p><img src="imagenes/monitor-pc.png" alt="La línea bajo los registros desensambla la instrucción del PC: CALL C924"></p>
+<p>Y con la orden <code>L</code> (listar) cableada a su manejador superviviente en <code>0xC535</code>, el monitor desensambla cualquier rango. La prueba más fina que hay: <b>el monitor desensamblando su propio código máquina</b>, su rutina de entrada, en vivo en pantalla — <code>LD (C1F6),SP</code>, <code>IM 1</code>, la ristra de <code>PUSH</code> que guarda los registros, <code>LD SP,(C1F6)</code>:</p>
+<p><img src="imagenes/monitor-listado.png" alt="El monitor desensamblando su propia rutina de entrada, línea a línea"></p>
+<h2 id="como-se-lee-y-como-se-hizo">Cómo se lee, y cómo se hizo</h2>
+<p>Los números usan la convención Intel/Loriciels que espera el parser: una dirección en hexadecimal lleva una <code>H</code> detrás (<code>L7FE0H,7FE6H</code>). La reconstrucción vive en el repositorio bajo <code>debugger/</code>: el generador del desensamblador (<code>gen_disasm.py</code>), las helpers y la tabla de órdenes rehechas, y los guiones de openMSX que arrancan el monitor y capturaron cada pantallazo de esta página en un MSX1 real (un Philips VG-8020). Aquí no hay ningún montaje; cada imagen es un fotograma en crudo del emulador corriendo el monitor reconstruido.</p>
+<p><em>Cuidado con la afirmación: lo medido es que el monitor reconstruido arranca, acepta órdenes y desensambla bien, mostrado por las capturas y una comprobación de 38/38 instrucciones. Lo que es reconstrucción — dicho claro — son las letras de la tabla de órdenes, las rutinas helper rehechas y el propio desensamblador; son equivalentes, no los originales perdidos de Sablatou.</em></p>
+<footer><p><em>Demonia</em> es un juego de MSX de 1986; su portada pone DEMONIA y lo firma <em>(C) 1986 PAR SABLATOU CLAUDE</em>, y la cinta son 58.334 bytes. Que lo publicara Microids sale del catalogo, no del binario. Todos los derechos sobre el juego siguen siendo de sus titulares. Este trabajo es de preservacion, estudio y documentacion.</p></footer></div>

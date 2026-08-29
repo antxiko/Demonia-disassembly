@@ -159,6 +159,38 @@ Y 0x8078 esta dentro de la pagina de variables de este mismo juego.
 0x8078 cae en 0x8000-0x80FF. SUPOSICION: que la sesion fuera de depuracion de
 este juego. Encaja, pero el binario no lo dice.)*
 
+### Un segundo fosil: las teclas
+
+El tampon del paso a paso no es lo unico que la cinta congelo de aquella
+sesion. El monitor guarda en sus variables dos cosas mas: el contador de
+programa del programa detenido, que va a pintar en el volcado de registros, en
+0xC1F4; y la ultima linea que se tecleo, en el tampon de entrada de 0xC144. Las
+dos sobrevivieron intactas al BSAVE, y las dos apuntan al mismo sitio:
+
+```
+0xC1F4   E0 7F              PC del programa detenido = 0x7FE0
+0xC144   "G7FE0H\r..."      la linea tecleada empieza con la orden Go a 0x7FE0
+```
+
+Y 0x7FE0 es una rutina de sonido: tres llamadas a la BIOS y un retorno:
+
+```
+7FE0  CD 93 00    call 0x0093     ; WRTPSG, escribe un registro del PSG
+7FE3  CD 9A FD    call 0xFD9A     ; el vector de sonido del juego
+7FE6  C9          ret
+```
+
+Los dos fosiles coinciden: lo ultimo que hizo este debugger fue saltar a la
+rutina de sonido de 0x7FE0 y ejecutarla. El `G7FE0` del tampon de entrada son
+las teclas que lo llevaron alli; el 0x7FE0 del area de registros es donde paro.
+
+*(MEDIDO: 0xC1F4 vale 0x7FE0, el tampon de entrada de 0xC144 empieza por los
+bytes 47 37 46 45 30 48 0D = "G7FE0H" mas el retorno de carro, y 0x7FE0 es
+call WRTPSG / call 0xFD9A / ret. SUPOSICION: que "G" sea la orden Go del
+monitor; su tabla de ordenes esta a ceros y eso no se puede leer del binario,
+pero "G<direccion en hex>" es la convencion universal de los monitores y el PC
+guardado lo corrobora.)*
+
 ---
 
 ## 2. Ramas que no pueden ejecutarse: no hay

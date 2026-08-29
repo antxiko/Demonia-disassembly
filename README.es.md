@@ -53,6 +53,9 @@ en `docs/` (ingles) y `docs/es/` (castellano):
 
 - [docs/es/HALLAZGOS.md](docs/es/HALLAZGOS.md) - todo lo que el juego lleva
   dentro y no usa, con la cuenta delante ([in English](docs/FINDINGS.md)).
+- [docs/es/EL-DEBUGGER.md](docs/es/EL-DEBUGGER.md) - el monitor de Loriciels de
+  1984 que lleva dentro, **reconstruido y funcionando** (un equivalente: NO
+  sobrevive el 100% del codigo original - ver [debugger/](debugger/)).
 - [docs/es/PREGUNTAS-ABIERTAS.md](docs/es/PREGUNTAS-ABIERTAS.md) - lo que queda
   abierto, separando lo MEDIDO de lo SUPUESTO
   ([in English](docs/OPEN-QUESTIONS.md)).

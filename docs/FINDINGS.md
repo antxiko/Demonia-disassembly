@@ -156,6 +156,39 @@ And `0x8078` is inside this very game's variable page.
 and that `0x8078` falls in `0x8000`-`0x80FF`. ASSUMED: that the session was a
 debugging session on this game. It fits, but the binary does not say so.)*
 
+### A second fossil: the keystrokes
+
+The single-step buffer is not the only thing the tape froze from that session.
+The monitor keeps two more things in its variables: the program counter of the
+stopped program, which it will paint in the register dump, at `0xC1F4`; and the
+last line the user typed, in the input buffer at `0xC144`. Both survived the
+`BSAVE` intact, and both point at the same place:
+
+```
+0xC1F4   E0 7F              PC of the stopped program = 0x7FE0
+0xC144   "G7FE0H\r..."      the typed line begins with the Go command to 0x7FE0
+```
+
+And `0x7FE0` is a sound routine — three BIOS calls and a return:
+
+```
+7FE0  CD 93 00    call 0x0093     ; WRTPSG, write a PSG register
+7FE3  CD 9A FD    call 0xFD9A     ; the game's sound hook
+7FE6  C9          ret
+```
+
+So the two fossils agree: the last thing this debugger did was jump to the
+sound routine at `0x7FE0` and run it. The `G7FE0` in the input buffer is the
+keystrokes that took it there; the `0x7FE0` in the register area is where it
+stopped.
+
+*(MEASURED: `0xC1F4` holds `0x7FE0`, the input buffer at `0xC144` begins with
+the bytes `47 37 46 45 30 48 0D` = `"G7FE0H"` + carriage return, and `0x7FE0`
+is `call WRTPSG / call 0xFD9A / ret`. ASSUMED: that `G` is the monitor's Go
+command — its command table is zeroed, so this cannot be read back from the
+binary, but `G<hex address>` is the universal monitor convention and the saved
+PC corroborates it.)*
+
 ---
 
 ## 2. Branches that cannot execute: none

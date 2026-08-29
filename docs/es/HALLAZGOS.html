@@ -82,7 +82,7 @@ footer{margin-top:5rem;padding-top:1.5rem;border-top:1px solid var(--linea);
 .galeria figcaption{color:var(--suave);font-size:13px;margin-top:.5rem}
 audio{display:block;width:100%;max-width:640px;margin:.75rem 0 1.5rem}
 </style>
-<div class="w"><nav class="top"><a href="index.html">Portada</a><a href="EMPEZAR.html">Empezar</a><a href="EL-JUEGO.html">El juego</a><a href="LA-CINTA.html">La cinta</a><a href="EL-CODIGO.html">El código</a><a href="HALLAZGOS.html" style=color:var(--tinta)>Hallazgos</a><a href="PREGUNTAS-ABIERTAS.html">Preguntas abiertas</a><a href="../FINDINGS.html" style="margin-left:auto;color:var(--oro)">English</a></nav>
+<div class="w"><nav class="top"><a href="index.html">Portada</a><a href="EMPEZAR.html">Empezar</a><a href="EL-JUEGO.html">El juego</a><a href="LA-CINTA.html">La cinta</a><a href="EL-CODIGO.html">El código</a><a href="HALLAZGOS.html" style=color:var(--tinta)>Hallazgos</a><a href="EL-DEBUGGER.html">El debugger</a><a href="PREGUNTAS-ABIERTAS.html">Preguntas abiertas</a><a href="../FINDINGS.html" style="margin-left:auto;color:var(--oro)">English</a></nav>
 <h1 id="hallazgos-lo-que-sobra-en-demonia">Hallazgos: lo que sobra en Demonia</h1>
 <p>Un desensamblado completo no solo dice lo que un juego hace: tambien deja a la vista lo que lleva dentro y no usa. En esta cinta hay bastante, y una cosa que no es un resto cualquiera.</p>
 <p>Las otras paginas: <a href="EMPEZAR.html">Empezar</a> · <a href="EL-JUEGO.html">El juego</a> · <a href="LA-CINTA.html">La cinta</a> · <a href="EL-CODIGO.html">El codigo</a> · <a href="PREGUNTAS-ABIERTAS.html">Preguntas abiertas</a></p>
@@ -139,6 +139,16 @@ C299  10 F7       djnz 0xC292</code></pre>
 <pre><code>CC5F  2A 78 80 00      ld hl,(0x8078)</code></pre>
 <p>Y 0x8078 esta dentro de la pagina de variables de este mismo juego.</p>
 <p><em>(MEDIDO: los cuatro bytes, que 0xCBB9 los borra y 0xCBDB los rellena, y que 0x8078 cae en 0x8000-0x80FF. SUPOSICION: que la sesion fuera de depuracion de este juego. Encaja, pero el binario no lo dice.)</em></p>
+<h3 id="un-segundo-fosil-las-teclas">Un segundo fosil: las teclas</h3>
+<p>El tampon del paso a paso no es lo unico que la cinta congelo de aquella sesion. El monitor guarda en sus variables dos cosas mas: el contador de programa del programa detenido, que va a pintar en el volcado de registros, en 0xC1F4; y la ultima linea que se tecleo, en el tampon de entrada de 0xC144. Las dos sobrevivieron intactas al BSAVE, y las dos apuntan al mismo sitio:</p>
+<pre><code>0xC1F4   E0 7F              PC del programa detenido = 0x7FE0
+0xC144   &quot;G7FE0H\r...&quot;      la linea tecleada empieza con la orden Go a 0x7FE0</code></pre>
+<p>Y 0x7FE0 es una rutina de sonido: tres llamadas a la BIOS y un retorno:</p>
+<pre><code>7FE0  CD 93 00    call 0x0093     ; WRTPSG, escribe un registro del PSG
+7FE3  CD 9A FD    call 0xFD9A     ; el vector de sonido del juego
+7FE6  C9          ret</code></pre>
+<p>Los dos fosiles coinciden: lo ultimo que hizo este debugger fue saltar a la rutina de sonido de 0x7FE0 y ejecutarla. El <code>G7FE0</code> del tampon de entrada son las teclas que lo llevaron alli; el 0x7FE0 del area de registros es donde paro.</p>
+<p><em>(MEDIDO: 0xC1F4 vale 0x7FE0, el tampon de entrada de 0xC144 empieza por los bytes 47 37 46 45 30 48 0D = &quot;G7FE0H&quot; mas el retorno de carro, y 0x7FE0 es call WRTPSG / call 0xFD9A / ret. SUPOSICION: que &quot;G&quot; sea la orden Go del monitor; su tabla de ordenes esta a ceros y eso no se puede leer del binario, pero &quot;G&lt;direccion en hex&gt;&quot; es la convencion universal de los monitores y el PC guardado lo corrobora.)</em></p>
 <hr>
 <h2 id="2-ramas-que-no-pueden-ejecutarse-no-hay">2. Ramas que no pueden ejecutarse: no hay</h2>
 <p>Se busco el patron clasico -una comparacion que decide otra comparacion, el caso del <code>cp 9</code> de Konami&#x27;s Mahjong- con <code>tools/ramas_imposibles.py</code>, en sus dos formas:</p>
