@@ -91,6 +91,37 @@ Hay dos bancos, y las dos cuentas dan exactas: **242 registros** en `0x0000` y
 **214** en `0x1F32`. El juego cambia de banco escribiéndose encima: `0xABB3`
 escribe en `0xAB1A`, que es el operando de un `ld c,n`.
 
+## La partida, jugada
+
+Todo lo anterior sale de leer el binario. Esto sale de jugarlo: una partida en
+openMSX sobre un **Philips VG-8020** con la cinta de verdad, guiada por
+`tools/omsx_partida.tcl`, que no se limita a arrancar el emulador sino que
+**mide que se está jugando**.
+
+Lo que se comprobó, con la medida al lado:
+
+- **El mando es el que dice el listado.** `0x8418` llama a GTSTCK (`0x00D5`),
+  que con A=0 lee los cursores, y `0x85A9` llama a GTTRIG (`0x00D8`), que lee la
+  barra espaciadora. Pulsando la barra se pasa de la presentación a la partida;
+  con los cursores el personaje anda.
+- **El jugador se mueve de verdad.** `0x8049`, que es su X, va de 128 a 141 y a
+  152 pulsando derecha, y baja a 139 y 138 pulsando izquierda. No es una
+  impresión: es el byte, leído de la RAM del emulador en cada paso.
+- **El marcador.** Arriba se lee `SCORE=000000`, `RECORD=000000` y una barra
+  `FORCE=` de dos colores, que es lo que anima `0x994F`.
+
+Y la comprobación que más vale de todas:
+
+> **La pantalla que pinta el emulador es la misma que el mapa dibujado desde la
+> cinta.** El cementerio de la primera pantalla —las estrellas, el mausoleo, la
+> lápida, la hierba y la tierra roja— sale idéntico en
+> `docs/imagenes/mapa-pantalla-00.png`, que no ha visto un emulador en su vida:
+> lo dibuja `tools/mapas.py` descomprimiendo los bytes de `0x43DE`.
+
+Lo que **no** se ha hecho: jugar una partida entera. No se han visitado las 24
+pantallas, ni se ha visto morir al personaje, ni el `GAME OVER`. Sigue en
+[Preguntas abiertas](PREGUNTAS-ABIERTAS.html).
+
 ## La pantalla y el sonido
 
 El MSX1 no desplaza la pantalla por hardware, así que el juego lo hace a mano y

@@ -90,6 +90,37 @@ There are two banks, and both counts come out exact: **242 records** at
 `0x0000` and **214** at `0x1F32`. The game switches bank by writing over
 itself: `0xABB3` writes into `0xAB1A`, which is the operand of a `ld c,n`.
 
+## The game, played
+
+Everything above comes from reading the binary. This comes from playing it: a
+session in openMSX on a **Philips VG-8020** with the real tape, driven by
+`tools/omsx_partida.tcl`, which does not merely start the emulator but
+**measures that a game is being played**.
+
+What was checked, with the measurement beside it:
+
+- **The controls are the ones the listing names.** `0x8418` calls GTSTCK
+  (`0x00D5`), which with A=0 reads the cursor keys, and `0x85A9` calls GTTRIG
+  (`0x00D8`), which reads the space bar. Pressing space takes you from the
+  presentation into the game; the cursor keys walk the character.
+- **The player really moves.** `0x8049`, its X, goes from 128 to 141 and on to
+  152 while right is held, and drops to 139 and 138 on left. That is not an
+  impression: it is the byte, read out of the emulator's RAM at every step.
+- **The panel.** Along the top it reads `SCORE=000000`, `RECORD=000000` and a
+  two-colour `FORCE=` bar, which is what `0x994F` animates.
+
+And the check that is worth most of all:
+
+> **The screen the emulator paints is the same as the map drawn from the tape.**
+> The graveyard of the first screen — the stars, the mausoleum, the headstone,
+> the grass and the red earth — comes out identical in
+> `docs/imagenes/mapa-pantalla-00.png`, which has never seen an emulator:
+> `tools/mapas.py` draws it by decompressing the bytes at `0x43DE`.
+
+What was **not** done: playing a whole game. The 24 screens have not been
+visited, the character has not been seen to die, and there is no `GAME OVER`.
+That stays in [Open questions](OPEN-QUESTIONS.html).
+
 ## Screen and sound
 
 The MSX1 cannot scroll in hardware, so the game does it by hand and carries

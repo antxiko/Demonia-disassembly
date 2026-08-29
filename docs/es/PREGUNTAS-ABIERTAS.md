@@ -116,13 +116,21 @@ en `~/Documents/openMSX/share/systemroms/`. Con eso, `tools/omsx_replay.tcl`
 da el muestreo del PC de una partida entera y la seccion 6 de
 [Hallazgos](HALLAZGOS.html) deja de ser un dato flojo.
 
-### 2. Que hace el juego, jugado
+### 2. Que hace el juego, jugado (a medias)
 
-No se ha documentado una partida. Lo que se sabe del juego sale del codigo y de
-sus datos: 24 pantallas con su ficha de 88 bytes y sus cuatro rutinas de
-conducta, un interprete de guiones de doce opcodes, marcador con `SCORE=`,
-`RECORD=` y `FORCE=`, y un `GAME OVER`. Falta atar cada pantalla con lo que se
-ve, y para eso el camino bueno es el replay del punto 1.
+**Ya se ha jugado**, y esta contado en [El juego](EL-JUEGO.html): una partida en
+openMSX sobre un Philips VG-8020 con la cinta de verdad. De ahi salen medidos el
+mando (cursores por GTSTCK, barra espaciadora por GTTRIG), que el jugador se
+mueve -su X, en 0x8049, va de 128 a 152 y vuelve-, el marcador con `SCORE=`,
+`RECORD=` y la barra `FORCE=`, y la comprobacion buena: la primera pantalla que
+pinta el emulador es identica al mapa que `tools/mapas.py` dibuja desde los
+bytes de 0x43DE, sin emulador ninguno.
+
+**Lo que sigue abierto** es la partida ENTERA: visitar las 24 pantallas, ver
+morir al personaje y llegar al `GAME OVER`, y atar cada pantalla con su ficha de
+88 bytes y sus cuatro rutinas de conducta. Sintetizar pulsaciones sirve para
+andar un rato, no para jugarse un juego; para eso el camino bueno sigue siendo
+el replay del punto 1.
 
 ### 3. Las fichas de pantalla, por dentro
 

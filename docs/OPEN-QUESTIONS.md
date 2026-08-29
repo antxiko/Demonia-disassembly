@@ -115,14 +115,21 @@ openMSX's `systemroms`. With that, `tools/omsx_replay.tcl` gives the PC
 sampling for a whole game and section 6 of [Findings](FINDINGS.html) stops
 being a weak datum.
 
-### 2. What the game does, played
+### 2. What the game does, played (half closed)
 
-No play session has been documented. What is known about the game comes from
-the code and its data: 24 screens with their 88-byte record and their four
-behaviour routines, a twelve-opcode script interpreter, a scoreboard with
-`SCORE=`, `RECORD=` and `FORCE=`, and a `GAME OVER`. Tying each screen to what
-is actually seen is still to do, and the right road for that is the replay in
-point 1.
+**It has now been played**, and it is written up in [The game](THE-GAME.html): a
+session in openMSX on a Philips VG-8020 with the real tape. From it come the
+measured controls (cursor keys through GTSTCK, space bar through GTTRIG), that
+the player really moves — its X, at `0x8049`, runs from 128 up to 152 and back —
+the panel with `SCORE=`, `RECORD=` and the `FORCE=` bar, and the check that is
+worth most: the first screen the emulator paints is identical to the map
+`tools/mapas.py` draws from the bytes at `0x43DE`, with no emulator involved.
+
+**What is still open** is the WHOLE game: visiting all 24 screens, seeing the
+character die and reaching the `GAME OVER`, and tying each screen to its 88-byte
+record and its four behaviour routines. Synthesised keystrokes are good for
+walking about for a while, not for playing a game through; for that the right
+road is still the replay in point 1.
 
 ### 3. The screen records, inside
 
